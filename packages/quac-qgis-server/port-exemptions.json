@@ -1,0 +1,73 @@
+{
+  "about": "Every module in packages/quac/src/parse/ and packages/quac/src/generate/ has a Python counterpart in quac_server/ of the same name, or is listed under modules with the reason it has none. A module with a counterpart exports each of its JavaScript functions under the Python name, or lists the function under functions with its reason. tests/test_parity.py checks both. Under departures, a function that does what its JavaScript counterpart does in a different way, and why.",
+  "modules": {
+    "parse/parseBrandColour.ts": "The project's Brand colour, which an application reads from the parsed project; no catalogue field carries it.",
+    "parse/parseDataDefinedEditable.ts": "A field's data-defined editable expression, for quac:editable_when, which is not in the first release.",
+    "parse/parseExtent.ts": "The map canvas extent, for quac:initial_view, which is not in the first release.",
+    "parse/parseFormLayout.ts": "The form layout, for quac:form_order, quac:in_form, quac:visible_when and quac:editable_when, which are not in the first release.",
+    "parse/parseGetProjectSettings.ts": "Reads a GetProjectSettings response, the other QGIS Server producer's input. The plugin reads the project's text.",
+    "parse/parseMeasurement.ts": "The project's area and distance units, for quac:measurement, which is not in the first release.",
+    "parse/parseMergin.ts": "The Mergin Maps plugin's filters, for quac:filters, which is not in the first release.",
+    "parse/parseProjectVariables.ts": "The project's variables, which an application reads from the parsed project; no catalogue field carries them.",
+    "parse/parseRelations.ts": "The project's relations, for quac:related_to and value relations, which are not in the first release.",
+    "parse/parseStyle.ts": "A layer's styles. The plugin's first release serves no style.",
+    "parse/qgisExpression.ts": "Reads QGIS expressions, for defaults, constraints and conditional fields, which are not in the first release.",
+    "parse/qtDateFormat.ts": "Qt date patterns, for quac:date_format and for evaluating expressions, neither in the first release.",
+    "parse/qtRegex.ts": "Qt regular expressions, for evaluating expressions, which the first release does not do.",
+    "generate/arcgisStacCatalogue.ts": "The ArcGIS producer: another kind of source.",
+    "generate/externalStacCatalogue.ts": "Reads a STAC catalogue from somewhere else: another kind of source.",
+    "generate/fileLayerCollection.ts": "The Collection for a single data file: another kind of source.",
+    "generate/folderStacCatalogue.ts": "The folder of data files producer: another kind of source.",
+    "generate/ogcFeaturesStacCatalogue.ts": "The OGC API Features producer: another kind of source.",
+    "generate/qmlForLayer.ts": "Rebuilds a layer's QML style. The plugin's first release serves no style.",
+    "generate/wfsStacCatalogue.ts": "The WFS producer: another kind of source."
+  },
+  "functions": {
+    "parse/geometrySiblings.ts": {
+      "readGeometrySiblingShapes": "Used by an application's loaders, not by a producer."
+    },
+    "parse/parseQfieldSync.ts": {
+      "parseInitialActiveLayerId": "For quac:active_collection, which is not in the first release."
+    },
+    "generate/normalizedProject.ts": {
+      "withSelfLink": "The server route writes no self address of its own.",
+      "readCatalogueActiveCollection": "A reader of a catalogue, for an application, not a producer.",
+      "readCatalogueInitialView": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionDisplayField": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldAliases": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldNames": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldTypes": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldValues": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldValueRelations": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionMeasurement": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionLegendImage": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionIcon": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionLocks": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFilters": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionPrivate": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldAttachments": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldEditRules": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFormLayout": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionEditable": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionIdentifiable": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionVisibility": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionGeometryType": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionScaleRange": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionOpacity": "A reader of a catalogue, for an application, not a producer.",
+      "statedOpacity": "Used by a reader of a catalogue, for an application, not a producer.",
+      "readCollectionRelatedTo": "A reader of a catalogue, for an application, not a producer."
+    },
+    "generate/stacCatalogue.ts": {
+      "readCollectionGeometryFilter": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionLayerName": "A reader of a catalogue, for an application, not a producer.",
+      "isQgisPlaceholderDescription": "Used by an application to tell a placeholder description from the project's own.",
+      "parseQgisStyleAssetHref": "Takes a style asset's address apart. The plugin's first release serves no style."
+    },
+    "generate/wmsStacCatalogue.ts": {
+      "generateStacCatalogueFromWms": "The GetProjectSettings producer, the other QGIS Server route. The plugin reads the project's text."
+    }
+  },
+  "departures": {
+    "parse/parseDataSource.ts": "parse_data_source reads every source of the wms and xyzvectortiles providers as kind image, whatever its address; the JavaScript reads it as wms, wmts or xyz, or unsupported where the URL class refuses its address. In a served catalogue the kind decides only whether a layer is editable, and a layer of either provider is an image, which QGIS Server does not publish for WFS, so the server route makes it read-only either way. Vectoria chose this on 2026-11-07 over copying the URL class's rules into Python."
+  }
+}

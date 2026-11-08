@@ -1,0 +1,45 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Value relation" version="3.44.8-Solothurn">
+  <title>Value relation</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="species_1" name="Species" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"><editWidget type="ValueRelation"><config><Option type="Map"><Option type="QString" value="species_1" name="Layer"/><Option type="QString" value="Species" name="LayerName"/><Option type="QString" value="code" name="Key"/><Option type="QString" value="common_name" name="Value"/><Option type="bool" value="false" name="AllowNull"/><Option type="bool" value="false" name="AllowMulti"/><Option type="bool" value="true" name="OrderByValue"/><Option type="QString" value="" name="FilterExpression"/></Option></config></editWidget></field>
+      </fieldConfiguration>
+    </maplayer>
+    <maplayer type="vector" wkbType="NoGeometry">
+      <id>species_1</id>
+      <datasource>./species_1.geojson</datasource>
+      <layername>Species</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="code"/>
+        <field configurationFlags="NoFlag" name="common_name"/>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

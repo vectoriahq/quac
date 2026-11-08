@@ -1,0 +1,40 @@
+{
+  "type": "Catalog",
+  "id": "value-relation",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "table:columns": [
+        {
+          "name": "species",
+          "quac:value_relation": {
+            "collection": "species_1",
+            "key": "code",
+            "value": "common_name",
+            "order_by": "value"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "id": "species_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Species"
+    }
+  ]
+}

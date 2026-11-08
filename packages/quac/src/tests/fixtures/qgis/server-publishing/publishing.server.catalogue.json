@@ -1,0 +1,279 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "server-publishing",
+  "title": "Server publishing",
+  "description": "STAC catalogue generated from QGIS project \"Server publishing\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Parcels.json",
+      "type": "application/json",
+      "title": "Parcels"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Survey%20notes.json",
+      "type": "application/json",
+      "title": "Survey notes"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Assets.json",
+      "type": "application/json",
+      "title": "Assets"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Parcels",
+      "title": "Parcels",
+      "description": "Layer \"Parcels\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=Parcels&OUTPUTFORMAT=application%2Fjson",
+          "type": "application/geo+json",
+          "title": "WFS GetFeature: Parcels",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Parcels"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:display_field": "parcel_id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Polygon"
+      ],
+      "quac:qgis_server_wms_name": "Parcels",
+      "quac:qgis_server_wfs_type_name": "Parcels",
+      "table:columns": [
+        {
+          "name": "parcel_id"
+        },
+        {
+          "name": "zone_code"
+        }
+      ],
+      "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+      "quac:wfs_type_name": "Parcels"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Survey notes",
+      "title": "Survey notes",
+      "description": "Layer \"Survey notes\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Survey notes"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:display_field": "note",
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Survey notes",
+      "table:columns": [
+        {
+          "name": "note_id"
+        },
+        {
+          "name": "note"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Assets",
+      "title": "Assets",
+      "description": "Layer \"Assets\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=Assets&OUTPUTFORMAT=application%2Fjson",
+          "type": "application/geo+json",
+          "title": "WFS GetFeature: Assets",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Assets"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:display_field": "asset_id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Assets",
+      "quac:qgis_server_wfs_type_name": "Assets",
+      "table:columns": [
+        {
+          "name": "asset_id"
+        },
+        {
+          "name": "condition"
+        }
+      ],
+      "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+      "quac:wfs_type_name": "Assets"
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

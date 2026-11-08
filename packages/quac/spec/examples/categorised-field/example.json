@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:categorised_field"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

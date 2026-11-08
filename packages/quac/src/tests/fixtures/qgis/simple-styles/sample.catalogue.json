@@ -1,0 +1,410 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "qgs-project",
+  "description": "STAC catalogue generated from a QGIS project.",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc.json",
+      "type": "application/json",
+      "title": "bicycle-routes-linestring_Bicycle_Routes"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073.json",
+      "type": "application/json",
+      "title": "car-share-point_Car_Share"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7.json",
+      "type": "application/json",
+      "title": "whats-on-when-polygon_Whats_On_When"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          144.996864,
+          -37.938609,
+          145.083382,
+          -37.860402
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc",
+      "title": "bicycle-routes-linestring_Bicycle_Routes",
+      "description": "Layer \"bicycle-routes-linestring_Bicycle_Routes\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              144.996864,
+              -37.938609,
+              145.083382,
+              -37.860402
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Line"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./bicycle-routes-linestring.json",
+          "type": "application/geo+json",
+          "title": "bicycle-routes-linestring.json",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./sample.qgs#Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./sample.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "RoadName",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "MultiLineString"
+      ],
+      "quac:qgis_server_wms_name": "bicycle-routes-linestring_Bicycle_Routes",
+      "quac:qgis_server_wfs_type_name": "bicycle-routes-linestring_Bicycle_Routes",
+      "table:columns": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "DESCRIPT"
+        },
+        {
+          "name": "RoadName"
+        },
+        {
+          "name": "ogr_fid"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073",
+      "title": "car-share-point_Car_Share",
+      "description": "Layer \"car-share-point_Car_Share\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              144.999639,
+              -37.918597,
+              145.058528,
+              -37.870055
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./car-share-point.json",
+          "type": "application/geo+json",
+          "title": "car-share-point.json",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./sample.qgs#Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./sample.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "car-share-point_Car_Share",
+      "quac:qgis_server_wfs_type_name": "car-share-point_Car_Share",
+      "table:columns": [
+        {
+          "name": "id"
+        },
+        {
+          "name": "Comments"
+        },
+        {
+          "name": "Provider"
+        },
+        {
+          "name": "ogr_fid"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7",
+      "title": "whats-on-when-polygon_Whats_On_When",
+      "description": "Layer \"whats-on-when-polygon_Whats_On_When\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              145.005926,
+              -37.935103,
+              145.076695,
+              -37.861949
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./whats-on-when-polygon.json",
+          "type": "application/geo+json",
+          "title": "whats-on-when-polygon.json",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./sample.qgs#What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./sample.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "Title",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Polygon"
+      ],
+      "quac:qgis_server_wms_name": "whats-on-when-polygon_Whats_On_When",
+      "quac:qgis_server_wfs_type_name": "whats-on-when-polygon_Whats_On_When",
+      "table:columns": [
+        {
+          "name": "ContactNums"
+        },
+        {
+          "name": "Contacts"
+        },
+        {
+          "name": "Finish"
+        },
+        {
+          "name": "Notes"
+        },
+        {
+          "name": "Start"
+        },
+        {
+          "name": "Title"
+        },
+        {
+          "name": "What"
+        },
+        {
+          "name": "id"
+        },
+        {
+          "name": "ogr_fid"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

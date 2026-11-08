@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:value_relation"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

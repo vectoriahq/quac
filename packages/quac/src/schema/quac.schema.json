@@ -1,0 +1,935 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://groundwork.do/schemas/quac/v0.1.0/schema.json",
+  "title": "QUAC: Quite Useful Additions for Catalogs",
+  "description": "The fields of QUAC (Quite Useful Additions for Catalogs): the fields a STAC catalogue carries under the quac: prefix to say how a layer is drawn, edited and set up, as a source such as a QGIS project declares it. Validates a Catalog with its inlined collections and catalogs, or a single Collection. Only quac: fields are checked: any other field passes, and a quac: field this schema does not define fails. A field is written only when the source declares it, so an absent field means the source said nothing.",
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "if": {
+    "properties": {
+      "type": {
+        "const": "Collection"
+      }
+    }
+  },
+  "then": {
+    "$ref": "#/definitions/collection"
+  },
+  "else": {
+    "$ref": "#/definitions/catalog"
+  },
+  "definitions": {
+    "presetFilter": {
+      "type": "object",
+      "required": ["field"],
+      "properties": {
+        "field": { "description": "The field the filter filters.", "type": "string", "minLength": 1 },
+        "name": { "description": "The name the filter is shown under, in place of the field's own. Absent where the source gives none.", "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "editLock": {
+      "oneOf": [
+        { "const": true },
+        {
+          "type": "object",
+          "required": ["expression"],
+          "properties": {
+            "expression": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "catalog": {
+      "type": "object",
+      "properties": {
+        "quac:active_collection": {
+          "description": "On the top-level Catalog: the id of the Collection whose layer the source names as the layer to make active when the map opens. Written from a QGIS project's Initial active layer, which the QFieldSync plugin sets.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_endpoint": {
+          "description": "On a Catalog made from a WFS service: the address of the service, with no query.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_version": {
+          "description": "On a Catalog made from a WFS service: the WFS version that the service answered in, such as 2.0.0.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_output_formats": {
+          "description": "On a Catalog made from a WFS service: the formats that the service can send features in, as its capabilities document lists them.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "quac:arcgis_item_id": {
+          "description": "On a Catalog made from ArcGIS Online: the id of the Web Map or Feature Service item. Absent for a FeatureServer that reports no item.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:initial_view": {
+          "description": "On the top-level Catalog: the area that the map opens on, as a WGS84 box of west, south, east and north. Written from the view that a QGIS project or an ArcGIS Web Map was saved with.",
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "type": "number" }
+        },
+        "quac:visibility_checked": {
+          "description": "On a group: whether the group opens switched on. In a catalogue of basemaps, true marks the basemap that is shown first, and false keeps a group hidden.",
+          "type": "boolean"
+        },
+        "quac:mutually_exclusive": {
+          "description": "The group shows only one of its children at a time, as a QGIS mutually exclusive group does. Written from a QGIS project's layer tree or QGIS Server's GetProjectSettings.",
+          "const": true
+        },
+        "collections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/collection"
+          }
+        },
+        "catalogs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/catalog"
+          }
+        }
+      },
+      "patternProperties": {
+        "^(?!quac:)": {}
+      },
+      "additionalProperties": false
+    },
+    "collection": {
+      "type": "object",
+      "properties": {
+        "quac:wfs_endpoint": {
+          "description": "For a layer read from a WFS service: the address of the service, with no query. Written from a QGIS WFS layer, from QGIS Server or from a WFS service.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_type_name": {
+          "description": "For a layer read from a WFS service: the name of the feature type, as the service publishes it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:qgis_server_wms_name": {
+          "description": "For a layer from a QGIS project: the name QGIS Server gives the layer in WMS, as GetCapabilities and GetProjectSettings list it under Name. That is the layer id where the project ticks Use layer ids as names, else the layer's short name, else its name. Absent where the project leaves the layer out of WMS. An application reading QGIS Server beside the catalogue can match a layer by it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:qgis_server_wfs_type_name": {
+          "description": "For a layer from a QGIS project that publishes it for WFS: the feature type name QGIS Server gives the layer, which is its short name or else its name, with each space made an underscore and each colon or em dash made a hyphen. Unlike quac:wfs_type_name, it does not say that the layer is read from WFS.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_srs_name": {
+          "description": "For a layer read from a WFS service: the coordinate reference system that a QGIS project sets for the layer.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_default_srs": {
+          "description": "For a layer read from a WFS service: the coordinate reference system that the service declares as the default for the feature type.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wfs_supported_srs": {
+          "description": "For a layer read from a WFS service: every coordinate reference system that the service lists for the feature type.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "quac:wfs_operations": {
+          "description": "For a layer read from a WFS service: the operations that the service lists for the feature type. Absent where the service lists none.",
+          "type": "object",
+          "properties": {
+            "Query": { "description": "The service answers queries for the feature type.", "type": "boolean" },
+            "Insert": { "description": "The service adds new features.", "type": "boolean" },
+            "Update": { "description": "The service changes existing features.", "type": "boolean" },
+            "Delete": { "description": "The service deletes features.", "type": "boolean" }
+          },
+          "required": ["Query", "Insert", "Update", "Delete"],
+          "additionalProperties": false
+        },
+        "quac:arcgis_layer_url": {
+          "description": "For a layer from ArcGIS Online: the address of its FeatureServer layer. Absent on a layer that quac:arcgis_not_shown marks.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:arcgis_where": {
+          "description": "For a layer from an ArcGIS Web Map: the filter that the Web Map sets on the layer, in ArcGIS's SQL. Absent where the Web Map sets none.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:arcgis_not_shown": {
+          "description": "For a layer from ArcGIS Online that cannot be read as features: why. not-queryable is a layer whose service does not answer queries as GeoJSON, not-a-feature-layer a layer that is not a FeatureServer feature layer, such as imagery, and layer-unavailable a layer whose service could not be read. Absent on a layer that can be read.",
+          "enum": ["not-queryable", "not-a-feature-layer", "layer-unavailable"]
+        },
+        "quac:display_field": {
+          "description": "The field whose value names each feature, such as in a list of features. Written from a QGIS layer's Display Name where it names one field, or from an ArcGIS layer's display field.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:visibility_checked": {
+          "description": "Whether the layer opens switched on. Written from the tick beside a layer in a QGIS project's layers panel, or from an ArcGIS Web Map layer's visibility. Absent means that the layer opens on.",
+          "type": "boolean"
+        },
+        "quac:editable": {
+          "description": "Whether the source lets the layer's features be edited. Written from a QGIS layer's Read-only setting, reversed. Absent means that the layer can be edited.",
+          "type": "boolean"
+        },
+        "quac:identifiable": {
+          "description": "Whether the layer's features can be identified, which QGIS means as answering its identify tool and a WMS GetFeatureInfo request. WMS calls this queryable. Written from a QGIS layer's Identifiable setting, or from QGIS Server's queryable flag. Absent means that the layer can be identified. Some desktop GIS have a related setting called selectable, which is not the same.",
+          "type": "boolean"
+        },
+        "quac:min_scale": {
+          "description": "The most zoomed-out scale that the layer shows at, as a denominator: 25000 is 1:25,000. Written from a QGIS layer's Scale Dependent Visibility, or from an ArcGIS layer's scale range.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "quac:max_scale": {
+          "description": "The most zoomed-in scale that the layer shows at, as a denominator. Written from the same settings as quac:min_scale.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "quac:opacity": {
+          "description": "The opacity that the layer is drawn at, from 0 to 1. Written from a QGIS layer's Opacity, or from an ArcGIS Web Map layer's opacity. A layer with no value, or with 0, draws at full opacity.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "quac:related_to": {
+          "description": "The relations this Collection is the child side of, so its records hang off another Collection's features rather than being a map layer of their own. Written from a QGIS project's Relations.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        },
+        "quac:private": {
+          "description": "The source keeps this Collection off its map and legend, such as a lookup table. Written from a QGIS layer's Private flag.",
+          "const": true
+        },
+        "quac:filters": {
+          "description": "The filters the source sets up for the Collection, in its order: a field each, and the name it is shown under, ready for values of that field to be picked. Written from the filters the Mergin Maps plugin saves in a QGIS project for the Mergin Maps app.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/presetFilter" }
+        },
+        "quac:locks": {
+          "description": "The edits the source locks on the Collection: adding a feature, changing its attributes, changing its geometry, and deleting it. Each is true, locked for every feature, or an expression, locked for a feature while the QGIS expression comes out true for it. Written from a QGIS project's QGIS Server WFS settings and from the QFieldSync plugin's permissions.",
+          "type": "object",
+          "minProperties": 1,
+          "properties": {
+            "add": { "$ref": "#/definitions/editLock", "description": "Adding a feature. Locked for a new feature, before it has values, so an expression locks every new feature." },
+            "attributes": { "$ref": "#/definitions/editLock", "description": "Changing a feature's attributes." },
+            "geometry": { "$ref": "#/definitions/editLock", "description": "Moving or reshaping a feature." },
+            "delete": { "$ref": "#/definitions/editLock", "description": "Deleting a feature." }
+          },
+          "additionalProperties": false
+        },
+        "quac:measurement": {
+          "description": "The area and distance units the source gives $area, $length and $perimeter in, each as the name QGIS saves, such as ha and meters. Written from a QGIS project's Measurements settings, onto every layer's Collection. Absent means square metres and metres.",
+          "type": "object",
+          "required": ["area_unit", "distance_unit"],
+          "properties": {
+            "area_unit": { "type": "string", "minLength": 1 },
+            "distance_unit": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "quac:legend_image": {
+          "description": "The image the source shows in place of this Collection's legend, embedded as a data URL. Written from a QGIS layer's Legend placeholder image when QGIS embeds the file in the project.",
+          "type": "string",
+          "pattern": "^data:image/[A-Za-z0-9+.-]+;base64,"
+        },
+        "quac:icon": {
+          "description": "The address of the icon drawn before this Collection's name, in the colour of the text beside it. Written from the layer variable named quac_icon.",
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "quac:form_order": {
+          "description": "The names of the fields the source's form layout places, in its order. A column not listed is left out of the form. Written from a QGIS layer's Drag and Drop Designer form.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/name"
+          }
+        },
+        "quac:light_style": {
+          "description": "For a layer drawn from style documents: the style drawn in a light theme, by its name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:dark_style": {
+          "description": "For a layer drawn from style documents: the style drawn in a dark theme, by its name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:cross_origin": {
+          "description": "Request this layer's tiles with cross-origin access, so an exported map image can include them.",
+          "const": true
+        },
+        "quac:max_zoom": {
+          "description": "The deepest tile level requested; past it, the last level's tiles are enlarged. Written from a QGIS XYZ layer's maximum zoom.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "summaries": {
+          "type": "object",
+          "properties": {
+            "quac:geometry_type": {
+              "description": "The layer's geometry type as a QGIS project names it, such as Point, as a one-item array.",
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": {
+                "$ref": "#/definitions/name"
+              }
+            }
+          },
+          "patternProperties": {
+            "^(?!quac:)": {}
+          },
+          "additionalProperties": false
+        },
+        "table:columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/column"
+          }
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/asset"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/link"
+          }
+        }
+      },
+      "patternProperties": {
+        "^(?!quac:)": {}
+      },
+      "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "properties": {
+        "quac:wms_crs": {
+          "description": "On a WMS link: the coordinate reference system that the layer's images are requested in, such as EPSG:3857. Written from a QGIS WMS layer's CRS. For a QGIS Server layer, it is EPSG:3857 where the layer lists it, and otherwise the first CRS it lists. The Web Map Links extension defines no field for it and would be its natural home.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wms_version": {
+          "description": "On a WMS link: the WMS version that the layer is requested with. Written from a QGIS WMS layer's version. Absent where the source states none, in which case the server's capabilities give the version. The Web Map Links extension defines no field for it and would be its natural home.",
+          "enum": ["1.1.1", "1.3.0"]
+        },
+        "quac:wmts_tile_matrix_set": {
+          "description": "On a WMTS link: the tile matrix set, which is the grid of tiles, that the layer is requested in. Written from a QGIS WMTS layer's tile matrix set. The Web Map Links extension defines no field for it and would be its natural home.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:wmts_style": {
+          "description": "On a WMTS link: the style that the layer's tiles are requested in. Written from a QGIS WMTS layer's style. Absent where QGIS uses the layer's default style. The Web Map Links extension defines no field for it and would be its natural home.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "patternProperties": {
+        "^(?!quac:)": {}
+      },
+      "additionalProperties": false
+    },
+    "asset": {
+      "type": "object",
+      "properties": {
+        "quac:style_overrides": {
+          "description": "On a style document: overrides to merge into it before it is drawn, in order. Each is the address of a JSON document or the document itself. An override has the shape of the style document and holds only the values that differ, merged as JSON Merge Patch (RFC 7396) except that `layers` is merged by each layer's `id`: an override layer is merged into the style layer with the same `id`, and one the style has no layer for is ignored.",
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "object" }
+            ]
+          }
+        },
+        "quac:categorised_field": {
+          "description": "On a style: the field that a QGIS Categorized style colours features by. Written only for a Categorized style.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:geometry_filter": {
+          "description": "The geometry types in the asset's file that the Collection holds, so a layer shows only those features. A multi-part geometry, such as a MultiPoint, counts as its single-part type. Written from QGIS file layers' geometrytype= option, which QGIS uses to split a file holding several geometry types into one layer per type; one Collection made from two such layers lists both their types, and one made from all three has no filter, so it holds the whole file.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "Point",
+              "LineString",
+              "Polygon"
+            ]
+          }
+        },
+        "quac:delimited_text": {
+          "description": "How the asset's file splits into rows and cells, where QGIS reads it with its Delimited Text provider rather than OGR. Written from the options a QGIS Delimited Text data source names. QGIS cannot edit a file it reads this way.",
+          "type": "object",
+          "properties": {
+            "delimiter": {
+              "description": "The characters that each end a cell.",
+              "type": "string",
+              "minLength": 1
+            },
+            "quote": {
+              "description": "The characters that each open and close a quoted cell.",
+              "type": "string"
+            },
+            "escape": {
+              "description": "The characters that each make the next character literal. A quote character here escapes only itself.",
+              "type": "string"
+            },
+            "skip_lines": {
+              "description": "The lines skipped before the header or the first row.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "header": {
+              "description": "Whether the first row read holds the column names.",
+              "type": "boolean"
+            },
+            "trim": {
+              "description": "Whether space around an unquoted cell is removed.",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "quac:layer_name": {
+          "description": "The table of the asset's GeoPackage that the Collection reads, where the file holds several. Written from a QGIS layer's layername= option, for a GeoPackage only, and for each table of a GeoPackage dropped onto the map with no project.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:feature_filter": {
+          "description": "The filter that keeps some of the features of the asset's data, so the Collection holds only those. Written from a QGIS file or WFS layer's Provider Feature Filter (Layer Properties > Source > Query Builder), in the language of the provider that reads the data.",
+          "type": "object",
+          "required": [
+            "expression",
+            "dialect"
+          ],
+          "properties": {
+            "expression": {
+              "description": "The filter as the QGIS project writes it.",
+              "type": "string",
+              "minLength": 1
+            },
+            "dialect": {
+              "description": "The filter's language: ogr_sql for GDAL's OGR SQL WHERE clause, which QGIS's OGR provider hands to GDAL; qgis_expression for a QGIS expression, which QGIS's Delimited Text provider reads and its WFS provider sends to the server; wfs_sql for the SELECT statement a QGIS WFS layer can carry instead; or ogc_filter for the OGC Filter XML it can carry in place of either.",
+              "enum": [
+                "ogr_sql",
+                "qgis_expression",
+                "wfs_sql",
+                "ogc_filter"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "patternProperties": {
+        "^(?!quac:)": {}
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": [
+        "id",
+        "parent_collection_id",
+        "fields"
+      ],
+      "properties": {
+        "id": {
+          "description": "The relation's id within this catalogue.",
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "description": "The relation's display name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "parent_collection_id": {
+          "description": "The id of the Collection holding the parent records.",
+          "type": "string",
+          "minLength": 1
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "parent",
+              "child"
+            ],
+            "properties": {
+              "parent": {
+                "description": "A field of the parent Collection.",
+                "type": "string",
+                "minLength": 1
+              },
+              "child": {
+                "description": "The matching field of this Collection.",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          },
+          "description": "The field pairs joining the two, in source order. Several pairs make one composite key."
+        }
+      },
+      "additionalProperties": false,
+      "description": "One relation: the parent Collection and the fields that join the two."
+    },
+    "column": {
+      "type": "object",
+      "properties": {
+        "quac:editable": {
+          "description": "The field is shown but no one can change it. Written from an unticked Editable box or a UUID Generator widget in QGIS's Attributes Form.",
+          "const": false
+        },
+        "quac:default": {
+          "$ref": "#/definitions/default"
+        },
+        "quac:constraints": {
+          "$ref": "#/definitions/constraints"
+        },
+        "quac:hidden": {
+          "description": "The form never shows the field. Written from a QGIS Hidden widget.",
+          "const": true
+        },
+        "quac:reuse_last_value": {
+          "description": "A new feature or record is offered the value last entered in the field. Written from QGIS's Reuse last entered value.",
+          "const": true
+        },
+        "quac:duplicate_policy": {
+          "description": "What the field does when a feature is duplicated: default takes the field's default value, unset clears it. Written from the field's Duplicate setting in QGIS.",
+          "enum": [
+            "default",
+            "unset"
+          ]
+        },
+        "quac:checkbox": {
+          "$ref": "#/definitions/checkbox"
+        },
+        "quac:range": {
+          "$ref": "#/definitions/range"
+        },
+        "quac:date_format": {
+          "description": "The QGIS date pattern a text field stores its dates in, such as dd/MM/yyyy. Written from a QGIS Date/Time widget, only where the format is not ISO 8601.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:visible_when": {
+          "description": "The QGIS expressions that decide whether the form shows the field, outermost container first, each as QGIS wrote it. The field shows while all are true. Written from the enabled visibility expressions of the containers around it in a Drag and Drop Designer form.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "quac:in_form": {
+          "description": "The source's form layout does not place the field, so its form leaves the field out. Written from a Drag and Drop Designer form that does not list it.",
+          "const": false
+        },
+        "quac:color": {
+          "description": "The field holds a colour, which the form shows as a swatch and changes with a colour picker. Written from a QGIS Color widget.",
+          "const": true
+        },
+        "quac:editable_when": {
+          "description": "A QGIS expression: the source's form locks the field while it comes out false, and leaves it as its Editable box says when it comes out NULL. A field-type property is the field in double quotes, and a static one is true or false. Written from a placed field's data-defined Editable property in a Drag and Drop Designer form.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quac:icon": {
+          "description": "The address of the icon drawn beside the field's name, in the colour of the text beside it. Written from the layer variable named quac_icon_ followed by the field's name.",
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "quac:control": {
+          "description": "How the edit form draws the field's list of choices: buttons shows each choice as a button, and dropdown a list that opens. A field that accepts typed text stays a dropdown. Written from the layer variable named quac_control_ followed by the field's name.",
+          "enum": [
+            "buttons",
+            "dropdown"
+          ]
+        },
+        "quac:value_relation": {
+          "$ref": "#/definitions/value_relation"
+        },
+        "quac:attachment": {
+          "$ref": "#/definitions/attachment"
+        }
+      },
+      "patternProperties": {
+        "^(?!quac:)": {}
+      },
+      "additionalProperties": false
+    },
+    "default": {
+      "description": "A value the field is filled with. Written from the field's Default value and Apply default value on update in QGIS, or a UUID Generator widget.",
+      "type": "object",
+      "required": [
+        "kind",
+        "on_update"
+      ],
+      "properties": {
+        "kind": {
+          "description": "now: the moment of the create or save. uuid: a new random identifier. fixed: value. expression: the result of expression.",
+          "enum": [
+            "now",
+            "uuid",
+            "fixed",
+            "expression"
+          ]
+        },
+        "on_update": {
+          "description": "Fill the field again on every save that adds or changes the feature, not only when a new feature's form opens.",
+          "type": "boolean"
+        },
+        "format": {
+          "description": "For uuid: with_braces, without_braces, or id128 (32 hex digits).",
+          "enum": [
+            "with_braces",
+            "without_braces",
+            "id128"
+          ]
+        },
+        "value": {
+          "description": "For fixed: the value.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "expression": {
+          "description": "For expression: a QGIS expression over the record's other values.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "now"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {},
+              "on_update": {}
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "uuid"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {},
+              "on_update": {},
+              "format": {
+                "enum": [
+                  "with_braces",
+                  "without_braces",
+                  "id128"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "fixed"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "kind": {},
+              "on_update": {},
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "expression"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "expression"
+            ],
+            "properties": {
+              "kind": {},
+              "on_update": {},
+              "expression": {
+                "$ref": "#/definitions/name"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      ]
+    },
+    "constraints": {
+      "description": "What the source checks a value against before it saves. Written from the Constraints group in QGIS's Attributes Form.",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "not_null": {
+          "description": "A blank value is refused (enforced) or saved with a warning (warn).",
+          "$ref": "#/definitions/strength"
+        },
+        "unique": {
+          "description": "A value another feature holds is refused (enforced) or saved with a warning (warn).",
+          "$ref": "#/definitions/strength"
+        },
+        "expression": {
+          "type": "object",
+          "required": [
+            "expression",
+            "strength"
+          ],
+          "properties": {
+            "expression": {
+              "$ref": "#/definitions/name"
+            },
+            "description": {
+              "type": "string"
+            },
+            "strength": {
+              "$ref": "#/definitions/strength"
+            }
+          },
+          "additionalProperties": false,
+          "description": "A QGIS expression the values must make true, the message shown when they do not, and its strength."
+        }
+      },
+      "additionalProperties": false
+    },
+    "checkbox": {
+      "description": "A Checkbox widget. Written from a QGIS Checkbox widget.",
+      "type": "object",
+      "properties": {
+        "checked": {
+          "type": "string",
+          "description": "The value a text field stores when ticked."
+        },
+        "unchecked": {
+          "type": "string",
+          "description": "The value a text field stores when unticked."
+        },
+        "show_stored": {
+          "const": true,
+          "description": "Show the stored value rather than true and false."
+        },
+        "allow_null": {
+          "const": true,
+          "description": "A blank is a third state."
+        }
+      },
+      "additionalProperties": false
+    },
+    "range": {
+      "description": "The limits and format of a number. Written from a QGIS Range widget, or from an ArcGIS field's range domain.",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "min": {
+          "type": "number",
+          "description": "The smallest value allowed."
+        },
+        "max": {
+          "type": "number",
+          "description": "The largest value allowed."
+        },
+        "step": {
+          "type": "number",
+          "description": "The step a spin box moves by."
+        },
+        "precision": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Decimal places shown."
+        },
+        "suffix": {
+          "type": "string",
+          "description": "Text shown after the number."
+        }
+      },
+      "additionalProperties": false
+    },
+    "value_relation": {
+      "description": "The field's choices are the records of another Collection in the same catalogue. Written from a QGIS Value Relation widget.",
+      "type": "object",
+      "required": [
+        "collection",
+        "key",
+        "value"
+      ],
+      "properties": {
+        "collection": {
+          "description": "The id of the Collection holding the choices.",
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "description": "The field of that Collection the column stores.",
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "description": "The field shown for it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "filter": {
+          "type": "string",
+          "description": "A QGIS expression narrowing the choices."
+        },
+        "allow_null": {
+          "const": true,
+          "description": "The list offers a blank choice."
+        },
+        "allow_multi": {
+          "const": true,
+          "description": "The column stores several keys."
+        },
+        "order_by": {
+          "enum": [
+            "value",
+            "field"
+          ],
+          "description": "value orders the list by the shown value, field by order_field. Absent, it is ordered by key."
+        },
+        "order_field": {
+          "description": "With order_by field: the field the list is ordered by.",
+          "type": "string",
+          "minLength": 1
+        },
+        "descending": {
+          "const": true,
+          "description": "The order is reversed."
+        }
+      },
+      "if": {
+        "properties": {
+          "order_by": {
+            "const": "field"
+          }
+        },
+        "required": [
+          "order_by"
+        ]
+      },
+      "then": {
+        "required": [
+          "order_field"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "order_field"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "attachment": {
+      "description": "The field holds a path to a file rather than a value of its own. Written from a QGIS Attachment widget.",
+      "type": "object",
+      "required": [
+        "relative_storage"
+      ],
+      "properties": {
+        "viewer": {
+          "enum": [
+            "image",
+            "web",
+            "audio",
+            "video"
+          ],
+          "description": "How the file is meant to be shown."
+        },
+        "filter": {
+          "type": "string",
+          "description": "The file types offered, in the source's own wording."
+        },
+        "default_root": {
+          "type": "string",
+          "description": "The folder the source says the files live in."
+        },
+        "relative_storage": {
+          "enum": [
+            "absolute",
+            "project",
+            "default-root"
+          ],
+          "description": "What a stored path is relative to."
+        }
+      },
+      "additionalProperties": false
+    },
+    "strength": {
+      "enum": [
+        "enforced",
+        "warn"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

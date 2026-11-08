@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:wfs_srs_name"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

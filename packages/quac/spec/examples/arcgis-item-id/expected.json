@@ -1,0 +1,12 @@
+{
+  "type": "Catalog",
+  "id": "street-trees",
+  "quac:arcgis_item_id": "0123456789abcdef0123456789abcdef",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "0123456789abcdef0123456789abcdef_0",
+      "quac:arcgis_layer_url": "https://services.arcgis.com/example/arcgis/rest/services/Trees/FeatureServer/0"
+    }
+  ]
+}

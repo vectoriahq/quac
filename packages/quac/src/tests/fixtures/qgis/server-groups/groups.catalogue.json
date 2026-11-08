@@ -1,0 +1,396 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "server-groups",
+  "title": "Server groups",
+  "description": "STAC catalogue generated from QGIS project \"Server groups\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/water/catalog.json",
+      "type": "application/json",
+      "title": "Water"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/internal/catalog.json",
+      "type": "application/json",
+      "title": "Internal"
+    }
+  ],
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "water",
+      "title": "Water",
+      "description": "Layer group \"Water\" from the QGIS project.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/water/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "child",
+          "href": "./collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json",
+          "type": "application/json",
+          "title": "Water: bores"
+        },
+        {
+          "rel": "child",
+          "href": "./catalogs/monitoring/catalog.json",
+          "type": "application/json",
+          "title": "Monitoring"
+        }
+      ],
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01",
+          "title": "Water: bores",
+          "description": "Layer \"Water: bores\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "summaries": {
+            "quac:geometry_type": [
+              "Point"
+            ]
+          },
+          "assets": {
+            "data": {
+              "href": "./bores.geojson",
+              "type": "application/geo+json",
+              "title": "bores.geojson",
+              "roles": [
+                "data"
+              ]
+            }
+          },
+          "links": [
+            {
+              "rel": "self",
+              "href": "./collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "via",
+              "href": "./groups.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:display_field": "bore_id",
+          "quac:visibility_checked": true,
+          "quac:editable": true,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "quac:locks": {
+            "add": true,
+            "delete": true
+          },
+          "stac_extensions": [
+            "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+            "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+            "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+          ],
+          "vector:geometry_types": [
+            "Point"
+          ],
+          "quac:qgis_server_wms_name": "Water: bores",
+          "quac:qgis_server_wfs_type_name": "Water-_bores",
+          "table:columns": [
+            {
+              "name": "bore_id"
+            },
+            {
+              "name": "depth"
+            },
+            {
+              "name": "owner"
+            }
+          ]
+        }
+      ],
+      "catalogs": [
+        {
+          "type": "Catalog",
+          "stac_version": "1.1.0",
+          "id": "monitoring",
+          "title": "Monitoring",
+          "description": "Layer group \"Monitoring\" from the QGIS project.",
+          "links": [
+            {
+              "rel": "self",
+              "href": "./catalogs/monitoring/catalog.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../../catalog.json"
+            },
+            {
+              "rel": "child",
+              "href": "./collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json",
+              "type": "application/json",
+              "title": "Sites"
+            }
+          ],
+          "collections": [
+            {
+              "type": "Collection",
+              "stac_version": "1.1.0",
+              "id": "sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02",
+              "title": "Sites",
+              "description": "Layer \"Sites\" from the QGIS project.",
+              "license": "other",
+              "extent": {
+                "spatial": {
+                  "bbox": [
+                    [
+                      -180,
+                      -90,
+                      180,
+                      90
+                    ]
+                  ]
+                },
+                "temporal": {
+                  "interval": [
+                    [
+                      null,
+                      null
+                    ]
+                  ]
+                }
+              },
+              "summaries": {
+                "quac:geometry_type": [
+                  "Point"
+                ]
+              },
+              "assets": {
+                "data": {
+                  "href": "./sites.geojson",
+                  "type": "application/geo+json",
+                  "title": "sites.geojson",
+                  "roles": [
+                    "data"
+                  ]
+                }
+              },
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "./collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json"
+                },
+                {
+                  "rel": "parent",
+                  "href": "../catalog.json"
+                },
+                {
+                  "rel": "root",
+                  "href": "../catalog.json"
+                },
+                {
+                  "rel": "via",
+                  "href": "./groups.qgs",
+                  "title": "QGIS project"
+                }
+              ],
+              "quac:display_field": "site_id",
+              "quac:visibility_checked": true,
+              "quac:editable": true,
+              "quac:identifiable": true,
+              "quac:opacity": 1,
+              "stac_extensions": [
+                "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+                "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+                "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+              ],
+              "vector:geometry_types": [
+                "Point"
+              ],
+              "quac:qgis_server_wms_name": "monitoring_sites",
+              "table:columns": [
+                {
+                  "name": "site_id"
+                },
+                {
+                  "name": "contact"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "internal",
+      "title": "Internal",
+      "description": "Layer group \"Internal\" from the QGIS project.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/internal/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "child",
+          "href": "./collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json",
+          "type": "application/json",
+          "title": "Staff notes"
+        }
+      ],
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03",
+          "title": "Staff notes",
+          "description": "Layer \"Staff notes\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "summaries": {
+            "quac:geometry_type": [
+              "Point"
+            ]
+          },
+          "assets": {
+            "data": {
+              "href": "./staff-notes.geojson",
+              "type": "application/geo+json",
+              "title": "staff-notes.geojson",
+              "roles": [
+                "data"
+              ]
+            }
+          },
+          "links": [
+            {
+              "rel": "self",
+              "href": "./collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "via",
+              "href": "./groups.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:display_field": "note_id",
+          "quac:visibility_checked": true,
+          "quac:editable": true,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "quac:locks": {
+            "add": true,
+            "attributes": true,
+            "geometry": true,
+            "delete": true
+          },
+          "stac_extensions": [
+            "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+            "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+            "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+          ],
+          "vector:geometry_types": [
+            "Point"
+          ],
+          "quac:qgis_server_wms_name": "Staff notes",
+          "quac:qgis_server_wfs_type_name": "Staff_notes",
+          "table:columns": [
+            {
+              "name": "note_id"
+            },
+            {
+              "name": "author"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

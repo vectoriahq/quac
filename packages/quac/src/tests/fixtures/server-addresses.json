@@ -1,0 +1,101 @@
+{
+  "about": "Server addresses with the WMS link address serverWmsEndpoint gives for each, null where it refuses one. packages/quac/src/generate/serverStacCatalogue.test.ts and the plugin's packages/quac-qgis-server/tests/test_server_stac_catalogue.py both check every case.",
+  "cases": [
+    {
+      "address": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+      "wms": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs"
+    },
+    {
+      "address": "https://qgis.example.com/ows",
+      "wms": "https://qgis.example.com/ows"
+    },
+    {
+      "address": "https://qgis.example.com",
+      "wms": "https://qgis.example.com"
+    },
+    {
+      "address": "HTTPS://QGIS.Example.com:8443/ows?map=x#top",
+      "wms": "https://QGIS.Example.com:8443/ows?map=x"
+    },
+    {
+      "address": "https://qgis.example.com/ows?SERVICE=WMS&MAP=/p/a.qgs&request=GetCapabilities&Version=1.3.0",
+      "wms": "https://qgis.example.com/ows?MAP=/p/a.qgs"
+    },
+    {
+      "address": "https://qgis.example.com/ows?SERVICE=WMS",
+      "wms": "https://qgis.example.com/ows"
+    },
+    {
+      "address": "https://qgis.example.com/ows?",
+      "wms": "https://qgis.example.com/ows"
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=%2Fp%2Fa.qgs&&layers=x",
+      "wms": "https://qgis.example.com/ows?MAP=%2Fp%2Fa.qgs"
+    },
+    {
+      "address": "http://[::1]:8080/ows",
+      "wms": "http://[::1]:8080/ows"
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=/projects/My%20Project.qgs",
+      "wms": "https://qgis.example.com/ows?MAP=/projects/My%20Project.qgs"
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=/projects/My Project.qgs",
+      "wms": null
+    },
+    {
+      "address": " https://qgis.example.com/ows",
+      "wms": null
+    },
+    {
+      "address": "https://qgis.example.com/ows\n",
+      "wms": null
+    },
+    {
+      "address": "https://user:secret@qgis.example.com/ows",
+      "wms": null
+    },
+    {
+      "address": "https://user@qgis.example.com/ows",
+      "wms": null
+    },
+    {
+      "address": "https:///ows",
+      "wms": null
+    },
+    {
+      "address": "https:qgis.example.com/ows",
+      "wms": null
+    },
+    {
+      "address": "file:///projects/ows",
+      "wms": null
+    },
+    {
+      "address": "ftp://qgis.example.com/ows",
+      "wms": null
+    },
+    {
+      "address": "not an address",
+      "wms": null
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=postgresql://user:secret@db.example.com/qgis?project=parcels",
+      "wms": null
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=postgresql%3A%2F%2Fuser%3Asecret%40db.example.com%2Fqgis",
+      "wms": null
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=postgresql:///?service=qgis&dbname=gis&Password=secret",
+      "wms": null
+    },
+    {
+      "address": "https://qgis.example.com/ows?MAP=postgresql:///?service=qgisprojects&schema=public&project=parcels",
+      "wms": "https://qgis.example.com/ows?MAP=postgresql:///?service=qgisprojects&schema=public&project=parcels"
+    }
+  ]
+}

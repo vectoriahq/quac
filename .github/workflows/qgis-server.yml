@@ -1,0 +1,134 @@
+name: QGIS Server
+
+# The QGIS Server plugin inside the official QGIS Server image, on 3.44 and 4.2:
+# check_qgis_server.py checks the reading route against QGIS Server's own
+# GetProjectSettings, WFS GetCapabilities and DescribeFeatureType, for a .qgs,
+# a .qgz and a project kept in PostgreSQL, and check_catalogue.py checks the
+# plugin's answers, its leak rules, its cache, its refusals and each test
+# person's catalogue. The reports are the run's summary.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "packages/quac-qgis-server/**"
+      - "packages/quac/src/tests/fixtures/qgis/**"
+      - "packages/quac/src/parse/**"
+      - "packages/quac/src/generate/**"
+      - "packages/quac/src/model/**"
+      - "packages/quac/src/util/**"
+      - "packages/quac/src/tests/firstTierServer.catalogues.json"
+      - "packages/quac/spec/examples/**"
+      - ".github/workflows/qgis-server.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: qgis-server-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  reader:
+    name: Python reader
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run the Python tests
+        working-directory: packages/quac-qgis-server
+        run: python3 -m unittest discover -s tests -t . -v
+
+  qgis-server:
+    name: QGIS Server ${{ matrix.label }}
+    needs: reader
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 3.44 LTR
+            image: qgis/qgis-server:3.44.15-noble
+          - label: 4.2
+            image: qgis/qgis-server:4.2.3-resolute
+    services:
+      postgres:
+        image: postgres:17.10
+        env:
+          POSTGRES_USER: quac
+          POSTGRES_PASSWORD: quac
+          POSTGRES_DB: quac
+        options: >-
+          --health-cmd "pg_isready -U quac"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      WORK: ${{ github.workspace }}/spike-work
+      # A test database's address inside the job's network, not a secret.
+      POSTGRES_PROJECT_URI: postgresql://quac:quac@postgres:5432?sslmode=disable&dbname=quac&schema=public&project=publishing
+      # The same project named through a pg_service file, so the address holds no password.
+      POSTGRES_SERVICE_PROJECT_URI: postgresql:///?service=quac&schema=public&project=publishing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Lay out the projects and the test plugin
+        run: python3 packages/quac-qgis-server/tests/server/check_qgis_server.py prepare "$WORK"
+
+      - name: Start QGIS Server
+        run: |
+          # The test database's connection, for the project named by service. Not a secret.
+          # QGIS Server's own process may not see the container's environment, so the file is also
+          # mounted where Debian's and Ubuntu's libpq look for it by default.
+          printf '[quac]\nhost=postgres\nport=5432\ndbname=quac\nuser=quac\npassword=quac\nsslmode=disable\n' > "$WORK/data/pg_service.conf"
+          chmod 644 "$WORK/data/pg_service.conf"
+          docker pull --quiet "${{ matrix.image }}"
+          docker run -d --name qgis-server \
+            --network "${{ job.services.postgres.network }}" \
+            -p 8080:80 \
+            -v "$WORK/data:/io/data:ro" \
+            -v "$WORK/plugins:/io/plugins:ro" \
+            -v "$PWD/packages/quac-qgis-server/tests/server:/io/scripts:ro" \
+            -v "$WORK/data/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro" \
+            -e PGSERVICEFILE=/io/data/pg_service.conf \
+            -e QGIS_SERVER_IGNORE_BAD_LAYERS=true \
+            -e QGIS_SERVER_LOG_LEVEL=1 \
+            "${{ matrix.image }}"
+
+      - name: Store a project in PostgreSQL with QGIS
+        id: store
+        run: |
+          # The image's python3 may not have QGIS's modules on its path, so find them.
+          core=$(docker exec qgis-server sh -c 'find / -xdev -type f -path "*/qgis/core/__init__.py" 2>/dev/null | head -n 1')
+          pythonpath=$(dirname "$(dirname "$(dirname "$core")")")
+          echo "QGIS's Python modules: $pythonpath" | tee "$WORK/store.log"
+          docker exec -e PYTHONPATH="$pythonpath" qgis-server python3 /io/scripts/store_in_postgres.py \
+            /io/data/fixtures/server-publishing/publishing.qgs "$POSTGRES_PROJECT_URI" 2>&1 | tee -a "$WORK/store.log"
+          echo "Exit code: ${PIPESTATUS[0]}" | tee -a "$WORK/store.log"
+
+      - name: Check the reading route against QGIS Server
+        run: |
+          python3 packages/quac-qgis-server/tests/server/check_qgis_server.py check "$WORK" http://localhost:8080 "$POSTGRES_PROJECT_URI"
+
+      - name: Check the catalogue plugin against QGIS Server
+        if: success() || failure()
+        run: |
+          python3 packages/quac-qgis-server/tests/server/check_catalogue.py check "$WORK" http://localhost:8080 "$POSTGRES_SERVICE_PROJECT_URI" "$POSTGRES_PROJECT_URI"
+
+      - name: QGIS Server's log
+        if: always()
+        run: docker logs qgis-server 2>&1 | grep -v ' 200 ' | tail -n 80
+
+      - name: Keep the results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: quac-qgis-server-${{ strategy.job-index }}
+          path: |
+            ${{ env.WORK }}/results.json
+            ${{ env.WORK }}/catalogue-results.json
+          if-no-files-found: ignore

@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "tree-inspections.1",
+      "geometry": null,
+      "properties": { "inspection_id": "I-101", "tree_id": "T-001", "inspected": "2025-04-08", "condition": "Good" }
+    },
+    {
+      "type": "Feature",
+      "id": "tree-inspections.2",
+      "geometry": null,
+      "properties": { "inspection_id": "I-102", "tree_id": "T-001", "inspected": "2026-04-20", "condition": "Poor" }
+    },
+    {
+      "type": "Feature",
+      "id": "tree-inspections.3",
+      "geometry": null,
+      "properties": { "inspection_id": "I-103", "tree_id": "T-002", "inspected": "2026-05-11", "condition": "Good" }
+    }
+  ]
+}

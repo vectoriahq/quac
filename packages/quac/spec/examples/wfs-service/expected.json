@@ -1,0 +1,28 @@
+{
+  "type": "Catalog",
+  "id": "city-open-data",
+  "quac:wfs_endpoint": "https://data.example.com/wfs",
+  "quac:wfs_version": "2.0.0",
+  "quac:wfs_output_formats": [
+    "application/json",
+    "text/xml; subtype=gml/3.2"
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "city:benches",
+      "quac:wfs_endpoint": "https://data.example.com/wfs",
+      "quac:wfs_type_name": "city:benches",
+      "quac:wfs_default_srs": "EPSG:4326",
+      "quac:wfs_supported_srs": [
+        "EPSG:4326"
+      ],
+      "quac:wfs_operations": {
+        "Query": true,
+        "Insert": false,
+        "Update": false,
+        "Delete": false
+      }
+    }
+  ]
+}

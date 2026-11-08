@@ -1,0 +1,12 @@
+{
+  "type": "Catalog",
+  "id": "imagery",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "aerial",
+      "quac:cross_origin": true,
+      "quac:max_zoom": 19
+    }
+  ]
+}

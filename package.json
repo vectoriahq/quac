@@ -1,0 +1,12 @@
+{
+  "name": "quac",
+  "private": true,
+  "workspaces": [
+    "packages/quac"
+  ],
+  "scripts": {
+    "test": "npm test --workspace @vectoriahq/quac",
+    "typecheck": "npm run typecheck --workspace @vectoriahq/quac",
+    "test:server": "cd packages/quac-qgis-server && python3 -m unittest discover -s tests -t ."
+  }
+}

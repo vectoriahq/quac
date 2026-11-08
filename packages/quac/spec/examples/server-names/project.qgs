@@ -1,0 +1,33 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Server names" version="3.44.8-Solothurn">
+  <title>Server names</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Street trees: 2024" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <properties>
+    <WFSLayers type="QStringList"><value>trees_1</value></WFSLayers>
+  </properties>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Street trees: 2024</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="planted"/>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

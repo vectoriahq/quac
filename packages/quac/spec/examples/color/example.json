@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:color"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

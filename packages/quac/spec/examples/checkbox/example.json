@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:checkbox"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

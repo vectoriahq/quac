@@ -1,0 +1,38 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc",
+      "name": "bicycle-routes-linestring_Bicycle_Routes",
+      "wmsName": "bicycle-routes-linestring_Bicycle_Routes",
+      "wfsTypeName": "bicycle-routes-linestring_Bicycle_Routes",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073",
+      "name": "car-share-point_Car_Share",
+      "wmsName": "car-share-point_Car_Share",
+      "wfsTypeName": "car-share-point_Car_Share",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7",
+      "name": "whats-on-when-polygon_Whats_On_When",
+      "wmsName": "whats-on-when-polygon_Whats_On_When",
+      "wfsTypeName": "whats-on-when-polygon_Whats_On_When",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90",
+      "name": "Street trees",
+      "wmsName": "Street trees",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47",
+      "name": "Inspections",
+      "wmsName": "Inspections",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

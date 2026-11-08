@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WMS_Capabilities xmlns:sld="http://www.opengis.net/sld" xmlns="http://www.opengis.net/wms" xsi:schemaLocation="http://www.opengis.net/wms http://schemas.opengis.net/wms/1.3.0/capabilities_1_3_0.xsd http://www.opengis.net/sld http://schemas.opengis.net/sld/1.1.0/sld_capabilities.xsd http://www.qgis.org/wms http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;SERVICE=WMS&amp;REQUEST=GetSchemaExtension" version="1.3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:qgs="http://www.qgis.org/wms">
+ <Service>
+  <Name>WMS</Name>
+  <Title>WA Municipal Graffiti Vandalism Register</Title>
+  <KeywordList>
+   <Keyword vocabulary="ISO">infoMapAccessService</Keyword>
+  </KeywordList>
+  <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+  <Fees>conditions unknown</Fees>
+  <AccessConstraints>None</AccessConstraints>
+ </Service>
+ <Capability>
+  <Request>
+   <GetCapabilities>
+    <Format>text/xml</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </GetCapabilities>
+   <GetMap>
+    <Format>image/jpeg</Format>
+    <Format>image/png</Format>
+    <Format>image/png; mode=16bit</Format>
+    <Format>image/png; mode=8bit</Format>
+    <Format>image/png; mode=1bit</Format>
+    <Format>application/dxf</Format>
+    <Format>application/pdf</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </GetMap>
+   <GetFeatureInfo>
+    <Format>text/plain</Format>
+    <Format>text/html</Format>
+    <Format>text/xml</Format>
+    <Format>application/vnd.ogc.gml</Format>
+    <Format>application/vnd.ogc.gml/3.1.1</Format>
+    <Format>application/json</Format>
+    <Format>application/geo+json</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </GetFeatureInfo>
+   <sld:GetLegendGraphic>
+    <Format>image/jpeg</Format>
+    <Format>image/png</Format>
+    <Format>application/json</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </sld:GetLegendGraphic>
+   <sld:DescribeLayer>
+    <Format>text/xml</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </sld:DescribeLayer>
+   <qgs:GetStyles>
+    <Format>text/xml</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </qgs:GetStyles>
+   <GetPrint>
+    <Format>svg</Format>
+    <Format>png</Format>
+    <Format>pdf</Format>
+    <DCPType>
+     <HTTP>
+      <Get>
+       <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+      </Get>
+     </HTTP>
+    </DCPType>
+   </GetPrint>
+  </Request>
+  <Exception>
+   <Format>XML</Format>
+  </Exception>
+  <sld:UserDefinedSymbolization RemoteWCS="0" UserStyle="1" RemoteWFS="0" SupportSLD="1" InlineFeature="0" UserLayer="0"/>
+  <WFSLayers>
+   <WFSLayer name="Graffiti Reports"/>
+  </WFSLayers>
+  <Layer queryable="1">
+   <Name>WA_Municipal_Graffiti_Vandalism_Register</Name>
+   <Title>WA Municipal Graffiti Vandalism Register</Title>
+   <KeywordList>
+    <Keyword vocabulary="ISO">infoMapAccessService</Keyword>
+   </KeywordList>
+   <CRS>CRS:84</CRS>
+   <CRS>EPSG:4326</CRS>
+   <CRS>EPSG:3857</CRS>
+   <EX_GeographicBoundingBox>
+    <westBoundLongitude>115.75</westBoundLongitude>
+    <eastBoundLongitude>115.95</eastBoundLongitude>
+    <southBoundLatitude>-32.200001</southBoundLatitude>
+    <northBoundLatitude>-31.75</northBoundLatitude>
+   </EX_GeographicBoundingBox>
+   <BoundingBox maxy="-3730538.794" minx="12885231.059" miny="-3789592.462" CRS="EPSG:3857" maxx="12907494.958"/>
+   <BoundingBox maxy="115.95" minx="-32.200001" miny="115.75" CRS="EPSG:4326" maxx="-31.75"/>
+   <TreeName></TreeName>
+   <Layer displayField="location_description" visible="1" opacity="1" queryable="1" expanded="0" geometryType="Point" visibilityChecked="1">
+    <Name>Graffiti Reports</Name>
+    <Title>Graffiti Reports</Title>
+    <CRS>CRS:84</CRS>
+    <CRS>EPSG:4326</CRS>
+    <CRS>EPSG:3857</CRS>
+    <EX_GeographicBoundingBox>
+     <westBoundLongitude>115.75</westBoundLongitude>
+     <eastBoundLongitude>115.95</eastBoundLongitude>
+     <southBoundLatitude>-32.200001</southBoundLatitude>
+     <northBoundLatitude>-31.75</northBoundLatitude>
+    </EX_GeographicBoundingBox>
+    <BoundingBox maxy="-3730538.794" minx="12885231.059" miny="-3789592.462" CRS="EPSG:3857" maxx="12907494.958"/>
+    <BoundingBox maxy="115.95" minx="-32.200001" miny="115.75" CRS="EPSG:4326" maxx="-31.75"/>
+    <Attribution>
+     <Title>Government of Western Australia</Title>
+     <OnlineResource xlink:href="https://example.test" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+    </Attribution>
+    <Style>
+     <Name>Asset Owner</Name>
+     <Title>Asset Owner</Title>
+     <LegendURL>
+      <Format>image/png</Format>
+      <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;SERVICE=WMS&amp;VERSION=1.3.0&amp;REQUEST=GetLegendGraphic&amp;LAYER=Graffiti Reports&amp;FORMAT=image/png&amp;STYLE=Asset Owner&amp;SLD_VERSION=1.1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+     </LegendURL>
+    </Style>
+    <Style>
+     <Name>Priority</Name>
+     <Title>Priority</Title>
+     <LegendURL>
+      <Format>image/png</Format>
+      <OnlineResource xlink:href="http://qgis-server.example/qgs?MAP=C:/Data/graffiti.qgs&amp;SERVICE=WMS&amp;VERSION=1.3.0&amp;REQUEST=GetLegendGraphic&amp;LAYER=Graffiti Reports&amp;FORMAT=image/png&amp;STYLE=Priority&amp;SLD_VERSION=1.1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple"/>
+     </LegendURL>
+    </Style>
+    <TreeName>Graffiti Reports</TreeName>
+    <Attributes>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="incident_uid" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="gir_number" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="damage_category" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="priority_status" type="QString"/>
+     <Attribute length="1" comment="" typeName="Boolean" editType="CheckBox" precision="0" name="offensive_flag" type="bool"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="asset_owner" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="location_description" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="tagger_moniker" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="implement_type" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="surface_type" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="removal_method" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="liability_waiver_status" type="QString"/>
+     <Attribute length="0" comment="" typeName="Real" editType="TextEdit" precision="0" name="cost_estimate" type="double"/>
+     <Attribute length="0" comment="" typeName="DateTime" editType="DateTime" precision="0" name="date_report" type="QDateTime"/>
+     <Attribute length="0" comment="" typeName="DateTime" editType="DateTime" precision="0" name="date_resolve" type="QDateTime"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="evidence_photo_url" type="QString"/>
+     <Attribute length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="referral_agency" type="QString"/>
+    </Attributes>
+   </Layer>
+  </Layer>
+  <LayerDrawingOrder>Graffiti Reports</LayerDrawingOrder>
+ </Capability>
+</WMS_Capabilities>

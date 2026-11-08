@@ -1,0 +1,216 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "layer-ids-as-names",
+  "title": "Layer ids as names",
+  "description": "STAC catalogue generated from QGIS project \"Layer ids as names\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05.json",
+      "type": "application/json",
+      "title": "Roads"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06.json",
+      "type": "application/json",
+      "title": "Bridges"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05",
+      "title": "Roads",
+      "description": "Layer \"Roads\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Line"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./roads.geojson",
+          "type": "application/geo+json",
+          "title": "roads.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./layer-ids.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "name",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "add": true,
+        "attributes": true,
+        "geometry": true,
+        "delete": true
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "LineString"
+      ],
+      "quac:qgis_server_wms_name": "roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05",
+      "quac:qgis_server_wfs_type_name": "Roads",
+      "table:columns": [
+        {
+          "name": "road_id"
+        },
+        {
+          "name": "name"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06",
+      "title": "Bridges",
+      "description": "Layer \"Bridges\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./bridges.geojson",
+          "type": "application/geo+json",
+          "title": "bridges.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./layer-ids.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "name",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "add": true,
+        "attributes": true,
+        "geometry": true,
+        "delete": true
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06",
+      "quac:qgis_server_wfs_type_name": "Bridges",
+      "table:columns": [
+        {
+          "name": "bridge_id"
+        },
+        {
+          "name": "name"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

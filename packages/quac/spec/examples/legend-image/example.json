@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:legend_image"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

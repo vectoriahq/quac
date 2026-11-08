@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:cross_origin"
+  ],
+  "source": "hand-written",
+  "input": "catalogue.json"
+}

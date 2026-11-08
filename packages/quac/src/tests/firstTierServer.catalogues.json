@@ -1,0 +1,1442 @@
+{
+  "active-collection": {
+    "type": "Catalog",
+    "id": "active-layer",
+    "quac:active_collection": "Benches",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      },
+      {
+        "type": "Collection",
+        "id": "Benches",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Benches",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "attachment": {
+    "type": "Catalog",
+    "id": "attachment-widget",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "photo",
+            "quac:attachment": {
+              "viewer": "image",
+              "filter": "Images (*.jpg *.png)",
+              "relative_storage": "project"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "categorised-field": {
+    "type": "Catalog",
+    "id": "categorised-style",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "checkbox": {
+    "type": "Catalog",
+    "id": "checkbox-widget",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "heritage",
+            "quac:checkbox": {
+              "checked": "Y",
+              "unchecked": "N"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "color": {
+    "type": "Catalog",
+    "id": "color-widget",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "marker_colour",
+            "quac:color": true
+          }
+        ]
+      }
+    ]
+  },
+  "column-editable": {
+    "type": "Catalog",
+    "id": "not-editable",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "tree_id",
+            "quac:editable": false
+          }
+        ]
+      }
+    ]
+  },
+  "column-icon": {
+    "type": "Catalog",
+    "id": "field-icon",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:icon": "https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/leaf.svg"
+          }
+        ]
+      }
+    ]
+  },
+  "constraints": {
+    "type": "Catalog",
+    "id": "constraint",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:constraints": {
+              "not_null": "enforced"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "control": {
+    "type": "Catalog",
+    "id": "field-control",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:control": "buttons"
+          }
+        ]
+      }
+    ]
+  },
+  "date-format": {
+    "type": "Catalog",
+    "id": "date-format",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "surveyed",
+            "quac:date_format": "dd/MM/yyyy"
+          }
+        ]
+      }
+    ]
+  },
+  "default": {
+    "type": "Catalog",
+    "id": "default-value",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "planted",
+            "quac:default": {
+              "kind": "now",
+              "on_update": false
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "delimited-text": {
+    "type": "Catalog",
+    "id": "delimited-text",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Species",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Species",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "display-field": {
+    "type": "Catalog",
+    "id": "display-field",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:display_field": "species",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "duplicate-policy": {
+    "type": "Catalog",
+    "id": "duplicate-policy",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "tree_id",
+            "quac:duplicate_policy": "unset"
+          }
+        ]
+      }
+    ]
+  },
+  "editable-when": {
+    "type": "Catalog",
+    "id": "editable-when",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:form_order": [
+          "last_inspected",
+          "condition"
+        ],
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "condition",
+            "quac:editable_when": "\"last_inspected\" IS NULL"
+          }
+        ]
+      }
+    ]
+  },
+  "editable": {
+    "type": "Catalog",
+    "id": "read-only-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "feature-filter": {
+    "type": "Catalog",
+    "id": "feature-filter",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "filters": {
+    "type": "Catalog",
+    "id": "preset-filters",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:filters": [
+          {
+            "field": "species",
+            "name": "Species"
+          }
+        ],
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "form-order": {
+    "type": "Catalog",
+    "id": "form-order",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:form_order": [
+          "species",
+          "tree_id"
+        ],
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "planted",
+            "quac:in_form": false
+          }
+        ]
+      }
+    ]
+  },
+  "geometry-filter": {
+    "type": "Catalog",
+    "id": "shapes-of-a-file",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Sites (points)",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Sites (points)",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "geometry-type": {
+    "type": "Catalog",
+    "id": "geometry-type",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Line"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "hidden": {
+    "type": "Catalog",
+    "id": "hidden-widget",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "tree_id",
+            "quac:hidden": true
+          }
+        ]
+      }
+    ]
+  },
+  "icon-other-library": {
+    "type": "Catalog",
+    "id": "field-icon-from-lucide",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:icon": "https://cdn.jsdelivr.net/npm/lucide-static@1/icons/tree-pine.svg"
+          }
+        ]
+      }
+    ]
+  },
+  "identifiable": {
+    "type": "Catalog",
+    "id": "not-identifiable",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": false,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "initial-view": {
+    "type": "Catalog",
+    "id": "initial-view",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "layer-icon": {
+    "type": "Catalog",
+    "id": "layer-icon",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:icon": "https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/tree.svg",
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "layer-name": {
+    "type": "Catalog",
+    "id": "geopackage-table",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Parks",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Parks",
+        "summaries": {
+          "quac:geometry_type": [
+            "Polygon"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "layer-visibility": {
+    "type": "Catalog",
+    "id": "layer-visibility",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": false,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "legend-image": {
+    "type": "Catalog",
+    "id": "legend-image",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:legend_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII=",
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "locks": {
+    "type": "Catalog",
+    "id": "editing-lock",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:locks": {
+          "delete": true
+        },
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "max-zoom": {
+    "type": "Catalog",
+    "id": "tile-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "OpenStreetMap",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "OpenStreetMap",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "measurement": {
+    "type": "Catalog",
+    "id": "measurement-units",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:measurement": {
+          "area_unit": "ha",
+          "distance_unit": "km"
+        },
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "mutually-exclusive": {
+    "type": "Catalog",
+    "id": "mutually-exclusive-group",
+    "catalogs": [
+      {
+        "type": "Catalog",
+        "id": "street-furniture",
+        "quac:mutually_exclusive": true,
+        "collections": [
+          {
+            "type": "Collection",
+            "id": "Trees",
+            "quac:visibility_checked": true,
+            "quac:editable": false,
+            "quac:identifiable": true,
+            "quac:opacity": 1,
+            "quac:qgis_server_wms_name": "Trees",
+            "summaries": {
+              "quac:geometry_type": [
+                "Point"
+              ]
+            },
+            "links": [
+              {
+                "rel": "wms",
+                "quac:wms_crs": "EPSG:3857"
+              }
+            ]
+          },
+          {
+            "type": "Collection",
+            "id": "Benches",
+            "quac:visibility_checked": true,
+            "quac:editable": false,
+            "quac:identifiable": true,
+            "quac:opacity": 1,
+            "quac:qgis_server_wms_name": "Benches",
+            "summaries": {
+              "quac:geometry_type": [
+                "Point"
+              ]
+            },
+            "links": [
+              {
+                "rel": "wms",
+                "quac:wms_crs": "EPSG:3857"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "opacity": {
+    "type": "Catalog",
+    "id": "opacity",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 0.6,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "private": {
+    "type": "Catalog",
+    "id": "private-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:private": true,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "qgis-wfs-layer": {
+    "type": "Catalog",
+    "id": "wfs-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Parks",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Parks",
+        "summaries": {
+          "quac:geometry_type": [
+            "Polygon"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "range": {
+    "type": "Catalog",
+    "id": "range-widget",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "height",
+            "quac:range": {
+              "min": 0,
+              "max": 80,
+              "step": 0.5,
+              "precision": 1,
+              "suffix": " m"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "related-to": {
+    "type": "Catalog",
+    "id": "relations",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      },
+      {
+        "type": "Collection",
+        "id": "Inspections",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:related_to": [
+          {
+            "id": "tree_inspections",
+            "name": "Inspections",
+            "parent_collection_id": "Trees",
+            "fields": [
+              {
+                "parent": "tree_id",
+                "child": "tree_id"
+              }
+            ]
+          }
+        ],
+        "quac:qgis_server_wms_name": "Inspections",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "reuse-last-value": {
+    "type": "Catalog",
+    "id": "reuse-last-value",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:reuse_last_value": true
+          }
+        ]
+      }
+    ]
+  },
+  "scale-range": {
+    "type": "Catalog",
+    "id": "scale-range",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:min_scale": 25000,
+        "quac:max_scale": 500,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "server-names": {
+    "type": "Catalog",
+    "id": "server-names",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Street trees: 2024",
+        "quac:visibility_checked": true,
+        "quac:editable": true,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:locks": {
+          "add": true,
+          "attributes": true,
+          "geometry": true,
+          "delete": true
+        },
+        "quac:qgis_server_wms_name": "Street trees: 2024",
+        "quac:qgis_server_wfs_type_name": "Street_trees-_2024",
+        "quac:wfs_endpoint": "https://qgis.example.com/ows",
+        "quac:wfs_type_name": "Street_trees-_2024",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "server-wms-crs": {
+    "type": "Catalog",
+    "id": "server-wms-crs",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Street trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Street trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:28350"
+          }
+        ]
+      }
+    ]
+  },
+  "value-relation": {
+    "type": "Catalog",
+    "id": "value-relation",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "species",
+            "quac:value_relation": {
+              "collection": "Species",
+              "key": "code",
+              "value": "common_name",
+              "order_by": "value"
+            }
+          }
+        ]
+      },
+      {
+        "type": "Collection",
+        "id": "Species",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Species",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "visible-when": {
+    "type": "Catalog",
+    "id": "visible-when",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Trees",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:form_order": [
+          "status",
+          "removal_reason"
+        ],
+        "quac:qgis_server_wms_name": "Trees",
+        "summaries": {
+          "quac:geometry_type": [
+            "Point"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ],
+        "table:columns": [
+          {
+            "name": "removal_reason",
+            "quac:visible_when": [
+              "\"status\" = 'Removed'"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "wms-link": {
+    "type": "Catalog",
+    "id": "wms-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Parcels",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Parcels",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
+  "wmts-link": {
+    "type": "Catalog",
+    "id": "wmts-layer",
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Imagery",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Imagery",
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  }
+}

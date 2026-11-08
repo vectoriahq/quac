@@ -1,0 +1,77 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "basemaps",
+  "description": "A hand-written catalogue of basemaps.",
+  "links": [],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "streets",
+      "description": "A street map drawn from style documents.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "links": [],
+      "stac_extensions": [
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:light_style": "Bright",
+      "quac:dark_style": "Dark",
+      "assets": {
+        "Bright": {
+          "href": "https://tiles.example.com/styles/bright",
+          "type": "application/vnd.mapbox.style+json",
+          "title": "Bright",
+          "roles": [
+            "style",
+            "default"
+          ],
+          "quac:style_overrides": [
+            "https://example.com/overrides/bright-quiet.json",
+            {
+              "layers": [
+                {
+                  "id": "ferry",
+                  "layout": {
+                    "visibility": "none"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "Dark": {
+          "href": "https://tiles.example.com/styles/dark",
+          "type": "application/vnd.mapbox.style+json",
+          "title": "Dark",
+          "roles": [
+            "style"
+          ]
+        }
+      }
+    }
+  ]
+}

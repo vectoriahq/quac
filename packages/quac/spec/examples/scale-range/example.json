@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:min_scale",
+    "quac:max_scale"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

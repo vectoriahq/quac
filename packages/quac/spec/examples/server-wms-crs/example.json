@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:wms_crs"
+  ],
+  "source": "qgis-server",
+  "input": "project.qgs",
+  "endpoint": "https://qgis.example.com/ows"
+}

@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:opacity"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

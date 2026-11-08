@@ -1,0 +1,385 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "qgs-project",
+  "description": "STAC catalogue generated from a QGIS project.",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33.json",
+      "type": "application/json",
+      "title": "Schools Year 7 2027"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505.json",
+      "type": "application/json",
+      "title": "Schools Primary 2027"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882.json",
+      "type": "application/json",
+      "title": "Catchments Year 7 2007"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e.json",
+      "type": "application/json",
+      "title": "Catchments Primary 2027"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          -179.9999999999996,
+          -85.05112877980656,
+          179.9999999999996,
+          85.05112877980656
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33",
+      "title": "Schools Year 7 2027",
+      "description": "Layer \"Schools Year 7 2027\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              141.17733652887293,
+              -38.753523998404,
+              149.75429599852646,
+              -34.16936536777922
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://schools.example.test/schools/schools-2027.json",
+          "type": "application/geo+json",
+          "title": "schools-2027.json",
+          "roles": [
+            "data"
+          ],
+          "quac:feature_filter": {
+            "expression": "\"year7_2027\" = 'x'",
+            "dialect": "ogr_sql"
+          }
+        },
+        "default": {
+          "href": "./catchments.qgs#Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./catchments.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Schools Year 7 2027"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505",
+      "title": "Schools Primary 2027",
+      "description": "Layer \"Schools Primary 2027\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              141.08248728746506,
+              -38.753523998404,
+              149.75429599852646,
+              -34.16936536777922
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://schools.example.test/schools/schools-2027.json",
+          "type": "application/geo+json",
+          "title": "schools-2027.json",
+          "roles": [
+            "data"
+          ],
+          "quac:feature_filter": {
+            "expression": "\"primary_2027\" = 'x'",
+            "dialect": "ogr_sql"
+          }
+        },
+        "default": {
+          "href": "./catchments.qgs#schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./catchments.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": false,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Schools Primary 2027"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882",
+      "title": "Catchments Year 7 2007",
+      "description": "Layer \"Catchments Year 7 2007\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -179.9999999999996,
+              -85.05112877980656,
+              179.9999999999996,
+              85.05112877980656
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "default": {
+          "href": "./catchments.qgs#Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "xyz",
+          "href": "https://schools.example.test/tiles/catchments-year7-2027/{z}/{x}/{y}.pbf",
+          "type": "application/vnd.mapbox-vector-tile"
+        },
+        {
+          "rel": "via",
+          "href": "./catchments.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:max_zoom": 14,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Catchments Year 7 2007"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e",
+      "title": "Catchments Primary 2027",
+      "description": "Layer \"Catchments Primary 2027\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -179.9999999999996,
+              -85.05112877980656,
+              179.9999999999996,
+              85.05112877980656
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "default": {
+          "href": "./catchments.qgs#Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "xyz",
+          "href": "https://schools.example.test/tiles/catchments-primary-2027/{z}/{x}/{y}.pbf",
+          "type": "application/vnd.mapbox-vector-tile"
+        },
+        {
+          "rel": "via",
+          "href": "./catchments.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": false,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:max_zoom": 14,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Catchments Primary 2027"
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

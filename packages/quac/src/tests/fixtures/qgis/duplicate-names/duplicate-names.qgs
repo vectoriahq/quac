@@ -1,0 +1,76 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Duplicate names" version="3.44.8-Solothurn">
+  <homePath path=""/>
+  <title>Duplicate names</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" source="./roads-main.geojson" expanded="1" name="Roads" providerKey="ogr" id="roads_main_f8c9d0e5_6a7b_4c8d_9e4f_7a8b9c0d1e07"/>
+    <layer-tree-layer checked="Qt::Checked" source="./roads-local.geojson" expanded="1" name="Roads" providerKey="ogr" id="roads_local_a9d0e1f6_7b8c_4d9e_8f5a_8b9c0d1e2f08"/>
+  </layer-tree-group>
+  <relations>
+  </relations>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="LineString" geometry="Line" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>roads_main_f8c9d0e5_6a7b_4c8d_9e4f_7a8b9c0d1e07</id>
+      <datasource>./roads-main.geojson</datasource>
+      <layername>Roads</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="road_id"/>
+        <field configurationFlags="NoFlag" name="name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="road_id" index="0" name=""/>
+        <alias field="name" index="1" name=""/>
+      </aliases>
+      <previewExpression>"name"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="LineString" geometry="Line" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>roads_local_a9d0e1f6_7b8c_4d9e_8f5a_8b9c0d1e2f08</id>
+      <datasource>./roads-local.geojson</datasource>
+      <layername>Roads</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="road_id"/>
+        <field configurationFlags="NoFlag" name="name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="road_id" index="0" name=""/>
+        <alias field="name" index="1" name=""/>
+      </aliases>
+      <previewExpression>"name"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <WFSLayers type="QStringList"><value>roads_main_f8c9d0e5_6a7b_4c8d_9e4f_7a8b9c0d1e07</value><value>roads_local_a9d0e1f6_7b8c_4d9e_8f5a_8b9c0d1e2f08</value></WFSLayers>
+  </properties>
+</qgis>

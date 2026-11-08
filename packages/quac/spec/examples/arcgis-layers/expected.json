@@ -1,0 +1,22 @@
+{
+  "type": "Catalog",
+  "id": "biodiversity",
+  "quac:arcgis_item_id": "a4b8dfbcaddf4e5a901034b4eca7c792",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "vegetation",
+      "quac:visibility_checked": true,
+      "quac:opacity": 1,
+      "quac:arcgis_layer_url": "https://services.arcgis.com/example/arcgis/rest/services/Vegetation/FeatureServer/0",
+      "quac:arcgis_where": "zone = 'Hills'"
+    },
+    {
+      "type": "Collection",
+      "id": "imagery",
+      "quac:visibility_checked": true,
+      "quac:opacity": 1,
+      "quac:arcgis_not_shown": "not-a-feature-layer"
+    }
+  ]
+}

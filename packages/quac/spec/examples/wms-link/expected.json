@@ -1,0 +1,22 @@
+{
+  "type": "Catalog",
+  "id": "wms-layer",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Parcels",
+      "links": [
+        {
+          "rel": "wms",
+          "quac:wms_crs": "EPSG:3857",
+          "quac:wms_version": "1.3.0"
+        }
+      ]
+    }
+  ]
+}

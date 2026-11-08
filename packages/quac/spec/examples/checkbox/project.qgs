@@ -1,0 +1,30 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Checkbox widget" version="3.44.8-Solothurn">
+  <title>Checkbox widget</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="heritage"><editWidget type="CheckBox"><config><Option type="Map"><Option type="QString" value="Y" name="CheckedState"/><Option type="QString" value="N" name="UncheckedState"/><Option type="int" value="0" name="TextDisplayMethod"/><Option type="bool" value="false" name="AllowNullState"/></Option></config></editWidget></field>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:geometry_filter"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

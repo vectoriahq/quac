@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "street-trees.1",
+      "geometry": { "type": "Point", "coordinates": [151.19856, -33.87612] },
+      "properties": { "tree_id": "T-001", "species": "Lophostemon confertus", "planted": "2011-06-14" }
+    },
+    {
+      "type": "Feature",
+      "id": "street-trees.2",
+      "geometry": { "type": "Point", "coordinates": [151.20431, -33.87944] },
+      "properties": { "tree_id": "T-002", "species": "Jacaranda mimosifolia", "planted": "2004-09-02" }
+    },
+    {
+      "type": "Feature",
+      "id": "street-trees.3",
+      "geometry": { "type": "Point", "coordinates": [151.21178, -33.88372] },
+      "properties": { "tree_id": "T-003", "species": "Ficus microcarpa", "planted": "1998-03-21" }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Server groups" version="4.2.0-Belém do Pará">
+  <homePath path=""/>
+  <title>Server groups</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-group checked="Qt::Checked" expanded="1" name="Water">
+      <layer-tree-layer checked="Qt::Checked" source="./bores.geojson" expanded="1" name="Water: bores" providerKey="ogr" id="water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01"/>
+      <layer-tree-group checked="Qt::Checked" expanded="1" name="Monitoring">
+        <layer-tree-layer checked="Qt::Checked" source="./sites.geojson" expanded="1" name="Sites" providerKey="ogr" id="sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02"/>
+      </layer-tree-group>
+    </layer-tree-group>
+    <layer-tree-group checked="Qt::Checked" expanded="1" name="Internal">
+      <layer-tree-layer checked="Qt::Checked" source="./staff-notes.geojson" expanded="1" name="Staff notes" providerKey="ogr" id="staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03"/>
+    </layer-tree-group>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01</id>
+      <datasource>./bores.geojson</datasource>
+      <layername>Water: bores</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="bore_id"/>
+        <field configurationFlags="NoFlag" name="depth"/>
+        <field configurationFlags="NoFlag" name="owner"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="bore_id" index="0" name=""/>
+        <alias field="depth" index="1" name=""/>
+        <alias field="owner" index="2" name=""/>
+      </aliases>
+      <excludeAttributesWFS>
+        <attribute>owner</attribute>
+      </excludeAttributesWFS>
+      <previewExpression>"bore_id"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02</id>
+      <datasource>./sites.geojson</datasource>
+      <shortname>monitoring_sites</shortname>
+      <layername>Sites</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="site_id"/>
+        <field configurationFlags="HideFromWms|HideFromWfs" name="contact"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="site_id" index="0" name=""/>
+        <alias field="contact" index="1" name=""/>
+      </aliases>
+      <previewExpression>"site_id"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03</id>
+      <datasource>./staff-notes.geojson</datasource>
+      <layername>Staff notes</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="note_id"/>
+        <field configurationFlags="NoFlag" name="author"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="note_id" index="0" name=""/>
+        <alias field="author" index="1" name=""/>
+      </aliases>
+      <excludeAttributesWMS>
+        <attribute>author</attribute>
+      </excludeAttributesWMS>
+      <previewExpression>"note_id"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties name="properties">
+    <properties name="WMSRestrictedLayers" type="QStringList"><value>Internal</value></properties>
+    <properties name="WFSLayers" type="QStringList"><value>water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01</value><value>staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03</value></properties>
+    <properties name="WFSTLayers">
+      <properties name="Insert" type="QStringList"></properties>
+      <properties name="Update" type="QStringList"><value>water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01</value></properties>
+      <properties name="Delete" type="QStringList"></properties>
+    </properties>
+  </properties>
+</qgis>

@@ -1,0 +1,94 @@
+{
+  "type": "FeatureCollection",
+  "name": "annotations",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "properties": {
+        "label": "Gate"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.2,
+          -33.88
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "properties": {
+        "label": "Fence"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            151.199,
+            -33.881
+          ],
+          [
+            151.203,
+            -33.879
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "properties": {
+        "label": "Paddock"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              151.201,
+              -33.882
+            ],
+            [
+              151.204,
+              -33.882
+            ],
+            [
+              151.204,
+              -33.88
+            ],
+            [
+              151.201,
+              -33.88
+            ],
+            [
+              151.201,
+              -33.882
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "properties": {
+        "label": "Troughs"
+      },
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [
+            151.202,
+            -33.881
+          ],
+          [
+            151.2025,
+            -33.8812
+          ]
+        ]
+      }
+    }
+  ]
+}

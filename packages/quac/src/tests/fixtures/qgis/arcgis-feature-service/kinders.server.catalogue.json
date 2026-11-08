@@ -1,0 +1,148 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "qgs-project",
+  "description": "STAC catalogue generated from a QGIS project.",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Kinders.json",
+      "type": "application/json",
+      "title": "Kinders"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          145.36652786949747,
+          -38.2658383450348,
+          145.7218483635137,
+          -37.91345808711691
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Kinders",
+      "title": "Kinders",
+      "description": "Layer \"Kinders\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              145.36652786949747,
+              -38.2658383450348,
+              145.7218483635137,
+              -37.91345808711691
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Kinders"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Kinders",
+      "table:columns": [
+        {
+          "name": "FID",
+          "quac:constraints": {
+            "not_null": "enforced",
+            "unique": "enforced"
+          }
+        },
+        {
+          "name": "FACILITY"
+        },
+        {
+          "name": "ADDRESS"
+        },
+        {
+          "name": "LOCALITY"
+        },
+        {
+          "name": "Registrati"
+        },
+        {
+          "name": "Phone"
+        },
+        {
+          "name": "Info"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

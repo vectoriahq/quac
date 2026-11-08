@@ -1,0 +1,28 @@
+{
+  "type": "Catalog",
+  "id": "feature-filter",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "quac:feature_filter": {
+            "expression": "\"status\" = 'approved'",
+            "dialect": "ogr_sql"
+          }
+        }
+      }
+    }
+  ]
+}

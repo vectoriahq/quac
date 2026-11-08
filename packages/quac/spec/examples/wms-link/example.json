@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:wms_crs",
+    "quac:wms_version"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

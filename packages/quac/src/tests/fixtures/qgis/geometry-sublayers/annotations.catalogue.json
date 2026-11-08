@@ -1,0 +1,119 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "annotations",
+  "title": "Annotations",
+  "description": "STAC catalogue generated from QGIS project \"Annotations\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01.json",
+      "type": "application/json",
+      "title": "Annotations"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01",
+      "title": "Annotations",
+      "description": "Layer \"Annotations\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./annotations.geojson",
+          "type": "application/geo+json",
+          "title": "annotations.geojson",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./annotations.qgs#annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./annotations.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "label",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point",
+        "LineString",
+        "Polygon"
+      ],
+      "table:columns": [
+        {
+          "name": "label"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

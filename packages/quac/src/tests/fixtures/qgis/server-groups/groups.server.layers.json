@@ -1,0 +1,67 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "group",
+      "name": "Water",
+      "wmsPublished": true,
+      "children": [
+        {
+          "kind": "layer",
+          "id": "water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01",
+          "name": "Water: bores",
+          "wmsName": "Water: bores",
+          "wfsTypeName": "Water-_bores",
+          "hiddenFields": {
+            "wms": [],
+            "wfs": [
+              "owner"
+            ]
+          }
+        },
+        {
+          "kind": "group",
+          "name": "Monitoring",
+          "wmsPublished": true,
+          "children": [
+            {
+              "kind": "layer",
+              "id": "sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02",
+              "name": "Sites",
+              "wmsName": "monitoring_sites",
+              "wfsTypeName": null,
+              "hiddenFields": {
+                "wms": [
+                  "contact"
+                ],
+                "wfs": [
+                  "contact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "name": "Internal",
+      "wmsPublished": false,
+      "children": [
+        {
+          "kind": "layer",
+          "id": "staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03",
+          "name": "Staff notes",
+          "wmsName": null,
+          "wfsTypeName": "Staff_notes",
+          "hiddenFields": {
+            "wms": [
+              "author"
+            ],
+            "wfs": []
+          }
+        }
+      ]
+    }
+  ]
+}

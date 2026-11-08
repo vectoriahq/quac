@@ -1,0 +1,25 @@
+{
+  "type": "Catalog",
+  "id": "geopackage-table",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Parks",
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "quac:layer_name": "parks"
+        }
+      }
+    }
+  ]
+}

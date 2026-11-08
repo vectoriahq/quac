@@ -1,0 +1,37 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Editable when" version="3.44.8-Solothurn">
+  <title>Editable when</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="last_inspected"/>
+        <field configurationFlags="NoFlag" name="condition"/>
+      </fieldConfiguration>
+      <editorlayout>tablayout</editorlayout>
+      <attributeEditorForm>
+        <attributeEditorField index="0" name="last_inspected" showLabel="1"/>
+        <attributeEditorField index="1" name="condition" showLabel="1"/>
+      </attributeEditorForm>
+      <dataDefinedFieldProperties>
+        <field name="condition"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="true" name="active"/><Option type="QString" value="&quot;last_inspected&quot; IS NULL" name="expression"/><Option type="int" value="3" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+      </dataDefinedFieldProperties>
+    </maplayer>
+  </projectlayers>
+</qgis>

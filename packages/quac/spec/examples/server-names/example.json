@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:qgis_server_wms_name",
+    "quac:qgis_server_wfs_type_name"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

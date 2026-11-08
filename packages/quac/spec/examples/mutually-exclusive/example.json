@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:mutually_exclusive"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

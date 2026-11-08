@@ -1,0 +1,250 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "server-groups",
+  "title": "Server groups",
+  "description": "STAC catalogue generated from QGIS project \"Server groups\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/water/catalog.json",
+      "type": "application/json",
+      "title": "Water"
+    }
+  ],
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "water",
+      "title": "Water",
+      "description": "Layer group \"Water\" from the QGIS project.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/water/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "child",
+          "href": "./collections/Water%3A%20bores.json",
+          "type": "application/json",
+          "title": "Water: bores"
+        },
+        {
+          "rel": "child",
+          "href": "./catalogs/monitoring/catalog.json",
+          "type": "application/json",
+          "title": "Monitoring"
+        }
+      ],
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "Water: bores",
+          "title": "Water: bores",
+          "description": "Layer \"Water: bores\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "summaries": {
+            "quac:geometry_type": [
+              "Point"
+            ]
+          },
+          "assets": {
+            "data": {
+              "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=Water-_bores&OUTPUTFORMAT=application%2Fjson",
+              "type": "application/geo+json",
+              "title": "WFS GetFeature: Water: bores",
+              "roles": [
+                "data"
+              ]
+            }
+          },
+          "links": [
+            {
+              "rel": "wms",
+              "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+              "type": "image/png",
+              "wms:layers": [
+                "Water: bores"
+              ],
+              "wms:styles": [
+                ""
+              ],
+              "wms:transparent": true,
+              "quac:wms_crs": "EPSG:3857"
+            }
+          ],
+          "quac:display_field": "bore_id",
+          "quac:visibility_checked": true,
+          "quac:editable": true,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "quac:locks": {
+            "add": true,
+            "delete": true
+          },
+          "stac_extensions": [
+            "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+            "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+            "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+            "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+          ],
+          "vector:geometry_types": [
+            "Point"
+          ],
+          "quac:qgis_server_wms_name": "Water: bores",
+          "quac:qgis_server_wfs_type_name": "Water-_bores",
+          "table:columns": [
+            {
+              "name": "bore_id"
+            },
+            {
+              "name": "depth"
+            }
+          ],
+          "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "quac:wfs_type_name": "Water-_bores"
+        }
+      ],
+      "catalogs": [
+        {
+          "type": "Catalog",
+          "stac_version": "1.1.0",
+          "id": "monitoring",
+          "title": "Monitoring",
+          "description": "Layer group \"Monitoring\" from the QGIS project.",
+          "links": [
+            {
+              "rel": "self",
+              "href": "./catalogs/monitoring/catalog.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../../catalog.json"
+            },
+            {
+              "rel": "child",
+              "href": "./collections/monitoring_sites.json",
+              "type": "application/json",
+              "title": "Sites"
+            }
+          ],
+          "collections": [
+            {
+              "type": "Collection",
+              "stac_version": "1.1.0",
+              "id": "monitoring_sites",
+              "title": "Sites",
+              "description": "Layer \"Sites\" from the QGIS project.",
+              "license": "other",
+              "extent": {
+                "spatial": {
+                  "bbox": [
+                    [
+                      -180,
+                      -90,
+                      180,
+                      90
+                    ]
+                  ]
+                },
+                "temporal": {
+                  "interval": [
+                    [
+                      null,
+                      null
+                    ]
+                  ]
+                }
+              },
+              "summaries": {
+                "quac:geometry_type": [
+                  "Point"
+                ]
+              },
+              "links": [
+                {
+                  "rel": "wms",
+                  "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+                  "type": "image/png",
+                  "wms:layers": [
+                    "monitoring_sites"
+                  ],
+                  "wms:styles": [
+                    ""
+                  ],
+                  "wms:transparent": true,
+                  "quac:wms_crs": "EPSG:3857"
+                }
+              ],
+              "quac:display_field": "site_id",
+              "quac:visibility_checked": true,
+              "quac:editable": false,
+              "quac:identifiable": true,
+              "quac:opacity": 1,
+              "stac_extensions": [
+                "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+                "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+                "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+                "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+              ],
+              "vector:geometry_types": [
+                "Point"
+              ],
+              "quac:qgis_server_wms_name": "monitoring_sites",
+              "table:columns": [
+                {
+                  "name": "site_id"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

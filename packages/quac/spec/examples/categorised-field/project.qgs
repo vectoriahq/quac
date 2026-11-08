@@ -1,0 +1,32 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Categorised style" version="3.44.8-Solothurn">
+  <title>Categorised style</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="layer_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>layer_1</id>
+      <datasource>./trees.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="By species">
+        <map-layer-style name="By species"/>
+      </map-layer-style-manager>
+      <renderer-v2 type="categorizedSymbol" attr="species" forceraster="0" symbollevels="0" enableorderby="0">
+        <categories/>
+        <symbols/>
+      </renderer-v2>
+    </maplayer>
+  </projectlayers>
+</qgis>

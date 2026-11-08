@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:editable_when"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

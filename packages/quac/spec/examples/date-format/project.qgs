@@ -1,0 +1,30 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Date format" version="3.44.8-Solothurn">
+  <title>Date format</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="surveyed"><editWidget type="DateTime"><config><Option type="Map"><Option type="QString" value="dd/MM/yyyy" name="field_format"/><Option type="bool" value="false" name="field_iso_format"/><Option type="QString" value="d MMM yyyy" name="display_format"/><Option type="bool" value="true" name="allow_null"/></Option></config></editWidget></field>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

@@ -1,0 +1,134 @@
+{
+  "layerInfo": {
+    "type": "Feature Layer",
+    "capabilities": "Query",
+    "supportedQueryFormats": "JSON, geoJSON, PBF",
+    "maxRecordCount": 2000,
+    "advancedQueryCapabilities": {
+      "supportsPagination": true
+    },
+    "displayField": "",
+    "description": "",
+    "copyrightText": "",
+    "editingInfo": {
+      "lastEditDate": 1786497867248,
+      "schemaLastEditDate": 1724882391667,
+      "dataLastEditDate": 1786497867248
+    },
+    "minScale": 4622325,
+    "maxScale": 0,
+    "geometryType": "esriGeometryPoint",
+    "extent": {
+      "xmin": 16182127.86081867,
+      "ymin": -4617048.221703365,
+      "xmax": 16221681.957280971,
+      "ymax": -4567207.546306502,
+      "spatialReference": {
+        "wkid": 102100,
+        "latestWkid": 3857
+      }
+    },
+    "fields": [
+      {
+        "name": "FID",
+        "type": "esriFieldTypeOID",
+        "alias": "FID"
+      },
+      {
+        "name": "FACILITY",
+        "type": "esriFieldTypeString",
+        "alias": "FACILITY"
+      },
+      {
+        "name": "ADDRESS",
+        "type": "esriFieldTypeString",
+        "alias": "ADDRESS"
+      },
+      {
+        "name": "LOCALITY",
+        "type": "esriFieldTypeString",
+        "alias": "LOCALITY"
+      },
+      {
+        "name": "Registrati",
+        "type": "esriFieldTypeString",
+        "alias": "Registrati"
+      },
+      {
+        "name": "Phone",
+        "type": "esriFieldTypeString",
+        "alias": "Phone"
+      },
+      {
+        "name": "Info",
+        "type": "esriFieldTypeString",
+        "alias": "Info"
+      }
+    ]
+  },
+  "query": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "id": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            145.49119,
+            -38.074464
+          ]
+        },
+        "properties": {
+          "FID": 1,
+          "FACILITY": "Northvale Kindergarten",
+          "ADDRESS": "10 Example Street",
+          "LOCALITY": "Northvale",
+          "Registrati": "https://council.example.test/kindergartens/register",
+          "Phone": "0400 000 001",
+          "Info": "https://council.example.test/kindergartens/programs"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": 2,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            145.463935,
+            -37.922739
+          ]
+        },
+        "properties": {
+          "FID": 2,
+          "FACILITY": "Eastbrook Kindergarten",
+          "ADDRESS": "20 Example Street",
+          "LOCALITY": "Eastbrook",
+          "Registrati": "https://council.example.test/kindergartens/register",
+          "Phone": "0400 000 002",
+          "Info": "https://council.example.test/kindergartens/programs"
+        }
+      },
+      {
+        "type": "Feature",
+        "id": 3,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            145.57208,
+            -38.176137
+          ]
+        },
+        "properties": {
+          "FID": 3,
+          "FACILITY": "Southwood Kindergarten",
+          "ADDRESS": "30 Example Street",
+          "LOCALITY": "Southwood",
+          "Registrati": "https://council.example.test/kindergartens/register",
+          "Phone": "0400 000 003",
+          "Info": "https://council.example.test/kindergartens/programs"
+        }
+      }
+    ]
+  }
+}

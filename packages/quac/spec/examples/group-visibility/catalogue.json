@@ -1,0 +1,53 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "basemaps",
+  "description": "A hand-written catalogue of basemaps.",
+  "links": [],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ],
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "aerial",
+      "description": "Aerial imagery with labels.",
+      "links": [],
+      "stac_extensions": [
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:visibility_checked": true,
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "imagery",
+          "description": "Aerial imagery.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "links": []
+        }
+      ]
+    }
+  ]
+}

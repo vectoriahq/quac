@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "serviceTitle": "City Open Data",
+  "operations": {
+    "GetCapabilities": true,
+    "DescribeFeatureType": true,
+    "GetFeature": true,
+    "Transaction": true
+  },
+  "getFeatureOutputFormats": [
+    "application/json",
+    "text/xml; subtype=gml/3.2"
+  ],
+  "featureTypes": [
+    {
+      "name": "city:street_lights",
+      "title": "Street lights",
+      "abstract": "Council-maintained street lighting assets.",
+      "keywords": [
+        "lighting",
+        "assets"
+      ],
+      "defaultSrs": "EPSG:4326",
+      "otherSrs": [
+        "EPSG:3857"
+      ],
+      "supportedSrs": [
+        "EPSG:4326",
+        "EPSG:3857"
+      ],
+      "wgs84BoundingBox": {
+        "minX": 115.75,
+        "minY": -32.1,
+        "maxX": 115.95,
+        "maxY": -31.9
+      },
+      "operations": {
+        "Query": true,
+        "Insert": true,
+        "Update": true,
+        "Delete": false
+      },
+      "metadataUrls": []
+    },
+    {
+      "name": "city:parks",
+      "title": "Parks",
+      "abstract": null,
+      "keywords": [],
+      "defaultSrs": "EPSG:4326",
+      "otherSrs": [],
+      "supportedSrs": [
+        "EPSG:4326"
+      ],
+      "wgs84BoundingBox": {
+        "minX": 115.6,
+        "minY": -32.2,
+        "maxX": 116,
+        "maxY": -31.95
+      },
+      "operations": {
+        "Query": true,
+        "Insert": true,
+        "Update": true,
+        "Delete": true
+      },
+      "metadataUrls": []
+    }
+  ]
+}

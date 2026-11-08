@@ -1,0 +1,11 @@
+[general]
+name=QUAC reading spike harness
+description=Test harness for the QUAC plugin's reading spike: answers SERVICE=QUACSPIKE with the open project's server layer tree, read from its stored text. Not the QUAC endpoint.
+about=Used only by the QGIS Server job in Groundwork's CI.
+version=0.0.0
+qgisMinimumVersion=3.40
+qgisMaximumVersion=4.99
+supportsQt6=True
+author=Vectoria
+email=hello@groundwork.do
+server=True

@@ -1,0 +1,11 @@
+[general]
+name=QUAC catalogue
+description=Serves a QGIS project's QUAC catalogue from QGIS Server: SERVICE=QUAC&REQUEST=GetCatalogue answers the layers, groups and fields the project publishes, as one STAC document with its Collections inlined.
+about=Reads the project's stored text and applies its own QGIS Server publishing settings, as GetProjectSettings does. Without an access-control plugin it serves one shared copy per project; with one, it builds each answer afresh.
+version=0.1.0
+qgisMinimumVersion=3.40
+qgisMaximumVersion=4.99
+supportsQt6=True
+author=Vectoria
+email=hello@groundwork.do
+server=True

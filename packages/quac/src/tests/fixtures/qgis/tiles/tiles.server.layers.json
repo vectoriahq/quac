@@ -1,0 +1,27 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "world_imagery_wmts",
+      "name": "World Imagery",
+      "wmsName": "World Imagery",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "openstreetmap_xyz",
+      "name": "OpenStreetMap",
+      "wmsName": "OpenStreetMap",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

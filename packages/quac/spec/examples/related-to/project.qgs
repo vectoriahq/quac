@@ -1,0 +1,52 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Relations" version="3.44.8-Solothurn">
+  <title>Relations</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="inspections_1" name="Inspections" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <relations>
+    <relation id="tree_inspections" name="Inspections" referencedLayer="trees_1" referencingLayer="inspections_1" strength="Association">
+      <fieldRef referencedField="tree_id" referencingField="tree_id"/>
+    </relation>
+  </relations>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="planted"/>
+      </fieldConfiguration>
+    </maplayer>
+    <maplayer type="vector" wkbType="NoGeometry">
+      <id>inspections_1</id>
+      <datasource>./inspections_1.geojson</datasource>
+      <layername>Inspections</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="inspection_id"/>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="condition"/>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

@@ -1,0 +1,28 @@
+{
+  "type": "Catalog",
+  "id": "constraint",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "table:columns": [
+        {
+          "name": "species",
+          "quac:constraints": {
+            "not_null": "enforced"
+          }
+        }
+      ]
+    }
+  ]
+}

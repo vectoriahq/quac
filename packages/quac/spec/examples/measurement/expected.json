@@ -1,0 +1,24 @@
+{
+  "type": "Catalog",
+  "id": "measurement-units",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:measurement": {
+        "area_unit": "ha",
+        "distance_unit": "km"
+      },
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

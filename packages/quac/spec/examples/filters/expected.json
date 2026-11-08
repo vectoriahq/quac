@@ -1,0 +1,26 @@
+{
+  "type": "Catalog",
+  "id": "preset-filters",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:filters": [
+        {
+          "field": "species",
+          "name": "Species"
+        }
+      ],
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}
