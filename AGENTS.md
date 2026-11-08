@@ -2,11 +2,10 @@
 
 QUAC is a STAC profile and its two implementations: `packages/quac/` (the JavaScript package, with the spec in `packages/quac/spec/`) and `packages/quac-qgis-server/` (the QGIS Server plugin and its Python port of the JavaScript reader). The README says what each holds.
 
-## This repository is public
+## Writing in this repository
 
-- **A decision is Vectoria's.** In code, comments, notes, commit messages and pull request bodies, record a decision as Vectoria's, with no person's name and no reason taken from a conversation.
-- **Plans and discussion stay out.** Write here only what the code does and what the spec says. Plans, reviews of options and the reasons behind them belong in Vectoria's own records, not in this repository.
-- **No session links.** A commit or pull request carries no link to an agent session.
+- **Describe the change, not the conversation.** Code comments, notes, commit messages and pull request bodies say what the code does and what the spec says. They don't name private individuals, quote discussions, or point at documents outside this repository.
+- **No links to agent sessions** in commits or pull requests.
 - **No real data.** Test projects and examples use made-up data and `example.test` addresses, never a real person's name, a real organisation's data or a path from someone's computer.
 
 ## Checks
