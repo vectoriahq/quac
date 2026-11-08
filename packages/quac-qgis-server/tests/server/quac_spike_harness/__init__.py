@@ -1,6 +1,6 @@
 """
-A QGIS Server plugin used only by the reading spike's CI job
-(`docs/plans/quac-separation.md`, package 4). It is not the QUAC endpoint.
+A QGIS Server plugin used only by the QGIS Server workflow's checks of the
+reading route. It is not the QUAC endpoint.
 
 `SERVICE=QUACSPIKE&REQUEST=GetLayerTree&MAP=<project>` answers, as JSON, the
 server layer tree of the project QGIS Server has open for the request, read

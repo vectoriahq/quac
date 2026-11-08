@@ -71,7 +71,7 @@ export interface QgsProject {
  * The parts of QGIS's project-level `<projectMetadata>` Groundwork reads.
  * QGIS's own dialog (Project Properties > Metadata) writes the element on
  * every project, empty fields and all — `abstract` and `author` are null only
- * when the author left them blank, checked against `src/data/sample/sample.qgs`
+ * when the author left them blank, checked against a saved QGIS project
  * and `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs` on 2026-08-12.
  */
 export interface ProjectMetadata {
@@ -319,7 +319,7 @@ export interface WfsTransactionLayers {
 /**
  * The parts of QGIS's per-layer `<resourceMetadata>` Groundwork reads.
  * `abstract`, `contacts` and `temporalInterval`'s `<period>` shape verified
- * against `src/data/sample/graffiti/graffiti.qgs`, whose `<resourceMetadata>`
+ * against a saved QGIS project, whose `<resourceMetadata>`
  * has those fields written but empty on that fixture. `<license>` and
  * `temporalInterval`'s `<instant>` alternative are absent from every fixture
  * in this repo, so those shapes are verified instead against

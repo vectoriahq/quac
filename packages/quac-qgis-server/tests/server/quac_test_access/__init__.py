@@ -1,6 +1,6 @@
 """
-An access-control plugin used only by the QUAC catalogue plugin's CI job
-(`docs/plans/quac-separation.md`, package 6). While a request carries
+An access-control plugin used only by the QUAC catalogue plugin's checks in
+the QGIS Server workflow. While a request carries
 `TESTUSER`, it gives QGIS Server that value as a cache key, as an access plugin
 does for a signed-in person, and refuses what `rules.py` lists for that
 person: reading a layer, adding, changing or deleting its features, and seeing

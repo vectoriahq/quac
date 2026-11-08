@@ -1,6 +1,5 @@
 """
-The reading spike's QGIS Server checks (`docs/plans/quac-separation.md`,
-package 4), run by `.github/workflows/quac-qgis-server.yml` against the
+The reading route's QGIS Server checks, run by `.github/workflows/qgis-server.yml` against the
 official QGIS Server image. Python's standard library only.
 
 `prepare <work>` lays out what the server container mounts: the fixture

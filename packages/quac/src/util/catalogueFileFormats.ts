@@ -2,14 +2,9 @@ import { getLowerCaseExtension } from './fileName'
 
 /**
  * What a catalogue says about each file format: its extensions and the media
- * type an asset of that format declares. This is the half of the file-format
- * table that the package's catalogue generators read, kept in the package. What Groundwork does
- * with a format (its name on screen, whether a layer from it saves, the routes
- * that accept it) is the other half, `LAYER_FILE_DETAILS` in
- * `src/utils/layerFileFormats.ts`, which joins the two as `LAYER_FILE_FORMATS`.
- *
- * `src/tests/layerFileFormatLiterals.test.ts` fails on a module outside this
- * one that spells a listed extension or media type.
+ * type an asset of that format declares. What an application does with a
+ * format, such as its name on screen or whether a layer from it saves, is the
+ * application's own.
  */
 
 /**
@@ -65,7 +60,7 @@ export const FLATGEOBUF_MEDIA_TYPE = 'application/vnd.flatgeobuf'
 
 /**
  * COG (Cloud Optimized GeoTIFF), per Portolan's media-type registry. Stored as
- * the Collection's `data`-role asset (`docs/agents/portolan-compliance.md`).
+ * the Collection's `data`-role asset.
  */
 export const COG_MEDIA_TYPE = 'image/tiff; application=geotiff; profile=cloud-optimized'
 

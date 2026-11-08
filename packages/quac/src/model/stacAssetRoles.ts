@@ -4,7 +4,7 @@ import type { StacAsset, StacCollection } from './Stac'
  * Selecting a Collection's data asset.
  *
  * Portolan addresses assets by role rather than by key
- * (`docs/agents/portolan-compliance.md`): `data` is the primary file, `visual`
+ * (the Portolan convention): `data` is the primary file, `visual`
  * a rendering derivative, `style` a visualisation style. Groundwork's own
  * generators write the primary file under the `data` key *and* the `data` role,
  * so the key stands as the fallback for a document that declares no roles at

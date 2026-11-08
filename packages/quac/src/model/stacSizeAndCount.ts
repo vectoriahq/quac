@@ -6,8 +6,7 @@ import type { StacCollection } from './Stac'
  * A Collection's declared file size and row count: `file:size` on its `data`
  * asset (File extension) and `table:row_count` on the Collection (Table
  * extension). Both are what the catalogue states, not what was measured, so a
- * count read here is for display and never one a load is checked against
- * (`docs/plans/archive/catalogue-size-and-count.md`).
+ * count read here is for display and never one a load is checked against.
  */
 
 export const FILE_EXTENSION = 'https://stac-extensions.github.io/file/v2.1.0/schema.json'

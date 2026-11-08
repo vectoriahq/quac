@@ -37,8 +37,7 @@ export interface ServerLayerTreeLayer {
  * The layer tree QGIS Server reads from a project: each layer's WMS name and
  * WFS type name, and the fields the project hides from each service. It is
  * what the QUAC plugin's reading spike returns in Python, so that the two
- * languages are compared on the fixtures (`docs/plans/quac-separation.md`,
- * package 4).
+ * languages are compared on the fixtures.
  *
  * A layer's names are `qgisServerNamesOf`'s, except that a layer inside a
  * group the project leaves out of WMS has no WMS name. A tree entry whose layer

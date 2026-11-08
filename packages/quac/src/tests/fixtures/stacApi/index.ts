@@ -1,13 +1,12 @@
 /**
- * Fixture responses for a STAC API, as issue #859 describes one.
+ * Fixture responses for a STAC API.
  *
  * **Hand-authored, not captured from a live service.** No STAC API was reachable
  * from the environment these were written in — the GeoLens demo, Earth Search and
  * Planetary Computer are all blocked by the container's network policy — so no
  * response here was recorded off the wire, and none of these documents was
  * checked against a specification document either: the specifications were not
- * reachable from that environment. What they encode is the structure issue #859
- * describes — a Catalog whose Collections have no downloadable asset, each
+ * reachable from that environment. What they encode is the structure a STAC API serves: a Catalog whose Collections have no downloadable asset, each
  * with a `rel: "items"` link to the Items holding the data, with the item
  * list answering as a GeoJSON FeatureCollection with `rel: "next"`.
  *
@@ -35,8 +34,8 @@ export const apiLandingPage = {
 }
 
 /**
- * A Collection with no assets at all and an `items` link — the shape issue #859
- * reports every Collection a STAC API serves takes, and what greyed out as
+ * A Collection with no assets at all and an `items` link — the shape every
+ * Collection a STAC API serves takes, and what greyed out as
  * `No data asset` before the drill-down existed.
  */
 export const imageryCollection = {

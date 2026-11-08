@@ -1,7 +1,6 @@
 """
 QUAC for QGIS Server: given a QGIS project's stored text, the catalogue QGIS
-Server serves for it, and the layer tree it publishes
-(`docs/plans/quac-separation.md`, packages 4 and 6).
+Server serves for it, and the layer tree it publishes.
 
 Python's standard library only, so it runs inside QGIS Server's own Python and
 outside it. Each module under `parse/`, `generate/`, `model/` and `util/`

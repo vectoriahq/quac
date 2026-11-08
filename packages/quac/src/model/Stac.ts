@@ -74,8 +74,7 @@ export interface StacProvider {
  * A STAC Item — one record inside a Collection, and a GeoJSON Feature in its own
  * right. A STAC API puts its data here rather than on the Collection, which is
  * why `packages/quac/src/sources/stacItems.ts` exists: a Collection served by an API
- * has no downloadable asset, and the Items inside it have them all (issue
- * #859).
+ * has no downloadable asset, and the Items inside it have them all.
  *
  * Only the fields Groundwork reads are named. `properties.datetime` is what
  * orders an item list. An Item may have `start_datetime` / `end_datetime`

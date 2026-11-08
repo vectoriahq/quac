@@ -149,7 +149,7 @@ export interface LayerLookup {
 /**
  * The `fnName` of the GeoStyler `custom` function that stands for a
  * `LayerLookup`, with its `key` as its one argument. The evaluator is handed
- * the answers before it starts (`src/utils/formExpression.ts`).
+ * the answers before it starts.
  */
 export const LAYER_LOOKUP = 'layer_lookup'
 

@@ -99,7 +99,7 @@ function readProjectCrs(qgisRoot: Element): string | null {
  * Reads `<qgis><projectMetadata>` — separate from `<qgis><title>`, which
  * `parseQgsXml` reads directly above. QGIS's Project Properties > Metadata
  * dialog writes the element on every project, empty fields and all
- * (`src/data/sample/sample.qgs`, `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs`,
+ * (`src/tests/fixtures/qgis/simple-styles/sample.qgs`, `src/tests/fixtures/qgis/graffiti/graffiti.qgs`,
  * read 2026-08-12), so an absent element reads the same as one with nothing
  * filled in.
  */

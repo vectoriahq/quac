@@ -1,7 +1,5 @@
 """
-The port stays file for file with the JavaScript
-(`docs/plans/quac-separation.md` § "How the plugin and the JavaScript are
-kept in agreement"): every module in `packages/quac/src/parse/` and
+The port stays file for file with the JavaScript: every module in `packages/quac/src/parse/` and
 `generate/` has a Python module of the same name in `quac_server/`, and each
 function it exports has a Python function of the same name, or
 `port-exemptions.json` says why not. An exemption for something that has a

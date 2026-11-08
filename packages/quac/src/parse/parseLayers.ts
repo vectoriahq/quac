@@ -242,7 +242,7 @@ function parseResourceMetadataTemporal(block: Element): [string | null, string |
 /**
  * Reads `<attribution href="...">text</attribution>` — a direct child of
  * `<maplayer>`, separate from `<resourceMetadata>` (verified against
- * `src/data/sample/graffiti/graffiti.qgs`, where it sits alongside
+ * a saved QGIS project, where it sits alongside
  * `<resourceMetadata>` and `<provider>`). Null when the layer declares none.
  */
 function parseLayerAttribution(maplayer: Element): LayerAttribution | null {
@@ -260,7 +260,7 @@ const VALUE_MAP_NULL_CODE = '{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}'
  * Reads every field's ValueMap edit widget into its picklist, keyed by field
  * name. QGIS 3.x writes a widget's config as a generic `<Option>` tree
  * (verified in this project's own fixtures, e.g.
- * `src/data/sample/graffiti/graffiti.qgs`'s `TextEdit`/`CheckBox` field
+ * a saved QGIS project's `TextEdit`/`CheckBox` field
  * configs); for `ValueMap` specifically, each entry is a nested
  * `<Option type="Map">` holding one `<Option>` whose `name` is the display
  * label and `value` is what QGIS stores
@@ -359,7 +359,7 @@ function parseFieldValueMaps(maplayer: Element): Record<string, FieldValueMapEnt
  */
 function parseFieldValueRelations(maplayer: Element): Record<string, FieldValueRelation> {
   const result: Record<string, FieldValueRelation> = {}
-  // The layer's own block, not a saved alternate style's: see docs/gotchas.md.
+  // The layer's own block, not a saved alternate style's.
   const fieldConfig = directChild(maplayer, 'fieldConfiguration')
   for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
     const name = field.getAttribute('name')
@@ -451,7 +451,7 @@ const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
 function parseFieldAttachments(maplayer: Element): Record<string, FieldAttachment> {
   const result: Record<string, FieldAttachment> = {}
   // A saved alternate style embeds its own <fieldConfiguration>, which can
-  // disagree with the layer's own — see docs/gotchas.md.
+  // disagree with the layer's own.
   const fieldConfig = directChild(maplayer, 'fieldConfiguration')
   for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
     const name = field.getAttribute('name')
@@ -607,7 +607,7 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   }
 
   // A Range with Allow NULL off, or a Date/Time with it off, is a required
-  // field (decisions 5 and 9 of `docs/plans/archive/qgis-checkbox-range-datetime.md`).
+  // field.
   // It also raises a Not null that only warns.
   for (const name of allowNullOff) ruleFor(name).notNull = 'enforced'
 

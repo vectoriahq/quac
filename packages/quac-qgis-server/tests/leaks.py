@@ -1,6 +1,5 @@
 """
-The leak checks a served catalogue must pass (`docs/plans/quac-separation.md`,
-package 6), as one function, so that `test_leaks.py` runs them on every
+The leak checks a served catalogue must pass, as one function, so that `test_leaks.py` runs them on every
 fixture and `server/check_qgis_server.py` on what QGIS Server serves.
 
 Given the catalogue, the project's text and the server address it was built

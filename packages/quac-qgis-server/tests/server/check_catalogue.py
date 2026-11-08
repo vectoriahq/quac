@@ -1,7 +1,6 @@
 """
-The QUAC catalogue plugin's QGIS Server checks (`docs/plans/quac-separation.md`,
-package 6), run by `.github/workflows/quac-qgis-server.yml` after
-`check_qgis_server.py prepare` and the reading spike's checks, against the same
+The QUAC catalogue plugin's QGIS Server checks, run by `.github/workflows/qgis-server.yml` after
+`check_qgis_server.py prepare` and the reading route's checks, against the same
 server. Python's standard library only.
 
 `check <work> <server> [<service URI> <password URI>]` asks the server for the

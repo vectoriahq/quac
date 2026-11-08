@@ -80,8 +80,7 @@ export function generateStacCatalogue(
   // WGS84**, which is what `quac:initial_view` publishes. The canvas has
   // its own CRS and this package holds no reprojection — it must not import
   // OpenLayers or proj4 (see `packages/quac/src/index.ts`) — so the caller converts and
-  // passes the result, or leaves it off. `resolveProjectInitialView` in
-  // `src/utils/projectInitialView.ts` is what does that conversion.
+  // passes the result, or leaves it off.
   //
   // `layerWgs84Extents` is the same conversion, per layer, for a layer whose
   // `<wgs84extent>` QGIS didn't write: `layer.extent` is in the layer's own
@@ -395,8 +394,8 @@ function layerToNormalized(layer: LayerEntry, context: LayerContext): Normalized
 }
 
 /**
- * One Collection for layers QGIS split out of one file by shape (Decision Q-A
- * in `docs/plans/archive/qgis-geometry-sublayers.md`): the first sibling's settings,
+ * One Collection for layers QGIS split out of one file by shape: the first
+ * sibling's settings,
  * every sibling's extent, and a data asset keeping the siblings' shapes. With
  * all three shapes it keeps none, so the layer reads the whole file, features
  * with no shape included.

@@ -1,6 +1,6 @@
 /**
  * The parts of an OGC API - Features service's JSON this app reads. Kept apart
- * from the client in `@/api/ogcFeatures` so the STAC generators can describe a
+ * from the application's own OGC API Features client so the STAC generators can describe a
  * collection without importing anything that fetches.
  */
 

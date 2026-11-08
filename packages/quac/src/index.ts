@@ -223,9 +223,7 @@ export type { CatalogueChild } from './model/stacTreeWalk'
 // Logging is off until the application using the package turns it on.
 export { setDevLogging } from './util/devLog'
 
-// What Groundwork imports by name, beside the exports above. One entry point
-// for now; the layered entry points come before package 5 publishes
-// (docs/plans/quac-separation.md).
+// What an application imports by name, beside the exports above.
 export type { ArcgisCodedValue, ArcgisExtent, ArcgisField, ArcgisFieldMetadata, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisPassthrough, ArcgisRange, ArcgisResolution, ArcgisResolvedLayer } from './model/arcgis'
 export type { OgcCollection, OgcCollectionsDocument, OgcItemType, OgcLink } from './model/ogcFeatures'
 export { WEB_MAP_LINKS_EXTENSION, buildWmsLink, readCollectionWms, wmsEndpoint } from './model/stacWms'

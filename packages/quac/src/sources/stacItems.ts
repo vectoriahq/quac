@@ -9,8 +9,7 @@ import type { StacCollection, StacItem, StacLink } from '../model/Stac'
  * which `classifyStacCollectionFormat` reads and the rest of the app loads. A
  * STAC API does not: its Collections have no such asset, and every file sits on
  * an Item inside, reached through the Collection's `rel: "items"` link. Without
- * this module every Collection a STAC API lists classifies as unsupported
- * (issue #859).
+ * this module every Collection a STAC API lists classifies as unsupported.
  *
  * The one deliberate shape here is `itemAsCollection`: rather than teach the
  * four load paths about a second kind of thing, an Item is rewritten as a

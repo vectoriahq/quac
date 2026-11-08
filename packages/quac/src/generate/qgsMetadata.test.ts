@@ -9,8 +9,8 @@ import graffitiFixtureXml from '../tests/fixtures/qgis/graffiti/graffiti.qgs?raw
 /**
  * The QGIS project and layer metadata QGIS's Metadata dialog writes
  * (`<projectMetadata>`, `<resourceMetadata>`, `<attribution>`), and a
- * ValueMap edit widget's picklist — package 6 of the Portolan alignment plan.
- * Element names verified against `src/data/sample/graffiti/graffiti.qgs`
+ * ValueMap edit widget's picklist. Element names verified against a QGIS
+ * project's metadata
  * (resourceMetadata, attribution) and, for the license and ValueMap shapes no
  * fixture in this repo populates, against QGIS's own source
  * (`qgis/QGIS@master`, read 2026-08-12 — cited beside the parser functions in
@@ -191,7 +191,7 @@ describe('QGIS metadata flowing into the generated catalogue', () => {
 })
 
 // The elements QGIS's Metadata dialog writes on every project, empty fields
-// and all — verified against `src/data/sample/graffiti/graffiti.qgs`.
+// and all, as a saved QGIS project holds them.
 const EMPTY_RESOURCE_METADATA_XML = `
       <resourceMetadata>
         <identifier></identifier>

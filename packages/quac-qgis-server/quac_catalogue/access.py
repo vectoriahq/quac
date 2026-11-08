@@ -1,6 +1,6 @@
 """
 A person's catalogue, from the catalogue a project serves and QGIS's access
-answers for that person (`docs/plans/quac-separation.md`, package 6, step 4).
+answers for that person.
 No QGIS module, so its tests run anywhere; `qgis_inputs.access_answers` asks
 QGIS for the answers.
 
@@ -21,8 +21,7 @@ applies them to a finished catalogue:
 A served layer with no answer is left out, so a layer QGIS was not asked about
 is never shown. QGIS answers nothing finer: which fields a person may see but
 not change, whether they may change attributes but not move shapes, and which
-features they may edit stay with the access plugin, which refuses such a save
-(`docs/plans/qgis-server-access-control.md`).
+features they may edit stay with the access plugin, which refuses such a save.
 """
 
 from __future__ import annotations

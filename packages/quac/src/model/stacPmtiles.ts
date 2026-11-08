@@ -8,7 +8,7 @@ import type { StacCollection } from './Stac'
  * the whole dataset without downloading it.
  *
  * Portolan registers it in two places, and both are read here
- * (`docs/agents/portolan-compliance.md`): a collection-level `rel: "pmtiles"`
+ * (the Portolan convention): a collection-level `rel: "pmtiles"`
  * link per the web-map-links extension v1.3.0, which is the normative
  * registration, and an asset with the `visual` role. The two coexist and
  * address the same file.

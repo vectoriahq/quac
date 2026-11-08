@@ -12,8 +12,7 @@ import type { StacCatalog, StacCollection, StacLink, TableColumn } from '../mode
 /**
  * The catalogue a QGIS Server would serve for a project: the QUAC plugin's
  * route, as a pure function of the project's text and the server's address, so
- * that the plugin's Python port has one function to agree with
- * (`docs/plans/quac-separation.md`, package 3). Nothing in Groundwork calls it.
+ * that the plugin's Python port has one function to agree with.
  *
  * It starts from the catalogue a project file gives (`generateStacCatalogue`)
  * and applies the project's own QGIS Server settings, as GetProjectSettings
@@ -114,8 +113,8 @@ export function generateServerStacCatalogue(project: QgsProject, options: Server
  * written, its scheme lower-cased, less its fragment and any query parameter a
  * WMS request sets, such as `SERVICE` or `REQUEST`. Other parameters, such as
  * `MAP`, are kept as written. The rule is spelled out rather than left to the
- * `URL` class, so that the plugin's Python gives the same address
- * (`docs/plans/quac-separation.md`, package 6). Null for an address that is not
+ * `URL` class, so that the plugin's Python gives the same address.
+ * Null for an address that is not
  * `http` or `https`, has no host, holds a user name or password, or holds a
  * space or a control character. A query holding `@` or the word `password`,
  * in any case and escaped or not, is refused too: it may hold a project's

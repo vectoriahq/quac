@@ -13,9 +13,8 @@ import type { QgsRelation, QgsRelationFieldPair } from '../model/QgsProject'
  *     </relation>
  *
  * where the *referenced* layer is the parent and the *referencing* layer the
- * child, and several `<fieldRef>` children make one composite key. That shape is
- * recorded in `docs/plans/archive/related-datasets.md` § "What was verified, and when",
- * read out of QGIS's own `qgsrelation.cpp` on 2026-08-27.
+ * child, and several `<fieldRef>` children make one composite key. That shape
+ * was read out of QGIS's own `qgsrelation.cpp` on 2026-08-27.
  *
  * A relation missing its id, either layer id, or every field pair is skipped —
  * there is no complete join for it to describe.

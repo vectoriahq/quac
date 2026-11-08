@@ -1,6 +1,6 @@
 # QUAC for QGIS Server
 
-The QUAC catalogue plugin for QGIS Server, and the Python it is built on (`docs/plans/quac-separation.md`, package 6).
+The QUAC catalogue plugin for QGIS Server, and the Python it is built on.
 
 ## The plugin
 
@@ -11,7 +11,7 @@ The QUAC catalogue plugin for QGIS Server, and the Python it is built on (`docs/
 - On any error it answers "The catalogue could not be built for this project. The server's log has the details." and writes the cause to QGIS Server's log, under the tag `QUAC`. A server address holding a password, in the address or in its `MAP`, is refused this way, with a hint to give the project an advertised WMS address or name its database through a pg_service file. So a project stored in PostgreSQL is served when `MAP` names it by service (`postgresql:///?service=…&schema=…&project=…`), not when `MAP` carries its user name and password.
 - A project saved by a newer major version of QGIS than the server runs is served, with a warning in the log naming both versions: QGIS Server 3.44 does not read the server settings a QGIS 4 project saves, so the catalogue, which follows the project as saved, can list layers and services differently from what the server publishes.
 
-- With an access-control plugin installed, such as Castlegate (`docs/plans/qgis-server-access-control.md`), each person gets the catalogue QGIS's combined access answers allow them (`access.py`):
+- With an access-control plugin installed, each person gets the catalogue QGIS's combined access answers allow them (`access.py`):
   - A layer they may not read is left out, and so is a group left with no layer they may read.
   - A field they may not see is left out.
   - Each edit they may not make is locked in `quac:locks`.
@@ -53,7 +53,7 @@ The first runs the tests; CI runs them in the `Test` job of `ci.yml`, which `mai
 
 ## Inside QGIS Server
 
-A cloud session cannot run QGIS Server, so `.github/workflows/quac-qgis-server.yml` does, in the official `qgis/qgis-server` image, on each push of a branch that changes this folder, the fixtures, the examples or the JavaScript it mirrors. `tests/server/quac_spike_harness/` is a QGIS Server plugin used only by that job: it answers `SERVICE=QUACSPIKE&REQUEST=GetLayerTree` with the tree of the project QGIS Server has open, read from its stored text. `tests/server/check_qgis_server.py` lays out the projects and the plugins, asks the server, and compares the harness's answers with the JavaScript's and with QGIS Server's own GetProjectSettings, WFS GetCapabilities and DescribeFeatureType. `tests/server/check_catalogue.py` then checks the catalogue plugin on the same server:
+`.github/workflows/qgis-server.yml` runs QGIS Server, in the official `qgis/qgis-server` image, on `main` and on each pull request that changes this folder, the fixtures, the examples or the JavaScript it mirrors. `tests/server/quac_spike_harness/` is a QGIS Server plugin used only by that job: it answers `SERVICE=QUACSPIKE&REQUEST=GetLayerTree` with the tree of the project QGIS Server has open, read from its stored text. `tests/server/check_qgis_server.py` lays out the projects and the plugins, asks the server, and compares the harness's answers with the JavaScript's and with QGIS Server's own GetProjectSettings, WFS GetCapabilities and DescribeFeatureType. `tests/server/check_catalogue.py` then checks the catalogue plugin on the same server:
 
 - each served catalogue equals the one `quac_server` builds from the same text with the field types GetProjectSettings reports;
 - each passes the leak checks in `tests/leaks.py`, which `tests/test_leaks.py` also runs on every fixture without a server;
@@ -71,7 +71,7 @@ Reading the job's report:
 
 ## How fast it answers
 
-Measured on 2026-11-07 in [run 42419303174](https://github.com/vectoriahq/groundwork/actions/runs/42419303174), on `main` at commit `6f17482ec`, in milliseconds:
+Measured on 2026-11-07 by the QGIS Server workflow, before QUAC moved to this repository, in milliseconds:
 
 | Layers | QGIS Server | Built for the request | Built with an access key, median of 3 | From the plugin's cache, median of 5 | GetProjectSettings, already answered once, median of 5 |
 |---|---|---|---|---|---|
@@ -88,10 +88,10 @@ What the figures are:
 - Each figure is the time for one `GetCatalogue` request, timed by the job's own client on the same machine as the server, so it holds no network distance.
 - QGIS Server already had each project open from the job's earlier checks. "Built for the request" is the plugin's first request for that project, which builds the catalogue and keeps it. "Built with an access key" is a request that an access-control plugin gives a key, which builds the catalogue every time.
 - The last column is QGIS Server's own GetProjectSettings for the same project, after its first answer, from the reading-route report in the same run.
-- The machines are GitHub's shared ones, and the same job varies between runs: in [run 42353522114](https://github.com/vectoriahq/groundwork/actions/runs/42353522114), earlier the same day, a catalogue built for 1000 layers took 467.1 on 4.2.3 and 927.4 on 3.44.15. Read the figures as a size, not as the speed of a client's server.
+- The machines are GitHub's shared ones, and the same job varies between runs: in a run earlier the same day, a catalogue built for 1000 layers took 467.1 on 4.2.3 and 927.4 on 3.44.15. Read the figures as a size, not as the speed of a client's server.
 
-To measure again, run the "QUAC QGIS Server" workflow on `main` from the repository's Actions tab, or with the command below. Each server's job summary ends with "Cost of a catalogue request, by project size", and the reading-route report above it has the GetProjectSettings figures. Replace the table, its date and its run link together.
+To measure again, run the "QGIS Server" workflow on `main` from the repository's Actions tab, or with the command below. Each server's job summary ends with "Cost of a catalogue request, by project size", and the reading-route report above it has the GetProjectSettings figures. Replace the table and its date together, and link the run.
 
 ```bash
-gh workflow run quac-qgis-server.yml --ref main
+gh workflow run qgis-server.yml --ref main
 ```

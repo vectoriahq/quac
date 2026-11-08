@@ -1,8 +1,8 @@
 /**
  * The icon libraries Groundwork reads from jsDelivr, each pinned to the major
  * version of its package, so a release adds icons but never renames one. A
- * field's icon is named from them (`docs/plans/archive/field-icons.md`), and a
- * map symbol from one of them is painted in its style's colour (#2255). This
+ * field's icon is named from them, and a
+ * map symbol from one of them is painted in its style's colour. This
  * table is the one place a library or a version changes.
  */
 

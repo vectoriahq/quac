@@ -15,8 +15,8 @@ import { imageryCollection, itemsPageOne } from '../tests/fixtures/stacApi'
 import type { StacCollection, StacItem } from '../model/Stac'
 
 /**
- * The fixtures these run against are hand-authored to the structure issue #859
- * describes, not captured from a live service — see
+ * The fixtures these run against are hand-authored to the structure a STAC API
+ * serves, not captured from a live service — see
  * `packages/quac/src/tests/fixtures/stacApi/index.ts` for what that does and does not
  * establish.
  */

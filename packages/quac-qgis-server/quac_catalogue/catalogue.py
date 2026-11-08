@@ -95,8 +95,7 @@ def version_warning(project_version: Optional[str], server_version: str) -> Opti
     """
     The warning to log where the project was saved by a newer major version of
     QGIS than the server runs, or None. QGIS Server 3.44 does not read the
-    server settings a QGIS 4 project saves (`docs/plans/quac-separation.md`,
-    package 4), while the catalogue follows the project as saved.
+    server settings a QGIS 4 project saves, while the catalogue follows the project as saved.
     """
     project_major = major_version(project_version)
     server_major = major_version(server_version)

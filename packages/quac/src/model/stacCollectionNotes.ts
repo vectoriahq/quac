@@ -6,7 +6,6 @@ import type { StacCollection } from './Stac'
  * What a published catalogue says about a Collection for the person choosing
  * it: a ready-written credit (Attribution extension), whether it is outdated
  * (Version extension), and a preview image (the `thumbnail` asset role).
- * `docs/plans/archive/catalogue-credit-status-preview.md` holds the decisions.
  */
 
 export const THUMBNAIL_ROLE = 'thumbnail'
