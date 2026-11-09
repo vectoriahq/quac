@@ -21,4 +21,10 @@ QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary
 - **The JavaScript package**, `@vectoriahq/quac`, which writes QUAC catalogues from QGIS projects and other sources and reads them back: [`packages/quac/`](packages/quac/).
 - **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/).
 
+## Where QUAC came from
+
+QUAC began inside Groundwork, Vectoria's web app for capturing and editing spatial data. Groundwork reads each source a map connects to, from a QGIS project to an ArcGIS Web Map or a STAC catalogue, as a STAC catalogue, and QUAC holds what STAC has no field for. Groundwork is QUAC's first reader, which is why the spec marks a field experimental where Groundwork alone gives it meaning.
+
+## Status
+
 QUAC is pre-1.0 and not yet released. Its licence is not yet chosen.
