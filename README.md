@@ -97,7 +97,7 @@ QUAC is pre-1.0 and not yet released.
 
 ## Licence
 
-Copyright 2026 Vectoria.
+Copyright 2026 Vectoria Pty Ltd.
 
 - **The spec, the schema, the examples and the JavaScript package** are under the [Apache License 2.0](LICENSE), the licence of the STAC specification and its extension template.
 - **The QGIS Server plugin**, `packages/quac-qgis-server/`, is under the [GNU General Public License, version 2 or any later version](packages/quac-qgis-server/LICENSE), as the QGIS plugin repository asks of a plugin.
