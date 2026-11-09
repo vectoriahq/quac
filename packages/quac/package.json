@@ -2,6 +2,7 @@
   "name": "@vectoriahq/quac",
   "version": "0.0.0",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "description": "QUAC: the STAC profile Groundwork uses for a project's layers, fields, forms and styles, and the code that writes and reads it.",
   "exports": {
