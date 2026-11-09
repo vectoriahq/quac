@@ -1,0 +1,42 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Active layer" version="3.44.8-Solothurn">
+  <title>Active layer</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="benches_1" name="Benches" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <properties>
+    <qfieldsync>
+      <initialActiveLayer type="QString">benches_1</initialActiveLayer>
+    </qfieldsync>
+  </properties>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point" readOnly="0">
+      <id>trees_1</id>
+      <datasource>./trees.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+    </maplayer>
+    <maplayer type="vector" geometry="Point" wkbType="Point" readOnly="0">
+      <id>benches_1</id>
+      <datasource>./benches.geojson</datasource>
+      <layername>Benches</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+    </maplayer>
+  </projectlayers>
+</qgis>

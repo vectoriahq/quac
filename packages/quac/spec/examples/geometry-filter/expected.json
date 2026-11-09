@@ -1,0 +1,27 @@
+{
+  "type": "Catalog",
+  "id": "shapes-of-a-file",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Sites (points)",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "quac:geometry_filter": [
+            "Point"
+          ]
+        }
+      }
+    }
+  ]
+}

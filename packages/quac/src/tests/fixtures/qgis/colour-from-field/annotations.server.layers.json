@@ -1,0 +1,45 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "group",
+      "name": "Annotations",
+      "wmsPublished": true,
+      "children": [
+        {
+          "kind": "layer",
+          "id": "annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01",
+          "name": "annotations",
+          "wmsName": "annotations",
+          "wfsTypeName": null,
+          "hiddenFields": {
+            "wms": [],
+            "wfs": []
+          }
+        },
+        {
+          "kind": "layer",
+          "id": "annotations_line_1c7d3a2f_9e5b_4f8c_8d42_6a3b8e9f2c02",
+          "name": "annotations",
+          "wmsName": "annotations",
+          "wfsTypeName": null,
+          "hiddenFields": {
+            "wms": [],
+            "wfs": []
+          }
+        },
+        {
+          "kind": "layer",
+          "id": "annotations_polygon_2d8e4b3a_af6c_4a9d_9e53_7b4c9fa03d03",
+          "name": "annotations",
+          "wmsName": "annotations",
+          "wfsTypeName": null,
+          "hiddenFields": {
+            "wms": [],
+            "wfs": []
+          }
+        }
+      ]
+    }
+  ]
+}

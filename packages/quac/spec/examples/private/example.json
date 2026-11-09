@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:private"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

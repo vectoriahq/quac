@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:active_collection"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

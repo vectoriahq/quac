@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:max_zoom"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

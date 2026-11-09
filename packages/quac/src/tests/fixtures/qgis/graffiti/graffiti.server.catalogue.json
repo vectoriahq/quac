@@ -1,0 +1,379 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "qgs-project",
+  "description": "STAC catalogue generated from a QGIS project.",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Graffiti%20Reports.json",
+      "type": "application/json",
+      "title": "Graffiti Reports"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Schools.json",
+      "type": "application/json",
+      "title": "Schools"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          96.82881025,
+          -35.069076,
+          128.736183,
+          -10.4351873
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Graffiti Reports",
+      "title": "Graffiti Reports",
+      "description": "Layer \"Graffiti Reports\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        },
+        {
+          "name": "Government of Western Australia",
+          "roles": [
+            "licensor"
+          ],
+          "url": "https://example.test"
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              115.75,
+              -32.2,
+              115.95,
+              -31.75
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=Graffiti_Reports&OUTPUTFORMAT=application%2Fjson",
+          "type": "application/geo+json",
+          "title": "WFS GetFeature: Graffiti Reports",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Graffiti Reports"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:display_field": "location_description",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "delete": true
+      },
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Graffiti Reports",
+      "quac:qgis_server_wfs_type_name": "Graffiti_Reports",
+      "table:columns": [
+        {
+          "name": "incident_uid",
+          "title": "Incident UID"
+        },
+        {
+          "name": "gir_number",
+          "title": "GIT Number"
+        },
+        {
+          "name": "damage_category",
+          "title": "Damage Category"
+        },
+        {
+          "name": "priority_status",
+          "title": "Priority Status"
+        },
+        {
+          "name": "offensive_flag",
+          "title": "Offensive Flag",
+          "quac:checkbox": {}
+        },
+        {
+          "name": "asset_owner",
+          "title": "Asset Owner"
+        },
+        {
+          "name": "location_description",
+          "title": "Location Description"
+        },
+        {
+          "name": "tagger_moniker",
+          "title": "Tagger Moniker"
+        },
+        {
+          "name": "implement_type",
+          "title": "Implement Type"
+        },
+        {
+          "name": "surface_type",
+          "title": "Surface Type"
+        },
+        {
+          "name": "removal_method",
+          "title": "Removal Method"
+        },
+        {
+          "name": "liability_waiver_status",
+          "title": "Liability Waiver Status"
+        },
+        {
+          "name": "cost_estimate",
+          "title": "Cost Estimate"
+        },
+        {
+          "name": "date_report",
+          "title": "Date Report"
+        },
+        {
+          "name": "date_resolve",
+          "title": "Date Resolve"
+        },
+        {
+          "name": "evidence_photo_url",
+          "title": "Evidence Photo URL"
+        },
+        {
+          "name": "referral_agency",
+          "title": "Referral Agency"
+        }
+      ],
+      "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+      "quac:wfs_type_name": "Graffiti_Reports"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Schools",
+      "title": "Schools",
+      "description": "Layer \"Schools\" from the QGIS project.",
+      "license": "other",
+      "providers": [
+        {
+          "name": "Vectoria",
+          "roles": [
+            "producer"
+          ]
+        }
+      ],
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              96.82881025,
+              -35.069076,
+              128.736183,
+              -10.4351873
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs&SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=Schools&OUTPUTFORMAT=application%2Fjson",
+          "type": "application/geo+json",
+          "title": "WFS GetFeature: Schools",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Schools"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:display_field": "schoolname",
+      "quac:visibility_checked": false,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "add": true,
+        "attributes": true,
+        "geometry": true,
+        "delete": true
+      },
+      "quac:measurement": {
+        "area_unit": "m2",
+        "distance_unit": "meters"
+      },
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Schools",
+      "quac:qgis_server_wfs_type_name": "Schools",
+      "table:columns": [
+        {
+          "name": "objectid"
+        },
+        {
+          "name": "code"
+        },
+        {
+          "name": "schoolname"
+        },
+        {
+          "name": "physicalst"
+        },
+        {
+          "name": "physicalto"
+        },
+        {
+          "name": "physicalpo"
+        },
+        {
+          "name": "latitude"
+        },
+        {
+          "name": "longitude"
+        },
+        {
+          "name": "educationr"
+        },
+        {
+          "name": "sector"
+        },
+        {
+          "name": "remcode"
+        },
+        {
+          "name": "remotearea"
+        },
+        {
+          "name": "lowyear"
+        },
+        {
+          "name": "highyear"
+        },
+        {
+          "name": "totalprima"
+        },
+        {
+          "name": "totalsecon"
+        },
+        {
+          "name": "totalschoo"
+        },
+        {
+          "name": "postaladdr",
+          "title": "postal_address"
+        },
+        {
+          "name": "town"
+        },
+        {
+          "name": "postcode"
+        }
+      ],
+      "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+      "quac:wfs_type_name": "Schools"
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

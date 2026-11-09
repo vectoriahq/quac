@@ -1,0 +1,398 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "server-publishing",
+  "title": "Server publishing",
+  "description": "STAC catalogue generated from QGIS project \"Server publishing\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01.json",
+      "type": "application/json",
+      "title": "Parcels"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02.json",
+      "type": "application/json",
+      "title": "Survey notes"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03.json",
+      "type": "application/json",
+      "title": "Zones"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04.json",
+      "type": "application/json",
+      "title": "Assets"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01",
+      "title": "Parcels",
+      "description": "Layer \"Parcels\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./parcels.geojson",
+          "type": "application/geo+json",
+          "title": "parcels.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./publishing.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "parcel_id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:related_to": [
+        {
+          "id": "parcels_zone",
+          "name": "Zone",
+          "parent_collection_id": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
+          "fields": [
+            {
+              "parent": "code",
+              "child": "zone_code"
+            }
+          ]
+        }
+      ],
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Polygon"
+      ],
+      "quac:qgis_server_wms_name": "Parcels",
+      "quac:qgis_server_wfs_type_name": "Parcels",
+      "table:columns": [
+        {
+          "name": "parcel_id"
+        },
+        {
+          "name": "zone_code",
+          "quac:value_relation": {
+            "collection": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
+            "key": "code",
+            "value": "label"
+          }
+        },
+        {
+          "name": "owner_phone"
+        },
+        {
+          "name": "valuation"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02",
+      "title": "Survey notes",
+      "description": "Layer \"Survey notes\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./survey-notes.geojson",
+          "type": "application/geo+json",
+          "title": "survey-notes.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./publishing.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "note",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Survey notes",
+      "table:columns": [
+        {
+          "name": "note_id"
+        },
+        {
+          "name": "note"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
+      "title": "Zones",
+      "description": "Layer \"Zones\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./zones.geojson",
+          "type": "application/geo+json",
+          "title": "zones.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./publishing.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "label",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:qgis_server_wfs_type_name": "Zones",
+      "table:columns": [
+        {
+          "name": "code"
+        },
+        {
+          "name": "label"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04",
+      "title": "Assets",
+      "description": "Layer \"Assets\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "",
+          "title": "Unsupported source: postgres",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./publishing.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "asset_id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Assets",
+      "quac:qgis_server_wfs_type_name": "Assets",
+      "table:columns": [
+        {
+          "name": "asset_id"
+        },
+        {
+          "name": "condition"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

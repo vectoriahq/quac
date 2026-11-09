@@ -1,0 +1,9 @@
+{
+  "fields": [
+    "quac:arcgis_layer_url",
+    "quac:arcgis_where",
+    "quac:arcgis_not_shown"
+  ],
+  "source": "arcgis",
+  "input": "layers.json"
+}

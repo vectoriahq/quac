@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:visibility_checked"
+  ],
+  "source": "hand-written",
+  "input": "catalogue.json"
+}

@@ -1,0 +1,261 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "street-trees",
+  "title": "Street trees",
+  "description": "STAC catalogue generated from QGIS project \"Street trees\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90.json",
+      "type": "application/json",
+      "title": "Street trees"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47.json",
+      "type": "application/json",
+      "title": "Inspections"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          151.198,
+          -33.886,
+          151.214,
+          -33.874
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90",
+      "title": "Street trees",
+      "description": "Layer \"Street trees\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              151.198,
+              -33.886,
+              151.214,
+              -33.874
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./street-trees.geojson",
+          "type": "application/geo+json",
+          "title": "street-trees.geojson",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./street-trees.qgs#street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./street-trees.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "species",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Street trees",
+      "table:columns": [
+        {
+          "name": "tree_id",
+          "title": "Tree ID"
+        },
+        {
+          "name": "species",
+          "title": "Species"
+        },
+        {
+          "name": "planted",
+          "title": "Planted"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47",
+      "title": "Inspections",
+      "description": "Layer \"Inspections\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./tree-inspections.geojson",
+          "type": "application/geo+json",
+          "title": "tree-inspections.geojson",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./street-trees.qgs#tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ],
+          "quac:categorised_field": "condition"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./street-trees.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "inspected",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:related_to": [
+        {
+          "id": "tree_inspections_rel",
+          "name": "Inspections",
+          "parent_collection_id": "street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90",
+          "fields": [
+            {
+              "parent": "tree_id",
+              "child": "tree_id"
+            }
+          ]
+        }
+      ],
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Inspections",
+      "table:columns": [
+        {
+          "name": "inspection_id",
+          "title": "Inspection ID"
+        },
+        {
+          "name": "tree_id",
+          "title": "Tree ID"
+        },
+        {
+          "name": "inspected",
+          "title": "Inspected"
+        },
+        {
+          "name": "condition",
+          "title": "Condition"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

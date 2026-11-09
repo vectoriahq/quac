@@ -1,0 +1,31 @@
+{
+  "type": "Catalog",
+  "id": "attachment-widget",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "table:columns": [
+        {
+          "name": "photo",
+          "quac:attachment": {
+            "viewer": "image",
+            "filter": "Images (*.jpg *.png)",
+            "default_root": "photos",
+            "relative_storage": "project"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "type": "Catalog",
+  "id": "delimited-text",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Species",
+      "assets": {
+        "data": {
+          "quac:delimited_text": {
+            "delimiter": ";",
+            "quote": "\"",
+            "escape": "\"",
+            "skip_lines": 1,
+            "header": true,
+            "trim": false
+          }
+        }
+      }
+    }
+  ]
+}

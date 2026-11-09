@@ -1,0 +1,27 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "roads_main_f8c9d0e5_6a7b_4c8d_9e4f_7a8b9c0d1e07",
+      "name": "Roads",
+      "wmsName": "Roads",
+      "wfsTypeName": "Roads",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "roads_local_a9d0e1f6_7b8c_4d9e_8f5a_8b9c0d1e2f08",
+      "name": "Roads",
+      "wmsName": "Roads",
+      "wfsTypeName": "Roads",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

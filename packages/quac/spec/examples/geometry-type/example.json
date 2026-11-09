@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:geometry_type"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

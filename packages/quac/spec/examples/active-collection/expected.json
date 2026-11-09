@@ -1,0 +1,35 @@
+{
+  "type": "Catalog",
+  "id": "active-layer",
+  "quac:active_collection": "benches_1",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    },
+    {
+      "type": "Collection",
+      "id": "benches_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Benches",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "fields": [
+    "quac:light_style",
+    "quac:dark_style",
+    "quac:style_overrides"
+  ],
+  "source": "hand-written",
+  "input": "catalogue.json"
+}

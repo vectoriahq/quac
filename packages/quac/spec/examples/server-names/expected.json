@@ -1,0 +1,27 @@
+{
+  "type": "Catalog",
+  "id": "server-names",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "add": true,
+        "attributes": true,
+        "geometry": true,
+        "delete": true
+      },
+      "quac:qgis_server_wms_name": "Street trees: 2024",
+      "quac:qgis_server_wfs_type_name": "Street_trees-_2024",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

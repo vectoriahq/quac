@@ -1,0 +1,8 @@
+{
+  "catalog": ["type", "stac_version", "id", "title", "description", "links", "extent", "stac_extensions", "collections", "catalogs", "quac:mutually_exclusive"],
+  "collection": ["type", "stac_version", "id", "title", "description", "license", "extent", "summaries", "assets", "links", "stac_extensions", "vector:geometry_types", "table:columns", "quac:wfs_endpoint", "quac:wfs_type_name", "quac:qgis_server_wms_name", "quac:qgis_server_wfs_type_name", "quac:display_field", "quac:visibility_checked", "quac:editable", "quac:identifiable", "quac:min_scale", "quac:max_scale", "quac:opacity", "quac:locks"],
+  "summaries": ["quac:geometry_type"],
+  "link": ["rel", "href", "type", "title", "wms:layers", "wms:styles", "wms:transparent", "quac:wms_crs"],
+  "asset": ["href", "type", "title", "roles"],
+  "column": ["name", "title", "type", "data_type"]
+}

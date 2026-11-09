@@ -1,0 +1,10 @@
+{
+  "fields": [
+    "quac:wfs_endpoint",
+    "quac:wfs_version",
+    "quac:wfs_output_formats"
+  ],
+  "source": "wfs",
+  "input": "capabilities.json",
+  "endpoint": "https://data.example.com/wfs"
+}

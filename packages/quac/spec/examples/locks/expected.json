@@ -1,0 +1,23 @@
+{
+  "type": "Catalog",
+  "id": "editing-lock",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:locks": {
+        "delete": true
+      },
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

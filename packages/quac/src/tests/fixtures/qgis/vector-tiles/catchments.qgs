@@ -1,0 +1,499 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="" saveDateTime="2026-11-05T15:44:55" saveUser="groundwork" saveUserFull="Groundwork" version="4.2.0-Belém do Pará">
+  <title />
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+      <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+      <srsid>3857</srsid>
+      <srid>3857</srid>
+      <authid>EPSG:3857</authid>
+      <description>WGS 84 / Pseudo-Mercator</description>
+      <projectionacronym>merc</projectionacronym>
+      <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <customproperties>
+      <Option />
+    </customproperties>
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33" legend_exp="" legend_split_behavior="0" name="Schools Year 7 2027" patch_size="-1,-1" providerKey="ogr" source="/vsicurl/https://schools.example.test/schools/schools-2027.json|layername=schools-2027|subset=&quot;year7_2027&quot; = 'x'">
+      <customproperties>
+        <Option />
+      </customproperties>
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Unchecked" expanded="1" id="schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505" legend_exp="" legend_split_behavior="0" name="Schools Primary 2027" patch_size="-1,-1" providerKey="ogr" source="/vsicurl/https://schools.example.test/schools/schools-2027.json|layername=schools-2027|subset=&quot;primary_2027&quot; = 'x'">
+      <customproperties>
+        <Option />
+      </customproperties>
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882" legend_exp="" legend_split_behavior="0" name="Catchments Year 7 2007" patch_size="-1,-1" providerKey="xyzvectortiles" source="type=xyz&amp;url=https%3A%2F%2Fschools.example.test%2Ftiles%2Fcatchments-year7-2027%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.pbf&amp;zmax=14&amp;zmin=0&amp;http-header:referer=">
+      <customproperties>
+        <Option />
+      </customproperties>
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Unchecked" expanded="1" id="Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e" legend_exp="" legend_split_behavior="0" name="Catchments Primary 2027" patch_size="-1,-1" providerKey="xyzvectortiles" source="type=xyz&amp;url=https%3A%2F%2Fschools.example.test%2Ftiles%2Fcatchments-primary-2027%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.pbf&amp;zmax=14&amp;zmin=0&amp;http-header:referer=">
+      <customproperties>
+        <Option />
+      </customproperties>
+    </layer-tree-layer>
+    <custom-order enabled="0">
+      <item>Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e</item>
+      <item>Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882</item>
+      <item>schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505</item>
+      <item>Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33</item>
+    </custom-order>
+  </layer-tree-group>
+  <mapcanvas annotationsVisible="1" name="theMapCanvas">
+    <units>meters</units>
+    <extent>
+      <xmin>16049324.63599550537765026</xmin>
+      <ymin>-4646250.56178425159305334</ymin>
+      <xmax>16213694.82161998562514782</xmax>
+      <ymax>-4481880.37615980114787817</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+        <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+        <srsid>3857</srsid>
+        <srid>3857</srid>
+        <authid>EPSG:3857</authid>
+        <description>WGS 84 / Pseudo-Mercator</description>
+        <projectionacronym>merc</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope />
+  </mapcanvas>
+  <projectlayers>
+    <maplayer autoRefreshMode="Disabled" autoRefreshTime="0" hasScaleBasedVisibilityFlag="0" layerType="VectorTile" legendPlaceholderImage="" maxScale="0" minScale="1e+08" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" type="vector-tile">
+      <extent>
+        <xmin>-20037508.34278919920325279</xmin>
+        <ymin>-20037508.34278919920325279</ymin>
+        <xmax>20037508.34278919920325279</xmax>
+        <ymax>20037508.34278919920325279</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>-179.9999999999996021</xmin>
+        <ymin>-85.05112877980656094</ymin>
+        <xmax>179.9999999999996021</xmax>
+        <ymax>85.05112877980656094</ymax>
+      </wgs84extent>
+      <id>Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e</id>
+      <datasource>type=xyz&amp;url=https%3A%2F%2Fschools.example.test%2Ftiles%2Fcatchments-primary-2027%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.pbf&amp;zmax=14&amp;zmin=0&amp;http-header:referer=</datasource>
+      <layername>Catchments Primary 2027</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+          <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+          <srsid>3857</srsid>
+          <srid>3857</srid>
+          <authid>EPSG:3857</authid>
+          <description>WGS 84 / Pseudo-Mercator</description>
+          <projectionacronym>merc</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <provider>xyzvectortiles</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default" />
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer type="basic">
+        <styles>
+          <style enabled="1" expression="geometry_type(@geometry)='Polygon'" geometry="2" layer="" max-zoom="-1" min-zoom="-1" name="Polygons">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="fill">
+                <layer class="SimpleFill" enabled="1" id="{a00000de-c264-4a0d-8a3e-0cb34bc8154b}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="border_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="color" type="QString" value="231,113,72,100,rgb:0.9058824,0.4431373,0.282353,0.3921569" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="offset" type="QString" value="0,0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="outline_color" type="QString" value="51,160,44,255,rgb:0.2,0.627451,0.172549,1" />
+                    <Option name="outline_style" type="QString" value="solid" />
+                    <Option name="outline_width" type="QString" value="0.5" />
+                    <Option name="outline_width_unit" type="QString" value="MM" />
+                    <Option name="style" type="QString" value="no" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+          <style enabled="0" expression="geometry_type(@geometry)='Line'" geometry="1" layer="" max-zoom="-1" min-zoom="-1" name="Lines">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="line">
+                <layer class="SimpleLine" enabled="1" id="{5ab33c12-70da-46fd-ae42-2f4ea27c165f}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="align_dash_pattern" type="QString" value="0" />
+                    <Option name="capstyle" type="QString" value="square" />
+                    <Option name="customdash" type="QString" value="5;2" />
+                    <Option name="customdash_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="customdash_unit" type="QString" value="MM" />
+                    <Option name="dash_pattern_offset" type="QString" value="0" />
+                    <Option name="dash_pattern_offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="dash_pattern_offset_unit" type="QString" value="MM" />
+                    <Option name="draw_inside_polygon" type="QString" value="0" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="line_color" type="QString" value="152,125,183,255,rgb:0.5960785,0.4901961,0.7176471,1" />
+                    <Option name="line_style" type="QString" value="solid" />
+                    <Option name="line_width" type="QString" value="0.26" />
+                    <Option name="line_width_unit" type="QString" value="MM" />
+                    <Option name="offset" type="QString" value="0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="ring_filter" type="QString" value="0" />
+                    <Option name="trim_distance_end" type="QString" value="0" />
+                    <Option name="trim_distance_end_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="trim_distance_end_unit" type="QString" value="MM" />
+                    <Option name="trim_distance_start" type="QString" value="0" />
+                    <Option name="trim_distance_start_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="trim_distance_start_unit" type="QString" value="MM" />
+                    <Option name="tweak_dash_pattern_on_corners" type="QString" value="0" />
+                    <Option name="use_custom_dash" type="QString" value="0" />
+                    <Option name="width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+          <style enabled="0" expression="geometry_type(@geometry)='Point'" geometry="0" layer="" max-zoom="-1" min-zoom="-1" name="Points">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="marker">
+                <layer class="SimpleMarker" enabled="1" id="{130752fa-a8e2-4d0f-b7ea-be14ff1676df}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="angle" type="QString" value="0" />
+                    <Option name="cap_style" type="QString" value="square" />
+                    <Option name="color" type="QString" value="190,207,80,100,rgb:0.7450981,0.8117647,0.3137255,0.3921569" />
+                    <Option name="horizontal_anchor_point" type="QString" value="1" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="name" type="QString" value="circle" />
+                    <Option name="offset" type="QString" value="0,0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="outline_color" type="QString" value="190,207,80,255,rgb:0.7450981,0.8117647,0.3137255,1" />
+                    <Option name="outline_style" type="QString" value="solid" />
+                    <Option name="outline_width" type="QString" value="0" />
+                    <Option name="outline_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="outline_width_unit" type="QString" value="MM" />
+                    <Option name="scale_method" type="QString" value="diameter" />
+                    <Option name="size" type="QString" value="2" />
+                    <Option name="size_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="size_unit" type="QString" value="MM" />
+                    <Option name="vertical_anchor_point" type="QString" value="1" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+        </styles>
+      </renderer>
+    </maplayer>
+    <maplayer autoRefreshMode="Disabled" autoRefreshTime="0" hasScaleBasedVisibilityFlag="0" layerType="VectorTile" legendPlaceholderImage="" maxScale="0" minScale="1e+08" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" styleCategories="AllStyleCategories" type="vector-tile">
+      <extent>
+        <xmin>-20037508.34278919920325279</xmin>
+        <ymin>-20037508.34278919920325279</ymin>
+        <xmax>20037508.34278919920325279</xmax>
+        <ymax>20037508.34278919920325279</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>-179.9999999999996021</xmin>
+        <ymin>-85.05112877980656094</ymin>
+        <xmax>179.9999999999996021</xmax>
+        <ymax>85.05112877980656094</ymax>
+      </wgs84extent>
+      <id>Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882</id>
+      <datasource>type=xyz&amp;url=https%3A%2F%2Fschools.example.test%2Ftiles%2Fcatchments-year7-2027%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.pbf&amp;zmax=14&amp;zmin=0&amp;http-header:referer=</datasource>
+      <layername>Catchments Year 7 2007</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Web mapping and visualisation."],AREA["World between 85.06°S and 85.06°N."],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+          <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+          <srsid>3857</srsid>
+          <srid>3857</srid>
+          <authid>EPSG:3857</authid>
+          <description>WGS 84 / Pseudo-Mercator</description>
+          <projectionacronym>merc</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <provider>xyzvectortiles</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default" />
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer type="basic">
+        <styles>
+          <style enabled="1" expression="geometry_type(@geometry)='Polygon'" geometry="2" layer="" max-zoom="-1" min-zoom="-1" name="Polygons">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="fill">
+                <layer class="SimpleFill" enabled="1" id="{c313462e-4e1d-4dc1-ada1-4dc797f1f18b}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="border_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="color" type="QString" value="225,89,137,100,rgb:0.8823529,0.3490196,0.5372549,0.3921569" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="offset" type="QString" value="0,0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="outline_color" type="QString" value="255,127,0,255,rgb:1,0.4980392,0,1" />
+                    <Option name="outline_style" type="QString" value="solid" />
+                    <Option name="outline_width" type="QString" value="0.5" />
+                    <Option name="outline_width_unit" type="QString" value="MM" />
+                    <Option name="style" type="QString" value="no" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+          <style enabled="0" expression="geometry_type(@geometry)='Line'" geometry="1" layer="" max-zoom="-1" min-zoom="-1" name="Lines">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="line">
+                <layer class="SimpleLine" enabled="1" id="{8c2b5563-30e2-4a14-8919-82e71be23cad}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="align_dash_pattern" type="QString" value="0" />
+                    <Option name="capstyle" type="QString" value="square" />
+                    <Option name="customdash" type="QString" value="5;2" />
+                    <Option name="customdash_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="customdash_unit" type="QString" value="MM" />
+                    <Option name="dash_pattern_offset" type="QString" value="0" />
+                    <Option name="dash_pattern_offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="dash_pattern_offset_unit" type="QString" value="MM" />
+                    <Option name="draw_inside_polygon" type="QString" value="0" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="line_color" type="QString" value="229,182,54,255,rgb:0.8980392,0.7137255,0.2117647,1" />
+                    <Option name="line_style" type="QString" value="solid" />
+                    <Option name="line_width" type="QString" value="0.26" />
+                    <Option name="line_width_unit" type="QString" value="MM" />
+                    <Option name="offset" type="QString" value="0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="ring_filter" type="QString" value="0" />
+                    <Option name="trim_distance_end" type="QString" value="0" />
+                    <Option name="trim_distance_end_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="trim_distance_end_unit" type="QString" value="MM" />
+                    <Option name="trim_distance_start" type="QString" value="0" />
+                    <Option name="trim_distance_start_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="trim_distance_start_unit" type="QString" value="MM" />
+                    <Option name="tweak_dash_pattern_on_corners" type="QString" value="0" />
+                    <Option name="use_custom_dash" type="QString" value="0" />
+                    <Option name="width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+          <style enabled="0" expression="geometry_type(@geometry)='Point'" geometry="0" layer="" max-zoom="-1" min-zoom="-1" name="Points">
+            <symbols>
+              <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="marker">
+                <layer class="SimpleMarker" enabled="1" id="{6b68c642-33b1-423f-a936-284d185a2ca6}" locked="0" pass="0">
+                  <Option type="Map">
+                    <Option name="angle" type="QString" value="0" />
+                    <Option name="cap_style" type="QString" value="square" />
+                    <Option name="color" type="QString" value="196,60,57,100,rgb:0.7686275,0.2352941,0.2235294,0.3921569" />
+                    <Option name="horizontal_anchor_point" type="QString" value="1" />
+                    <Option name="joinstyle" type="QString" value="bevel" />
+                    <Option name="name" type="QString" value="circle" />
+                    <Option name="offset" type="QString" value="0,0" />
+                    <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="offset_unit" type="QString" value="MM" />
+                    <Option name="outline_color" type="QString" value="196,60,57,255,rgb:0.7686275,0.2352941,0.2235294,1" />
+                    <Option name="outline_style" type="QString" value="solid" />
+                    <Option name="outline_width" type="QString" value="0" />
+                    <Option name="outline_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="outline_width_unit" type="QString" value="MM" />
+                    <Option name="scale_method" type="QString" value="diameter" />
+                    <Option name="size" type="QString" value="2" />
+                    <Option name="size_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                    <Option name="size_unit" type="QString" value="MM" />
+                    <Option name="vertical_anchor_point" type="QString" value="1" />
+                  </Option>
+                </layer>
+              </symbol>
+            </symbols>
+          </style>
+        </styles>
+      </renderer>
+    </maplayer>
+    <maplayer autoRefreshMode="Disabled" autoRefreshTime="0" geometry="Point" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" layerType="Vector" legendPlaceholderImage="" maxScale="0" minScale="100000000" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" simplifyAlgorithm="0" simplifyDrawingHints="0" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" type="vector" wkbType="Point">
+      <extent>
+        <xmin>141.17733652887292806</xmin>
+        <ymin>-38.75352399840399897</ymin>
+        <xmax>149.75429599852645879</xmax>
+        <ymax>-34.16936536777922129</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>141.17733652887292806</xmin>
+        <ymin>-38.75352399840399897</ymin>
+        <xmax>149.75429599852645879</xmax>
+        <ymax>-34.16936536777922129</ymax>
+      </wgs84extent>
+      <id>Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33</id>
+      <datasource>/vsicurl/https://schools.example.test/schools/schools-2027.json|layername=schools-2027|subset="year7_2027" = 'x'</datasource>
+      <layername>Schools Year 7 2027</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+          <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+          <srsid>3452</srsid>
+          <srid>4326</srid>
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+          <projectionacronym>longlat</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>true</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default" />
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer-v2 enableorderby="0" forceraster="0" referencescale="-1" symbollevels="0" type="singleSymbol">
+        <symbols>
+          <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="marker">
+            <layer class="SimpleMarker" enabled="1" id="{89304489-bec9-4210-ac87-631b47f5eb42}" locked="0" pass="0">
+              <Option type="Map">
+                <Option name="angle" type="QString" value="0" />
+                <Option name="cap_style" type="QString" value="square" />
+                <Option name="color" type="QString" value="255,127,0,255,rgb:1,0.4980392,0,1" />
+                <Option name="horizontal_anchor_point" type="QString" value="1" />
+                <Option name="joinstyle" type="QString" value="bevel" />
+                <Option name="name" type="QString" value="circle" />
+                <Option name="offset" type="QString" value="0,0" />
+                <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="offset_unit" type="QString" value="MM" />
+                <Option name="outline_color" type="QString" value="255,255,255,255,rgb:1,1,1,1" />
+                <Option name="outline_style" type="QString" value="solid" />
+                <Option name="outline_width" type="QString" value="0.5" />
+                <Option name="outline_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="outline_width_unit" type="QString" value="MM" />
+                <Option name="scale_method" type="QString" value="diameter" />
+                <Option name="size" type="QString" value="4" />
+                <Option name="size_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="size_unit" type="QString" value="MM" />
+                <Option name="vertical_anchor_point" type="QString" value="1" />
+              </Option>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation />
+        <sizescale />
+        <data-defined-properties>
+          <Option type="Map">
+            <Option name="name" type="QString" value="" />
+            <Option name="properties" />
+            <Option name="type" type="QString" value="collection" />
+          </Option>
+        </data-defined-properties>
+      </renderer-v2>
+    </maplayer>
+    <maplayer autoRefreshMode="Disabled" autoRefreshTime="0" geometry="Point" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" layerType="Vector" legendPlaceholderImage="" maxScale="0" minScale="100000000" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" simplifyAlgorithm="0" simplifyDrawingHints="0" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" styleCategories="AllStyleCategories" symbologyReferenceScale="-1" type="vector" wkbType="Point">
+      <extent>
+        <xmin>141.08248728746505662</xmin>
+        <ymin>-38.75352399840399897</ymin>
+        <xmax>149.75429599852645879</xmax>
+        <ymax>-34.16936536777922129</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>141.08248728746505662</xmin>
+        <ymin>-38.75352399840399897</ymin>
+        <xmax>149.75429599852645879</xmax>
+        <ymax>-34.16936536777922129</ymax>
+      </wgs84extent>
+      <id>schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505</id>
+      <datasource>/vsicurl/https://schools.example.test/schools/schools-2027.json|layername=schools-2027|subset="primary_2027" = 'x'</datasource>
+      <layername>Schools Primary 2027</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+          <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+          <srsid>3452</srsid>
+          <srid>4326</srid>
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+          <projectionacronym>longlat</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>true</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default" />
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer-v2 enableorderby="0" forceraster="0" referencescale="-1" symbollevels="0" type="singleSymbol">
+        <symbols>
+          <symbol alpha="1" clip_to_extent="1" force_rhr="0" frame_rate="10" is_animated="0" name="0" type="marker">
+            <layer class="SimpleMarker" enabled="1" id="{89304489-bec9-4210-ac87-631b47f5eb42}" locked="0" pass="0">
+              <Option type="Map">
+                <Option name="angle" type="QString" value="0" />
+                <Option name="cap_style" type="QString" value="square" />
+                <Option name="color" type="QString" value="51,160,44,255,rgb:0.2,0.627451,0.172549,1" />
+                <Option name="horizontal_anchor_point" type="QString" value="1" />
+                <Option name="joinstyle" type="QString" value="bevel" />
+                <Option name="name" type="QString" value="circle" />
+                <Option name="offset" type="QString" value="0,0" />
+                <Option name="offset_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="offset_unit" type="QString" value="MM" />
+                <Option name="outline_color" type="QString" value="255,255,255,255,rgb:1,1,1,1" />
+                <Option name="outline_style" type="QString" value="solid" />
+                <Option name="outline_width" type="QString" value="0.5" />
+                <Option name="outline_width_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="outline_width_unit" type="QString" value="MM" />
+                <Option name="scale_method" type="QString" value="diameter" />
+                <Option name="size" type="QString" value="4" />
+                <Option name="size_map_unit_scale" type="QString" value="3x:0,0,0,0,0,0" />
+                <Option name="size_unit" type="QString" value="MM" />
+                <Option name="vertical_anchor_point" type="QString" value="1" />
+              </Option>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation />
+        <sizescale />
+        <data-defined-properties>
+          <Option type="Map">
+            <Option name="name" type="QString" value="" />
+            <Option name="properties" />
+            <Option name="type" type="QString" value="collection" />
+          </Option>
+        </data-defined-properties>
+      </renderer-v2>
+    </maplayer>
+  </projectlayers>
+  <layerorder>
+    <layer id="Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e" />
+    <layer id="Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882" />
+    <layer id="schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505" />
+    <layer id="Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33" />
+  </layerorder>
+</qgis>

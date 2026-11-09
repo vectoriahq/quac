@@ -1,0 +1,11 @@
+[general]
+name=QUAC test access control
+description=Test access-control plugin for the QUAC catalogue plugin's CI job: gives QGIS Server a cache key while a request carries TESTUSER, as an access plugin for signed-in people does.
+about=Used only by the QGIS Server workflow's checks. While a request carries TESTUSER, it refuses what rules.py lists for that test person.
+version=0.0.0
+qgisMinimumVersion=3.40
+qgisMaximumVersion=4.99
+supportsQt6=True
+author=Vectoria
+email=hello@groundwork.do
+server=True

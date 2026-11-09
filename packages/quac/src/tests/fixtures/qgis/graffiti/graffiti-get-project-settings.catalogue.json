@@ -1,0 +1,235 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "wa-municipal-graffiti-vandalism-register",
+  "title": "WA Municipal Graffiti Vandalism Register",
+  "description": "STAC catalogue generated from QGIS Server WMS GetProjectSettings for \"WA Municipal Graffiti Vandalism Register\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/wa-municipal-graffiti-vandalism-register/catalog.json",
+      "type": "application/json",
+      "title": "WA Municipal Graffiti Vandalism Register"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          115.75,
+          -32.200001,
+          115.95,
+          -31.75
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "wa-municipal-graffiti-vandalism-register",
+      "title": "WA Municipal Graffiti Vandalism Register",
+      "description": "Layer group \"WA Municipal Graffiti Vandalism Register\" from the QGIS Server project.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/wa-municipal-graffiti-vandalism-register/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../../catalog.json"
+        },
+        {
+          "rel": "child",
+          "href": "./collections/Graffiti Reports.json",
+          "type": "application/json",
+          "title": "Graffiti Reports"
+        }
+      ],
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "Graffiti Reports",
+          "title": "Graffiti Reports",
+          "description": "Layer \"Graffiti Reports\" from the QGIS Server project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  115.75,
+                  -32.200001,
+                  115.95,
+                  -31.75
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "summaries": {
+            "quac:geometry_type": [
+              "Point"
+            ]
+          },
+          "assets": {
+            "data": {
+              "href": "",
+              "type": "application/geo+json",
+              "title": "WFS GetFeature: Graffiti Reports",
+              "roles": [
+                "data"
+              ]
+            }
+          },
+          "links": [
+            {
+              "rel": "self",
+              "href": "./collections/Graffiti Reports.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../catalog.json"
+            }
+          ],
+          "quac:display_field": "location_description",
+          "quac:visibility_checked": true,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "quac:wfs_endpoint": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "stac_extensions": [
+            "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+            "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+            "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+          ],
+          "vector:geometry_types": [
+            "Point"
+          ],
+          "quac:qgis_server_wms_name": "Graffiti Reports",
+          "table:columns": [
+            {
+              "name": "incident_uid",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "gir_number",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "damage_category",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "priority_status",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "offensive_flag",
+              "type": "boolean",
+              "data_type": "other"
+            },
+            {
+              "name": "asset_owner",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "location_description",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "tagger_moniker",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "implement_type",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "surface_type",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "removal_method",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "liability_waiver_status",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "cost_estimate",
+              "type": "double",
+              "data_type": "float64"
+            },
+            {
+              "name": "date_report",
+              "type": "timestamp",
+              "data_type": "other"
+            },
+            {
+              "name": "date_resolve",
+              "type": "timestamp",
+              "data_type": "other"
+            },
+            {
+              "name": "evidence_photo_url",
+              "type": "string",
+              "data_type": "other"
+            },
+            {
+              "name": "referral_agency",
+              "type": "string",
+              "data_type": "other"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+  ]
+}

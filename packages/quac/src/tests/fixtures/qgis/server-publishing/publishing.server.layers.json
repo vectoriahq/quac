@@ -1,0 +1,53 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01",
+      "name": "Parcels",
+      "wmsName": "Parcels",
+      "wfsTypeName": "Parcels",
+      "hiddenFields": {
+        "wms": [
+          "valuation"
+        ],
+        "wfs": [
+          "owner_phone"
+        ]
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02",
+      "name": "Survey notes",
+      "wmsName": "Survey notes",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
+      "name": "Zones",
+      "wmsName": null,
+      "wfsTypeName": "Zones",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04",
+      "name": "Assets",
+      "wmsName": "Assets",
+      "wfsTypeName": "Assets",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:icon"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

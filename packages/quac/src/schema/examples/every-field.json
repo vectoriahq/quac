@@ -1,0 +1,219 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "street-trees",
+  "description": "A made-up catalogue carrying every quac: field once, for quac.schema.json's tests.",
+  "links": [],
+  "quac:active_collection": "trees",
+  "quac:initial_view": [144.9, -37.9, 145.0, -37.8],
+  "quac:wfs_endpoint": "https://example.com/wfs",
+  "quac:wfs_version": "2.0.0",
+  "quac:wfs_output_formats": ["application/gml+xml; version=3.2", "application/json"],
+  "quac:arcgis_item_id": "0123456789abcdef0123456789abcdef",
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "trees",
+      "description": "Street trees",
+      "license": "other",
+      "extent": { "spatial": { "bbox": [[144.9, -37.9, 145.0, -37.8]] }, "temporal": { "interval": [[null, null]] } },
+      "links": [],
+      "summaries": { "quac:geometry_type": ["Point"] },
+      "quac:display_field": "species",
+      "quac:qgis_server_wms_name": "trees",
+      "quac:qgis_server_wfs_type_name": "trees",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:min_scale": 50000,
+      "quac:max_scale": 500,
+      "quac:opacity": 0.8,
+      "assets": { "data": { "href": "./trees.geojson", "roles": ["data"], "quac:geometry_filter": ["Point"], "quac:feature_filter": { "expression": "\"status\" = 'approved'", "dialect": "ogr_sql" } } },
+      "quac:measurement": { "area_unit": "ha", "distance_unit": "meters" },
+      "quac:filters": [{ "field": "status", "name": "Condition" }, { "field": "species" }],
+      "quac:locks": { "add": { "expression": "\"status\" = 'surveyed'" }, "delete": true },
+      "quac:form_order": ["tree_id", "species", "status", "label", "heritage", "photo", "removal_reason"],
+      "table:columns": [
+        {
+          "name": "tree_id",
+          "quac:editable": false,
+          "quac:default": { "kind": "uuid", "format": "with_braces", "on_update": false }
+        },
+        {
+          "name": "species",
+          "quac:control": "buttons",
+          "quac:value_relation": {
+            "collection": "species",
+            "key": "code",
+            "value": "common_name",
+            "filter": "\"in_use\" = 1",
+            "allow_null": true,
+            "order_by": "field",
+            "order_field": "sort_order",
+            "descending": true
+          }
+        },
+        {
+          "name": "height",
+          "type": "double",
+          "quac:range": { "min": 0, "max": 80, "step": 0.5, "precision": 1, "suffix": " m" },
+          "quac:constraints": {
+            "not_null": "warn",
+            "expression": { "expression": "\"height\" < 80", "description": "Taller than any tree in the city", "strength": "warn" }
+          }
+        },
+        {
+          "name": "surveyed",
+          "quac:default": { "kind": "now", "on_update": true },
+          "quac:constraints": { "not_null": "enforced" }
+        },
+        {
+          "name": "survey_date",
+          "quac:date_format": "dd/MM/yyyy",
+          "quac:reuse_last_value": true
+        },
+        {
+          "name": "status",
+          "quac:default": { "kind": "fixed", "value": "Healthy", "on_update": false },
+          "quac:duplicate_policy": "default"
+        },
+        {
+          "name": "label",
+          "quac:default": { "kind": "expression", "expression": "\"species\" || ' ' || \"tree_id\"", "on_update": true },
+          "quac:duplicate_policy": "unset"
+        },
+        {
+          "name": "marker_colour",
+          "type": "string",
+          "quac:color": true
+        },
+        {
+          "name": "heritage",
+          "quac:icon": "https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/building-monument.svg",
+          "quac:checkbox": { "checked": "Y", "unchecked": "N", "show_stored": true, "allow_null": true }
+        },
+        {
+          "name": "asset_ref",
+          "quac:hidden": true,
+          "quac:constraints": { "unique": "enforced" },
+          "quac:in_form": false
+        },
+        {
+          "name": "removal_reason",
+          "quac:visible_when": ["\"status\" <> 'Healthy'", "\"heritage\" IS NULL"],
+          "quac:editable_when": "\"last_inspected\" IS NULL"
+        },
+        {
+          "name": "photo",
+          "quac:attachment": { "viewer": "image", "filter": "Images (*.jpg *.png)", "default_root": "photos", "relative_storage": "project" }
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "inspections",
+      "description": "Inspections of each tree",
+      "license": "other",
+      "extent": { "spatial": { "bbox": [[-180, -90, 180, 90]] }, "temporal": { "interval": [[null, null]] } },
+      "links": [],
+      "quac:arcgis_not_shown": "not-a-feature-layer",
+      "quac:related_to": [
+        {
+          "id": "tree_inspections",
+          "name": "Inspections",
+          "parent_collection_id": "trees",
+          "fields": [{ "parent": "tree_id", "child": "tree_id" }]
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "species",
+      "description": "The species list the species field chooses from",
+      "license": "other",
+      "extent": { "spatial": { "bbox": [[-180, -90, 180, 90]] }, "temporal": { "interval": [[null, null]] } },
+      "links": [],
+      "quac:arcgis_layer_url": "https://services.arcgis.com/example/arcgis/rest/services/Species/FeatureServer/0",
+      "quac:arcgis_where": "status = 'native'",
+      "assets": {
+        "data": {
+          "href": "./species.csv",
+          "type": "text/csv",
+          "roles": ["data"],
+          "quac:delimited_text": { "delimiter": ";", "quote": "\"", "escape": "\"", "skip_lines": 0, "header": true, "trim": false }
+        }
+      },
+      "quac:private": true,
+      "quac:legend_image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR4nGNgAAIAAAUAAXpeqz8AAAAASUVORK5CYII="
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "parks",
+      "description": "Parks, one table of a GeoPackage",
+      "license": "other",
+      "extent": { "spatial": { "bbox": [[144.9, -37.9, 145.0, -37.8]] }, "temporal": { "interval": [[null, null]] } },
+      "links": [],
+      "quac:wfs_endpoint": "https://example.com/wfs",
+      "quac:wfs_type_name": "ns:parks",
+      "quac:wfs_srs_name": "EPSG:7855",
+      "quac:wfs_default_srs": "urn:ogc:def:crs:EPSG::7855",
+      "quac:wfs_supported_srs": ["urn:ogc:def:crs:EPSG::7855", "urn:ogc:def:crs:EPSG::4326"],
+      "quac:wfs_operations": { "Query": true, "Insert": true, "Update": true, "Delete": false },
+      "assets": {
+        "data": { "href": "./open-space.gpkg", "type": "application/geopackage+sqlite3", "roles": ["data"], "quac:layer_name": "parks" },
+        "by-type": { "href": "./parks-by-type.qml", "type": "application/x-qgis-qml+xml", "title": "By type", "roles": ["style"], "quac:categorised_field": "park_type" }
+      }
+    }
+  ],
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "basemaps",
+      "description": "Basemaps",
+      "links": [],
+      "quac:mutually_exclusive": true,
+      "quac:visibility_checked": true,
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "streets",
+          "description": "Street map",
+          "license": "other",
+          "extent": { "spatial": { "bbox": [[-180, -90, 180, 90]] }, "temporal": { "interval": [[null, null]] } },
+          "links": [],
+          "quac:light_style": "Bright",
+          "quac:dark_style": "Dark",
+          "assets": {
+            "Bright": {
+              "href": "https://tiles.example.com/styles/bright",
+              "type": "application/vnd.mapbox.style+json",
+              "roles": ["style", "default"],
+              "quac:style_overrides": ["./overrides/bright.streets-cleanup.json", { "layers": [{ "id": "ferry", "paint": { "line-opacity": 0.25 } }] }]
+            },
+            "Dark": { "href": "https://tiles.example.com/styles/dark", "type": "application/vnd.mapbox.style+json", "roles": ["style"] }
+          }
+        },
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "imagery",
+          "description": "Aerial imagery",
+          "license": "other",
+          "extent": { "spatial": { "bbox": [[-180, -90, 180, 90]] }, "temporal": { "interval": [[null, null]] } },
+          "links": [
+            { "rel": "wmts", "href": "https://example.com/wmts", "type": "image/png", "wmts:layer": "aerial", "quac:wmts_tile_matrix_set": "GoogleMapsCompatible", "quac:wmts_style": "default" },
+            { "rel": "wms", "href": "https://example.com/wms", "type": "image/png", "wms:layers": ["aerial"], "quac:wms_crs": "EPSG:3857", "quac:wms_version": "1.3.0" }
+          ],
+          "quac:cross_origin": true,
+          "quac:max_zoom": 19
+        }
+      ]
+    }
+  ]
+}

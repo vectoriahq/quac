@@ -1,0 +1,26 @@
+{
+  "kind": "layers",
+  "title": "Street trees",
+  "itemId": "0123456789abcdef0123456789abcdef",
+  "itemType": "Feature Service",
+  "initialView": null,
+  "summary": null,
+  "layers": [
+    {
+      "id": "0123456789abcdef0123456789abcdef_0",
+      "title": "Trees",
+      "visible": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "layerUrl": null,
+      "itemId": null,
+      "status": "shown",
+      "source": {
+        "layerUrl": "https://services.arcgis.com/example/arcgis/rest/services/Trees/FeatureServer/0",
+        "where": null
+      },
+      "styleHref": null
+    }
+  ]
+}

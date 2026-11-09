@@ -1,0 +1,38 @@
+{
+  "kind": "layers",
+  "title": "Biodiversity",
+  "itemId": "a4b8dfbcaddf4e5a901034b4eca7c792",
+  "itemType": "Web Map",
+  "initialView": null,
+  "summary": null,
+  "layers": [
+    {
+      "id": "vegetation",
+      "title": "Vegetation zones",
+      "visible": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "layerUrl": null,
+      "itemId": null,
+      "status": "shown",
+      "source": {
+        "layerUrl": "https://services.arcgis.com/example/arcgis/rest/services/Vegetation/FeatureServer/0",
+        "where": "zone = 'Hills'"
+      },
+      "styleHref": null
+    },
+    {
+      "id": "imagery",
+      "title": "Imagery",
+      "visible": true,
+      "opacity": 1,
+      "minScale": null,
+      "maxScale": null,
+      "layerUrl": null,
+      "itemId": null,
+      "status": "not-shown",
+      "reason": "not-a-feature-layer"
+    }
+  ]
+}

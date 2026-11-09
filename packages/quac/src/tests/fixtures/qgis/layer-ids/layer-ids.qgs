@@ -1,0 +1,77 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Layer ids as names" version="3.44.8-Solothurn">
+  <homePath path=""/>
+  <title>Layer ids as names</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" source="./roads.geojson" expanded="1" name="Roads" providerKey="ogr" id="roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05"/>
+    <layer-tree-layer checked="Qt::Checked" source="./bridges.geojson" expanded="1" name="Bridges" providerKey="ogr" id="bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06"/>
+  </layer-tree-group>
+  <relations>
+  </relations>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="LineString" geometry="Line" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05</id>
+      <datasource>./roads.geojson</datasource>
+      <layername>Roads</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="road_id"/>
+        <field configurationFlags="NoFlag" name="name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="road_id" index="0" name=""/>
+        <alias field="name" index="1" name=""/>
+      </aliases>
+      <previewExpression>"name"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06</id>
+      <datasource>./bridges.geojson</datasource>
+      <layername>Bridges</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="bridge_id"/>
+        <field configurationFlags="NoFlag" name="name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="bridge_id" index="0" name=""/>
+        <alias field="name" index="1" name=""/>
+      </aliases>
+      <previewExpression>"name"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <WMSUseLayerIDs type="bool">true</WMSUseLayerIDs>
+    <WFSLayers type="QStringList"><value>roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05</value><value>bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06</value></WFSLayers>
+  </properties>
+</qgis>

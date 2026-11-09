@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:reuse_last_value"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

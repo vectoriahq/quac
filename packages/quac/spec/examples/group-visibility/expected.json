@@ -1,0 +1,17 @@
+{
+  "type": "Catalog",
+  "id": "basemaps",
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "id": "aerial",
+      "quac:visibility_checked": true,
+      "collections": [
+        {
+          "type": "Collection",
+          "id": "imagery"
+        }
+      ]
+    }
+  ]
+}

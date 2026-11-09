@@ -1,0 +1,25 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Delimited text" version="3.44.8-Solothurn">
+  <title>Delimited text</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="layer_1" name="Species" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" wkbType="NoGeometry">
+      <id>layer_1</id>
+      <datasource>file:./species.csv?type=csv&amp;delimiter=;&amp;skipLines=1&amp;geomType=none</datasource>
+      <layername>Species</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">delimitedtext</provider>
+    </maplayer>
+  </projectlayers>
+</qgis>

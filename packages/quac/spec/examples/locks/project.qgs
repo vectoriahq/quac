@@ -1,0 +1,31 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Editing lock" version="3.44.8-Solothurn">
+  <title>Editing lock</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="planted"/>
+      </fieldConfiguration>
+      <customproperties><Option type="Map"><Option type="bool" name="QFieldSync/is_feature_deletion_locked" value="true"/><Option type="bool" name="QFieldSync/is_feature_deletion_locked_expression_active" value="false"/></Option></customproperties>
+    </maplayer>
+  </projectlayers>
+</qgis>

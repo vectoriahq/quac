@@ -1,0 +1,25 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="WMS layer" version="3.44.8-Solothurn">
+  <title>WMS layer</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="layer_1" name="Parcels" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="raster">
+      <id>layer_1</id>
+      <datasource>crs=EPSG:3857&amp;dpiMode=7&amp;format=image/png&amp;layers=parcels&amp;styles&amp;url=https://maps.example.com/wms&amp;version=1.3.0</datasource>
+      <layername>Parcels</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">wms</provider>
+    </maplayer>
+  </projectlayers>
+</qgis>

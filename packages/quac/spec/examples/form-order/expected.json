@@ -1,0 +1,30 @@
+{
+  "type": "Catalog",
+  "id": "form-order",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:form_order": [
+        "species",
+        "tree_id"
+      ],
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "table:columns": [
+        {
+          "name": "planted",
+          "quac:in_form": false
+        }
+      ]
+    }
+  ]
+}

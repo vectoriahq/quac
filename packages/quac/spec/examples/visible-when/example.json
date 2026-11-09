@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:visible_when"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

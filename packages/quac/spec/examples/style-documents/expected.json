@@ -1,0 +1,29 @@
+{
+  "type": "Catalog",
+  "id": "basemaps",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "streets",
+      "quac:light_style": "Bright",
+      "quac:dark_style": "Dark",
+      "assets": {
+        "Bright": {
+          "quac:style_overrides": [
+            "https://example.com/overrides/bright-quiet.json",
+            {
+              "layers": [
+                {
+                  "id": "ferry",
+                  "layout": {
+                    "visibility": "none"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

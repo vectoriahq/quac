@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:wmts_tile_matrix_set",
+    "quac:wmts_style"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

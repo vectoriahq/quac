@@ -1,0 +1,21 @@
+{
+  "type": "Catalog",
+  "id": "layer-icon",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:icon": "https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/tree.svg",
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

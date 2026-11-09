@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:initial_view"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs",
+  "canvasAsInitialView": true
+}

@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:arcgis_item_id"
+  ],
+  "source": "arcgis",
+  "input": "layers.json"
+}

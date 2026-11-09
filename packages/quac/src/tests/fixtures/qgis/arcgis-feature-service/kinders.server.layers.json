@@ -1,0 +1,16 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "Kinders_f8c36c1c_277c_4f29_8b9c_de8dd8da2e9b",
+      "name": "Kinders",
+      "wmsName": "Kinders",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

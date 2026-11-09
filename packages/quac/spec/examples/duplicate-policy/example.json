@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:duplicate_policy"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

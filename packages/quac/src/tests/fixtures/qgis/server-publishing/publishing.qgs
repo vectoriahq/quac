@@ -1,0 +1,141 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Server publishing" version="3.44.8-Solothurn">
+  <homePath path=""/>
+  <title>Server publishing</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" source="./parcels.geojson" expanded="1" name="Parcels" providerKey="ogr" id="parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01"/>
+    <layer-tree-layer checked="Qt::Checked" source="./survey-notes.geojson" expanded="1" name="Survey notes" providerKey="ogr" id="survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02"/>
+    <layer-tree-layer checked="Qt::Checked" source="./zones.geojson" expanded="1" name="Zones" providerKey="ogr" id="zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03"/>
+    <layer-tree-layer checked="Qt::Checked" source="dbname='gis' host=db.example.com port=5432 user='editor' password='Pa55-in-the-project' sslmode=disable key='id' srid=4326 type=Point checkPrimaryKeyUnicity='1' table=&quot;public&quot;.&quot;assets&quot; (geom)" expanded="1" name="Assets" providerKey="postgres" id="assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04"/>
+  </layer-tree-group>
+  <relations>
+    <relation id="parcels_zone" name="Zone" referencedLayer="zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03" referencingLayer="parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01" strength="Association">
+      <fieldRef referencedField="code" referencingField="zone_code"/>
+    </relation>
+  </relations>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Polygon" geometry="Polygon" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01</id>
+      <datasource>./parcels.geojson</datasource>
+      <layername>Parcels</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="parcel_id"/>
+        <field configurationFlags="NoFlag" name="zone_code"><editWidget type="ValueRelation"><config><Option type="Map"><Option type="QString" value="zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03" name="Layer"/><Option type="QString" value="Zones" name="LayerName"/><Option type="QString" value="code" name="Key"/><Option type="QString" value="label" name="Value"/><Option type="bool" value="false" name="AllowNull"/><Option type="bool" value="false" name="AllowMulti"/><Option type="bool" value="false" name="OrderByValue"/><Option type="QString" value="" name="FilterExpression"/></Option></config></editWidget></field>
+        <field configurationFlags="HideFromWfs" name="owner_phone"/>
+        <field configurationFlags="HideFromWms" name="valuation"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="parcel_id" index="0" name=""/>
+        <alias field="zone_code" index="1" name=""/>
+        <alias field="owner_phone" index="2" name=""/>
+        <alias field="valuation" index="3" name=""/>
+      </aliases>
+      <previewExpression>"parcel_id"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>survey_notes_7a2d4c10_9e3f_4b1a_8c5d_2b3c4d5e6f02</id>
+      <datasource>./survey-notes.geojson</datasource>
+      <layername>Survey notes</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="note_id"/>
+        <field configurationFlags="NoFlag" name="note"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="note_id" index="0" name=""/>
+        <alias field="note" index="1" name=""/>
+      </aliases>
+      <previewExpression>"note"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="NoGeometry" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03</id>
+      <datasource>./zones.geojson</datasource>
+      <layername>Zones</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="code"/>
+        <field configurationFlags="NoFlag" name="label"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="code" index="0" name=""/>
+        <alias field="label" index="1" name=""/>
+      </aliases>
+      <previewExpression>"label"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04</id>
+      <datasource>dbname='gis' host=db.example.com port=5432 user='editor' password='Pa55-in-the-project' sslmode=disable key='id' srid=4326 type=Point checkPrimaryKeyUnicity='1' table=&quot;public&quot;.&quot;assets&quot; (geom)</datasource>
+      <layername>Assets</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">postgres</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="asset_id"/>
+        <field configurationFlags="NoFlag" name="condition"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="asset_id" index="0" name=""/>
+        <alias field="condition" index="1" name=""/>
+      </aliases>
+      <previewExpression>"asset_id"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <WMSRestrictedLayers type="QStringList"><value>Zones</value></WMSRestrictedLayers>
+    <WFSLayers type="QStringList"><value>parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01</value><value>zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03</value><value>assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04</value></WFSLayers>
+    <WFSTLayers><Insert type="QStringList"><value>parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01</value><value>zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03</value><value>assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04</value></Insert><Update type="QStringList"><value>parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01</value><value>zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03</value><value>assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04</value></Update><Delete type="QStringList"><value>parcels_3f1c9a20_5d4b_4e8a_9b6c_1a2b3c4d5e01</value><value>zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03</value><value>assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04</value></Delete></WFSTLayers>
+  </properties>
+</qgis>

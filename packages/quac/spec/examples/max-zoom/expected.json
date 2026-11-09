@@ -1,0 +1,16 @@
+{
+  "type": "Catalog",
+  "id": "tile-layer",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "layer_1",
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:max_zoom": 19,
+      "quac:qgis_server_wms_name": "OpenStreetMap"
+    }
+  ]
+}

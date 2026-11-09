@@ -1,0 +1,26 @@
+{
+  "type": "Catalog",
+  "id": "initial-view",
+  "quac:initial_view": [
+    144.95,
+    -37.82,
+    144.98,
+    -37.8
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    }
+  ]
+}

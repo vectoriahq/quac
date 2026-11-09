@@ -1,0 +1,29 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Hidden widget" version="3.44.8-Solothurn">
+  <title>Hidden widget</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_1" name="Trees" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point">
+      <id>trees_1</id>
+      <datasource>./trees_1.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"><editWidget type="Hidden"><config><Option/></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="species"/>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>

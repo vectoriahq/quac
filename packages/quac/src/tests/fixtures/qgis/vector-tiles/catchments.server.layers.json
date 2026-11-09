@@ -1,0 +1,49 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33",
+      "name": "Schools Year 7 2027",
+      "wmsName": "Schools Year 7 2027",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505",
+      "name": "Schools Primary 2027",
+      "wmsName": "Schools Primary 2027",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "Catchments_Year_7_2007_cf9a7b0e_594e_45a1_9ee8_441b91eb5882",
+      "name": "Catchments Year 7 2007",
+      "wmsName": "Catchments Year 7 2007",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "Catchments_Primary_2027_aa0a6214_0f51_46b1_90c4_2efc01bb4c6e",
+      "name": "Catchments Primary 2027",
+      "wmsName": "Catchments Primary 2027",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

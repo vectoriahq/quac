@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "serviceTitle": "City Open Data",
+  "operations": {
+    "GetCapabilities": true,
+    "DescribeFeatureType": true,
+    "GetFeature": true,
+    "Transaction": false
+  },
+  "getFeatureOutputFormats": [
+    "application/json",
+    "text/xml; subtype=gml/3.2"
+  ],
+  "featureTypes": [
+    {
+      "name": "city:benches",
+      "title": "Benches",
+      "abstract": null,
+      "keywords": [],
+      "defaultSrs": "EPSG:4326",
+      "otherSrs": [],
+      "supportedSrs": [
+        "EPSG:4326"
+      ],
+      "wgs84BoundingBox": {
+        "minX": 144.95,
+        "minY": -37.82,
+        "maxX": 144.98,
+        "maxY": -37.8
+      },
+      "operations": {
+        "Query": true,
+        "Insert": false,
+        "Update": false,
+        "Delete": false
+      },
+      "metadataUrls": []
+    }
+  ]
+}

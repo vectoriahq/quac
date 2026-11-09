@@ -1,0 +1,42 @@
+{
+  "type": "Catalog",
+  "id": "relations",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      }
+    },
+    {
+      "type": "Collection",
+      "id": "inspections_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:related_to": [
+        {
+          "id": "tree_inspections",
+          "name": "Inspections",
+          "parent_collection_id": "trees_1",
+          "fields": [
+            {
+              "parent": "tree_id",
+              "child": "tree_id"
+            }
+          ]
+        }
+      ],
+      "quac:qgis_server_wms_name": "Inspections"
+    }
+  ]
+}

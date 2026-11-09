@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:date_format"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

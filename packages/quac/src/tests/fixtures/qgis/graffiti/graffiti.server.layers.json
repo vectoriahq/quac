@@ -1,0 +1,27 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "WA_Municipal_Graffiti_Vandalism_Register_89291f01_c9ba_4931_b24f_93694710eea9",
+      "name": "Graffiti Reports",
+      "wmsName": "Graffiti Reports",
+      "wfsTypeName": "Graffiti_Reports",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "esri_Schools_a9cd903d_8448_44d2_86f7_31d0a416be2e",
+      "name": "Schools",
+      "wmsName": "Schools",
+      "wfsTypeName": "Schools",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

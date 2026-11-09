@@ -1,0 +1,8 @@
+{
+  "fields": [
+    "quac:form_order",
+    "quac:in_form"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

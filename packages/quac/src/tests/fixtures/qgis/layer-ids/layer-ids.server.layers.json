@@ -1,0 +1,27 @@
+{
+  "useLayerIds": true,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05",
+      "name": "Roads",
+      "wmsName": "roads_d6a7b8c3_4e5f_4a6b_9c2d_5e6f7a8b9c05",
+      "wfsTypeName": "Roads",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06",
+      "name": "Bridges",
+      "wmsName": "bridges_e7b8c9d4_5f6a_4b7c_8d3e_6f7a8b9c0d06",
+      "wfsTypeName": "Bridges",
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

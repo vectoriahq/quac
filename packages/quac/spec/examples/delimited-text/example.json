@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:delimited_text"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}
