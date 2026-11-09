@@ -10,16 +10,82 @@ That stack says what data exists, where it is and how to read it. It does not sa
 
 QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary STAC Collection with `quac:` fields added, so:
 
-- **A cloud-native catalogue can carry a map.** QUAC finds a layer's data the way Portolan addresses it, by the asset's `data` role, and reads PMTiles where Portolan registers them. Add QUAC fields to such a catalogue and an application reading it knows how to show each layer and what its form should hold.
+- **A cloud-native catalogue can carry a map.** Add QUAC fields to a Portolan catalogue and an application reading it knows how to show each layer and what its form should hold. [QUAC and Portolan](#quac-and-portolan) says how the two fit.
 - **A layer is described the same way wherever its data lives.** The fields for forms, rules, relations and styles are the same for a GeoParquet file, a QGIS Server or WFS layer, or an ArcGIS Feature Service. Only a field naming where the data is, such as `quac:wfs_endpoint`, belongs to one kind of source.
 - **QUAC restates settings rather than inventing them.** A field that carries a setting QGIS, QField, Mergin Maps or an ArcGIS client already acts on is marked stable in the spec; a field whose meaning depends on Groundwork alone is marked experimental.
 - **An application can take one field and ignore the rest.** Every field is optional, and an absent field means the source said nothing.
+
+## QUAC and Portolan
+
+Portolan sets the conventions a reader of a cloud-native catalogue relies on. QUAC follows them where they apply:
+
+- **Data and tiles.** QUAC finds a layer's data by the asset's `data` role, and reads PMTiles from a `rel: "pmtiles"` link or a `visual` asset, the two places Portolan registers them.
+- **Styles.** A style is a Collection asset with the `style` role, and the default style also carries the `default` role, as Portolan's core specification sets out.
+- **Fields.** Portolan describes a dataset's columns with the [Table extension](https://github.com/stac-extensions/table)'s `table:columns`. QUAC's settings for a field sit on that field's entry.
+
+[Portolan's core specification](https://github.com/portolan-sdi/portolan-spec/blob/main/specs/portolan/core.md) has no fields for forms, field rules, edit locks or relations between layers. Those are what QUAC adds, each under the `quac:` prefix, beside Portolan's fields and without changing them.
+
+One difference in shape: a QUAC catalogue is one document, with each Catalog carrying its Collections inline, where a Portolan catalogue keeps each Collection in a file of its own, linked with `rel: "child"`. The package reads the one-document form. An application reading a catalogue split across files gathers it into one document first.
+
+## What QUAC adds to a field
+
+Two entries from a street-tree layer's `table:columns`, taken from [the example catalogue that carries every field](packages/quac/src/schema/examples/every-field.json). `name` and `type` are the Table extension's; the rest are QUAC's.
+
+```json
+[
+  {
+    "name": "species",
+    "quac:control": "buttons",
+    "quac:value_relation": {
+      "collection": "species",
+      "key": "code",
+      "value": "common_name",
+      "filter": "\"in_use\" = 1",
+      "allow_null": true,
+      "order_by": "field",
+      "order_field": "sort_order",
+      "descending": true
+    }
+  },
+  {
+    "name": "height",
+    "type": "double",
+    "quac:range": {
+      "min": 0,
+      "max": 80,
+      "step": 0.5,
+      "precision": 1,
+      "suffix": " m"
+    },
+    "quac:constraints": {
+      "not_null": "warn",
+      "expression": {
+        "expression": "\"height\" < 80",
+        "description": "Taller than any tree in the city",
+        "strength": "warn"
+      }
+    }
+  }
+]
+```
+
+The species field offers its choices as buttons, taken from the `species` layer of the same catalogue: it stores a species' `code` and shows its `common_name`. The height field takes a number from 0 to 80 metres, and a form warns when it is left blank or is 80 or more. The [field reference](packages/quac/spec/README.md) describes every field.
+
+## What QUAC leaves out
+
+QUAC says what an edit may do: which fields can be changed, what each accepts, and which edits are locked. It does not say how an edit is saved. That is left to the application and the source, such as a WFS-T service or a file the application can write to.
+
+The JavaScript package makes no network request. It builds a catalogue from what an application has already fetched, such as a QGIS project's text or a QGIS Server GetProjectSettings response, and reads a catalogue it is given.
+
+## Checking a catalogue
+
+The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://groundwork.do/schemas/quac/v0.1.0/schema.json`. Any draft-07 validator checks a Catalog with its Collections inline, or a single Collection, against it. It checks only `quac:` fields: any other field passes, and a `quac:` field the schema does not define fails. A catalogue says it follows QUAC by listing the schema's address in `stac_extensions`.
 
 ## What this repository holds
 
 - **The spec**, the field reference and its per-field examples: [`packages/quac/spec/`](packages/quac/spec/).
 - **The JavaScript package**, `@vectoriahq/quac`, which writes QUAC catalogues from QGIS projects and other sources and reads them back: [`packages/quac/`](packages/quac/).
-- **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/).
+- **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server at `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/).
 
 ## Where QUAC came from
 
