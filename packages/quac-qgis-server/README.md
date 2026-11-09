@@ -95,3 +95,7 @@ To measure again, run the "QGIS Server" workflow on `main` from the repository's
 ```bash
 gh workflow run qgis-server.yml --ref main
 ```
+
+## Licence
+
+Copyright 2026 Vectoria Pty Ltd. This folder is free software: you can redistribute it and modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 of the License or (at your option) any later version. It is distributed without any warranty; see [`LICENSE`](LICENSE). The installed plugin carries the same text in `quac_catalogue/LICENSE`.
