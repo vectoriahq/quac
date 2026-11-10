@@ -1,15 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.451 130.451" role="img" aria-labelledby="t">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 153.078 153.078" role="img" aria-labelledby="t">
   <title id="t">QUAC</title>
-  <g transform="translate(45.426,45.426) rotate(-45) translate(0,-50)">
-    <polygon fill="#4e4e4e" points="13,52 40,47 52,50 86,80 13,63"/>
-    <polygon fill="#303030" points="13,63 86,80 72,76 74,82 60,77 61,82 13,74"/>
-    <polygon fill="#424242" points="-13,52 -40,47 -52,50 -86,80 -13,63"/>
-    <polygon fill="#2a2a2a" points="-13,63 -86,80 -72,76 -74,82 -60,77 -61,82 -13,74"/>
-    <polygon fill="#3a3a3a" points="0,33 -13,46 -13,90 0,103"/>
-    <polygon fill="#5a5a5a" points="0,33 13,46 13,90 0,103"/>
-    <polygon fill="#f0e64a" points="0,22 -13,35 -13,46 0,33"/>
-    <polygon fill="#f2ea65" points="0,22 13,35 13,46 0,33"/>
-    <path fill="#ee7913" d="M0,0 C-8,0 -13,3 -13,12 L-13,35 L0,22 Z"/>
-    <path fill="#f18d36" d="M0,0 C8,0 13,3 13,12 L13,35 L0,22 Z"/>
+  <g transform="translate(72.296,72.296) rotate(-45) translate(0,-66)">
+    <path fill="#424242" transform="scale(-1,1)" d="M11,59 C26,51 42,46 56,47 L104,72 L24,72 Z"/>
+    <path fill="#505050" d="M11,59 C26,51 42,46 56,47 L104,72 L24,72 Z"/>
+    <path fill="#2a2a2a" transform="scale(-1,1)" d="M24,72 L104,72 C80,80 50,86 25,98 Z"/>
+    <path fill="#333333" d="M24,72 L104,72 C80,80 50,86 25,98 Z"/>
+    <path fill="#3a3a3a" transform="scale(-1,1)" d="M0,39 L8,42 C8,49 9,54 14,58 C22,62 26,68 26,78 C26,95 17,113 5,128 L0,135 Z"/>
+    <path fill="#5a5a5a" d="M0,39 L8,42 C8,49 9,54 14,58 C22,62 26,68 26,78 C26,95 17,113 5,128 L0,135 Z"/>
+    <path fill="#f0e64a" transform="scale(-1,1)" d="M0,14 L6,16 C10,17 12.5,21 12.5,27 C12.5,33 10.5,38 8,42 L0,39 Z"/>
+    <path fill="#f2ea65" d="M0,14 L6,16 C10,17 12.5,21 12.5,27 C12.5,33 10.5,38 8,42 L0,39 Z"/>
+    <path fill="#ee7913" transform="scale(-1,1)" d="M0,0 C3.5,0 6.5,1 6.8,5 L6,16 L0,14 Z"/>
+    <path fill="#f18d36" d="M0,0 C3.5,0 6.5,1 6.8,5 L6,16 L0,14 Z"/>
+    <circle fill="#1e1e1e" cx="-9.8" cy="25" r="1.6"/>
+    <circle fill="#1e1e1e" cx="9.8" cy="25" r="1.6"/>
   </g>
 </svg>
