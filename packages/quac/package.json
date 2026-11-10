@@ -5,6 +5,15 @@
   "license": "Apache-2.0",
   "type": "module",
   "description": "QUAC: the STAC profile Groundwork uses for a project's layers, fields, forms and styles, and the code that writes and reads it.",
+  "homepage": "https://github.com/vectoriahq/quac#readme",
+  "bugs": {
+    "url": "https://github.com/vectoriahq/quac/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vectoriahq/quac.git",
+    "directory": "packages/quac"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema/quac.schema.json"
