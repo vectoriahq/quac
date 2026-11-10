@@ -1,10 +1,11 @@
-name: Publish the schema
+name: Publish the schema and front page
 
 # Copies the QUAC schema to the gh-pages branch, at the path its $id names
-# under https://vectoriahq.github.io/quac/, such as v0.1.0/schema.json.
-# GitHub Pages serves that branch. Each version is a folder of its own, and
-# a folder already on the branch stays there, so every schema a catalogue
-# may list keeps its address.
+# under https://vectoriahq.github.io/quac/, such as v0.1.0/schema.json, and
+# writes the site's front page from site/, listing every schema version on
+# the branch. GitHub Pages serves that branch. Each version is a folder of its
+# own, and a folder already on the branch stays there, so every schema a
+# catalogue may list keeps its address.
 
 on:
   push:
@@ -12,6 +13,8 @@ on:
       - main
     paths:
       - packages/quac/src/schema/quac.schema.json
+      - site/**
+      - assets/quac-mark.svg
       - .github/workflows/schema-pages.yml
   workflow_dispatch:
 
@@ -24,12 +27,12 @@ permissions:
 
 jobs:
   publish:
-    name: Copy the schema to gh-pages
+    name: Copy the schema and front page to gh-pages
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Copy the schema to the path its $id names
+      - name: Copy the schema to the path its $id names, and write the front page
         run: |
           prefix='https://vectoriahq.github.io/quac/'
           id=$(node -p "require('./packages/quac/src/schema/quac.schema.json').\$id")
@@ -39,6 +42,9 @@ jobs:
           esac
           target="${id#"$prefix"}"
           cp packages/quac/src/schema/quac.schema.json "$RUNNER_TEMP/schema.json"
+          mkdir -p "$RUNNER_TEMP/source/assets"
+          cp -R site "$RUNNER_TEMP/source/site"
+          cp assets/quac-mark.svg "$RUNNER_TEMP/source/assets/"
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -50,10 +56,11 @@ jobs:
           touch .nojekyll
           mkdir -p "$(dirname "$target")"
           cp "$RUNNER_TEMP/schema.json" "$target"
-          git add .nojekyll "$target"
+          python3 -I "$RUNNER_TEMP/source/site/build_site.py" .
+          git add .nojekyll "$target" index.html quac-mark.svg
           if git diff --cached --quiet; then
-            echo "gh-pages already holds this schema at $target."
+            echo "gh-pages already holds this schema at $target and this front page."
           else
-            git commit -m "Publish $target"
+            git commit -m "Publish $target and the front page"
             git push origin gh-pages
           fi

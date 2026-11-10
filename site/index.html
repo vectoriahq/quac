@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QUAC</title>
+<meta name="description" content="QUAC is a profile of STAC 1.1.0 for describing the layers of a map.">
+<link rel="icon" href="quac-mark.svg" type="image/svg+xml">
+<style>
+  :root {
+    --page: #fbf8f3;
+    --text: #2b2118;
+    --muted: #6b5a4a;
+    --link: #8a5528;
+    --rule: #e6ddd0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page: #1d1915;
+      --text: #f1ebe3;
+      --muted: #b9a996;
+      --link: #f18d36;
+      --rule: #3a3129;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 40rem; margin: 0 auto; padding: 3rem 1rem 4rem; }
+  header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  header img { width: 72px; height: 72px; flex: none; }
+  h1 { font-size: 2.4rem; line-height: 1.1; margin: 0; letter-spacing: 0.02em; }
+  h2 { font-size: 1.05rem; margin: 2.25rem 0 0.5rem; }
+  p { margin: 0 0 1rem; }
+  a { color: var(--link); text-underline-offset: 0.15em; }
+  ul { margin: 0; padding-left: 1.2rem; }
+  li { margin: 0.35rem 0; }
+  code { font: 0.9em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="quac-mark.svg" alt="">
+    <h1>QUAC</h1>
+  </header>
+
+  <p>QUAC (Quite Useful Additions for Catalogs) is a profile of <a href="https://stacspec.org">STAC</a> 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate.</p>
+  <p>A QUAC Collection is an ordinary STAC Collection with <code>quac:</code> fields added, so an application can read the fields it knows and ignore the rest.</p>
+
+  <h2>Read and use it</h2>
+  <ul>
+    <li><a href="https://github.com/vectoriahq/quac">The repository</a>: the spec, the code and the issue tracker.</li>
+    <li><a href="https://github.com/vectoriahq/quac/blob/main/packages/quac/spec/README.md">The field reference</a>: every field, with an example.</li>
+    <li><a href="https://www.npmjs.com/package/@vectoriahq/quac">The JavaScript package</a>, <code>@vectoriahq/quac</code>, which writes QUAC catalogues and reads them.</li>
+    <li><a href="https://github.com/vectoriahq/quac/tree/main/packages/quac-qgis-server">The QGIS Server plugin</a>, which serves a QGIS project's catalogue.</li>
+  </ul>
+
+  <h2>The schema</h2>
+  <p>A catalogue says it follows QUAC by listing the schema's address in <code>stac_extensions</code>. Each version keeps its address.</p>
+  <ul>
+<!-- schema versions -->
+  </ul>
+
+  <footer>Made by Vectoria. The spec, the schema and the JavaScript package are under the Apache License 2.0, and the QGIS Server plugin under the GNU GPL, version 2 or later.</footer>
+</main>
+</body>
+</html>
