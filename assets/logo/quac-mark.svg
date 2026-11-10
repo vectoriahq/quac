@@ -7,7 +7,11 @@
     <path fill="#f2ea65" d="M0,22 L13,35 L13,46 L0,33 Z"/>
     <path fill="#ee7913" transform="scale(-1,1)" d="M0,0 C8,0 13,3 13,12 L13,35 L0,22 Z"/>
     <path fill="#f18d36" d="M0,0 C8,0 13,3 13,12 L13,35 L0,22 Z"/>
-    <circle fill="#161616" cx="-6.5" cy="50.8" r="3.6"/>
-    <circle fill="#161616" cx="6.5" cy="50.8" r="3.6"/>
+    <g><ellipse fill="#161616" cx="4.6" cy="15" rx="1.15" ry="2.2" transform="rotate(-12 4.6 15)"/></g>
+    <g transform="scale(-1,1)"><ellipse fill="#161616" cx="4.6" cy="15" rx="1.15" ry="2.2" transform="rotate(-12 4.6 15)"/></g>
+    <path fill="#161616" transform="scale(-1,1)" d="M13,47.2 C15.6,49.36 15.6,54.64 13,56.8 C8.6,54.64 8.6,49.36 13,47.2 Z"/>
+    <circle fill="#ffffff" transform="scale(-1,1)" cx="13.2" cy="50.1" r="0.95"/>
+    <path fill="#161616" d="M13,47.2 C15.6,49.36 15.6,54.64 13,56.8 C8.6,54.64 8.6,49.36 13,47.2 Z"/>
+    <circle fill="#ffffff" cx="13.2" cy="50.1" r="0.95"/>
   </g>
 </svg>
