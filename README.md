@@ -4,6 +4,13 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. It is made by Vectoria.
 
+With QUAC you can:
+
+- **Take a QGIS project's forms to the web.** A street-tree layer's species list, its height range of 0 to 80 metres and its locked fields are set in QGIS. QUAC carries them in a catalogue, so a web or mobile app shows the same form without opening QGIS.
+- **Ask QGIS Server for the whole map in one request.** With the QUAC plugin, `SERVICE=QUAC&REQUEST=GetCatalogue` answers every layer the project publishes, with its fields, whether it can be edited and its edit locks. With an access-control plugin installed, each person gets only what they may see.
+- **Give cloud-native files a map.** A catalogue of GeoParquet files can carry each layer's form, value lists, relations and style, so an app can show the layers and build their forms with no GIS server behind them.
+- **Read many sources one way.** The JavaScript package builds a QUAC catalogue from a QGIS project, a WFS, WMS or OGC API Features service, or ArcGIS layers, so an app reads one format instead of one per source.
+
 ## Where QUAC fits
 
 Cloud-native geospatial publishes data as plain files rather than through a server. The data sits in object storage in formats built to be read over the web, such as GeoParquet, PMTiles and Cloud Optimized GeoTIFF, and a STAC catalogue says what each dataset is and where it lives. [Portolan](https://github.com/portolan-sdi/portolan-spec) specifies how to publish such a catalogue with no server or API to run. Query engines such as DuckDB read the files directly, and table formats such as Apache Iceberg keep their versions.
