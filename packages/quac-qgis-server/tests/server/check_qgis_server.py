@@ -40,7 +40,8 @@ TEST_ACCESS = Path(__file__).resolve().parent / 'quac_test_access'
 CACHE_PROJECT = 'cache/publishing.qgs'
 
 sys.path.insert(0, str(PACKAGE))
-from quac_server import read_server_layer_tree  # noqa: E402 - the package two folders up
+from build_plugin import lay_out_plugin  # noqa: E402 - the package two folders up
+from quac_server import read_server_layer_tree  # noqa: E402
 
 # The generated projects' sizes, as layer counts.
 SYNTHETIC_SIZES = (50, 200, 1000)
@@ -68,11 +69,9 @@ def prepare(work: Path) -> None:
     shutil.copy(FIXTURES / 'server-publishing' / 'publishing.qgs', data / CACHE_PROJECT)
     write_stand_in_data(data / CACHE_PROJECT)
 
-    # The spike's harness and the catalogue plugin each hold their own copy of quac_server, as an installed plugin does.
+    # The spike's harness and the catalogue plugin each hold their own copy of quac_server, laid out as the plugin's zip holds it.
     for source in (HARNESS, CATALOGUE_PLUGIN):
-        plugin = work / 'plugins' / source.name
-        shutil.copytree(source, plugin, ignore=shutil.ignore_patterns('__pycache__'))
-        shutil.copytree(PACKAGE / 'quac_server', plugin / 'quac_server', ignore=shutil.ignore_patterns('__pycache__'))
+        lay_out_plugin(source, work / 'plugins')
     shutil.copytree(TEST_ACCESS, work / 'plugins' / TEST_ACCESS.name, ignore=shutil.ignore_patterns('__pycache__'))
     for path in work.rglob('*'):
         path.chmod(0o755 if path.is_dir() else 0o644)

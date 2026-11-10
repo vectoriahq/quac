@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 125.569 125.569" role="img" aria-labelledby="t">
+  <title id="t">QUAC</title>
+  <g transform="translate(6.896,6.896) rotate(-45)">
+    <path fill="#8a5528" transform="scale(-1,1)" d="M0,33 L25,58 C31,64 34,74 34,88 C34,114 21,140 3,160 L0,165 Z"/>
+    <path fill="#9c6f4a" d="M0,33 L25,58 C31,64 34,74 34,88 C34,114 21,140 3,160 L0,165 Z"/>
+    <path fill="#5f3a1c" transform="scale(-1,1)" d="M7,63 C18,60 28,68 29,84 C30,104 23,122 12,138 L11,132 C8,138 5,145 2,152 C3,128 4,98 7,63 Z"/>
+    <path fill="#73492a" d="M7,63 C18,60 28,68 29,84 C30,104 23,122 12,138 L11,132 C8,138 5,145 2,152 C3,128 4,98 7,63 Z"/>
+    <path fill="#589632" transform="scale(-1,1)" d="M0,33 L13,46 L13,62 C13,71 8,74 0,74 Z"/>
+    <path fill="#71a651" d="M0,33 L13,46 L13,62 C13,71 8,74 0,74 Z"/>
+    <path fill="#f0e64a" transform="scale(-1,1)" d="M0,22 L13,35 L13,46 L0,33 Z"/>
+    <path fill="#f2ea65" d="M0,22 L13,35 L13,46 L0,33 Z"/>
+    <path fill="#ee7913" transform="scale(-1,1)" d="M0,0 C8,0 13,3 13,12 L13,35 L0,22 Z"/>
+    <path fill="#f18d36" d="M0,0 C8,0 13,3 13,12 L13,35 L0,22 Z"/>
+    <g><ellipse fill="#8a5528" cx="4.4" cy="18" rx="0.85" ry="1.6" transform="rotate(-12 4.4 18)"/></g>
+    <g transform="scale(-1,1)"><ellipse fill="#8a5528" cx="4.4" cy="18" rx="0.85" ry="1.6" transform="rotate(-12 4.4 18)"/></g>
+    <path fill="#161616" transform="scale(-1,1)" d="M7.5,45.4 Q15.7,52 7.5,58.6 Q-0.7,52 7.5,45.4 Z"/>
+    <circle fill="#ffffff" transform="scale(-1,1)" cx="8.935" cy="49.36" r="1.435"/>
+    <path fill="#161616" d="M7.5,45.4 Q15.7,52 7.5,58.6 Q-0.7,52 7.5,45.4 Z"/>
+    <circle fill="#ffffff" cx="8.935" cy="49.36" r="1.435"/>
+  </g>
+</svg>
