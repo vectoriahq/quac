@@ -15,6 +15,6 @@
     }
   ],
   "stac_extensions": [
-    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
   ]
 }

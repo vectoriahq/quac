@@ -138,7 +138,7 @@
       "quac:opacity": 1,
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
-        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
       ],
       "vector:geometry_types": [
         "Point"
@@ -225,7 +225,7 @@
       "quac:opacity": 1,
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
-        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
       ],
       "vector:geometry_types": [
         "Point"
@@ -301,7 +301,7 @@
       "quac:max_zoom": 14,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Catchments Year 7 2007"
     },
@@ -374,12 +374,12 @@
       "quac:max_zoom": 14,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Catchments Primary 2027"
     }
   ],
   "stac_extensions": [
-    "https://groundwork.do/schemas/quac/v0.1.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
   ]
 }
