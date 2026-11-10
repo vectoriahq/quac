@@ -1,15 +1,11 @@
 # QUAC logo
 
-A duck swimming, seen from above and heading top-left. Its head is the diagonal element of the QGIS logo, kept at that element's width with its chevron and two-face shading: a rounded orange bill with two small nostrils near its base, a yellow chevron, and a rounded green head with two dark, lens-shaped eyes, each with a white highlight. The brown body's front edges carry the yellow chevron's back edge straight on past the head; the body then rounds into a teardrop that tapers to a pointed tail. Two darker folded wings lie on the back, with a narrow V of body showing between them, their tips meeting just short of the tail. Every part is shaded in two halves, the right-hand half lighter.
+A duck swimming, seen from above and heading top-left. Its head is the diagonal element of the QGIS logo, kept at that element's width with its chevron and two-face shading: a rounded orange bill with two small nostrils near its base, a yellow chevron, and a rounded green head with two dark, lens-shaped eyes, each with a white highlight. The brown body's front edges carry the yellow chevron's back edge straight on past the head; the body then rounds into a teardrop that tapers to a pointed tail. Two darker folded wings lie on the back, with a narrow V of body showing between them, each with a second feather point on its trailing edge and their tips meeting just short of the tail. Every part is shaded in two halves, the right-hand half lighter.
 
 | File | Use |
 | --- | --- |
-| `quac-mark.svg` | The duck alone, on light or dark backgrounds |
-| `quac-logo.svg` | Duck and "QUAC" wordmark, on light backgrounds |
-| `quac-logo-on-dark.svg` | Duck and wordmark, on dark backgrounds (the wordmark in white) |
-| `quac-mark-512.png` | The mark as a 512 × 512 PNG with a transparent background |
-
-The wordmark is Inter Display Bold, converted to outlines so it needs no font installed.
+| `quac-mark.svg` | The logo, on light or dark backgrounds |
+| `quac-mark-512.png` | The logo as a 512 × 512 PNG with a transparent background |
 
 ## Colours
 
@@ -23,6 +19,5 @@ The wordmark is Inter Display Bold, converted to outlines so it needs no font in
 | Nostrils | `#8a5528` | `#8a5528` |
 | Eyes | `#161616` | `#161616` |
 | Eye highlight | `#ffffff` | `#ffffff` |
-| Wordmark | `#161616` | `#f4f4f4` on dark |
 
 The orange, yellow and green are the QGIS logo's own. The lit halves of the bill, chevron, head and body are the shaded colour with 15% white over it, as in the QGIS element; the wings take a smaller step so they stay a richer brown.

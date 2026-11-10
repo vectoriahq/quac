@@ -1,4 +1,4 @@
-<img src="assets/logo/quac-logo.svg" alt="QUAC" width="320">
+<img src="assets/logo/quac-mark.svg" alt="QUAC" width="160">
 
 # QUAC
 
