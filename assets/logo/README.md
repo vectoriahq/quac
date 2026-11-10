@@ -1,26 +1,24 @@
 # QUAC logo
 
-A duck in flight, seen from above and heading top-left: a narrow orange bill, a wider yellow head with two eyes, a long neck running into a full black body that tapers to the tail, and swept wings that grow out of the shoulders. It started from the diagonal element of the QGIS logo and keeps that element's orange, its yellow and its two-face shading: each part is split along the duck's spine, and the right-hand half is lighter.
+A duck's head seen from above, facing top-left: a rounded orange bill, a yellow chevron, and a rounded warm-brown head with two dark eyes. It is drawn from the diagonal element of the QGIS logo, keeping that element's width, its orange and yellow, its chevron, and its two-face shading: each part is split along the middle, and the right-hand half is lighter. The back of the head is rounded with the bill's front curve turned round, and the head is about the same size as the bill.
 
 | File | Use |
 | --- | --- |
-| `quac-mark.svg` | The duck alone, on light backgrounds |
-| `quac-mark-on-dark.svg` | The duck alone, on dark backgrounds (the black lifted to charcoal so it stays visible) |
-| `quac-logo.svg` | Duck and "QUAC" wordmark, on light backgrounds |
-| `quac-logo-on-dark.svg` | Duck and wordmark, on dark backgrounds |
-| `quac-mark-512.png` | The light-background mark as a 512 × 512 PNG with a transparent background |
+| `quac-mark.svg` | The duck's head alone, on light or dark backgrounds |
+| `quac-logo.svg` | Head and "QUAC" wordmark, on light backgrounds |
+| `quac-logo-on-dark.svg` | Head and wordmark, on dark backgrounds (the wordmark in white) |
+| `quac-mark-512.png` | The mark as a 512 × 512 PNG with a transparent background |
 
 The wordmark is Inter Display Bold, converted to outlines so it needs no font installed.
 
 ## Colours
 
-| Part | Shaded half | Lit half | Shaded half, on dark | Lit half, on dark |
-| --- | --- | --- | --- | --- |
-| Bill | `#ee7913` | `#f18d36` | `#ee7913` | `#f18d36` |
-| Head | `#f0e64a` | `#f2ea65` | `#f0e64a` | `#f2ea65` |
-| Body and neck | `#161616` | `#383838` | `#3a3a3a` | `#5a5a5a` |
-| Wing, leading edge | `#1f1f1f` | `#2e2e2e` | `#424242` | `#505050` |
-| Wing, trailing edge | `#080808` | `#0e0e0e` | `#2a2a2a` | `#333333` |
-| Eyes | `#161616` | `#161616` | `#1e1e1e` | `#1e1e1e` |
+| Part | Shaded half | Lit half |
+| --- | --- | --- |
+| Bill | `#ee7913` | `#f18d36` |
+| Yellow chevron | `#f0e64a` | `#f2ea65` |
+| Head | `#8a5528` | `#9c6f4a` |
+| Eyes | `#161616` | `#161616` |
+| Wordmark | `#161616` | `#f4f4f4` on dark |
 
-The orange and yellow are the QGIS logo's own; each lit half of the bill and head is the shaded colour with 15% white over it, as in the QGIS element.
+The orange and yellow are the QGIS logo's own. Each lit half is the shaded colour with 15% white over it, as in the QGIS element.
