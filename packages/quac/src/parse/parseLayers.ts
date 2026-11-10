@@ -144,10 +144,7 @@ function parseMapLayer(maplayer: Element): LayerEntry | null {
 function serverHiddenFieldsOf(maplayer: Element): { serverHiddenFields?: ServerHiddenFields } {
   const wms = new Set<string>()
   const wfs = new Set<string>()
-  const fieldConfig = directChild(maplayer, 'fieldConfiguration')
-  for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
-    const name = field.getAttribute('name')
-    if (!name) continue
+  for (const [name, field] of layerFields(maplayer)) {
     const flags = (field.getAttribute('configurationFlags') ?? '').split('|').map((flag) => flag.trim())
     if (flags.includes('HideFromWms')) wms.add(name)
     if (flags.includes('HideFromWfs')) wfs.add(name)
@@ -294,19 +291,9 @@ const VALUE_MAP_NULL_CODE = '{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}'
  */
 function parseFieldValueMaps(maplayer: Element): Record<string, FieldValueMapEntry[]> {
   const result: Record<string, FieldValueMapEntry[]> = {}
-  // Scoped to the layer's own top-level block: `maplayer.querySelectorAll`
-  // would also match a `<fieldConfiguration>` nested inside
-  // `<map-layer-style-manager>`'s embedded per-style documents, whose field
-  // configs can genuinely disagree with the layer's own (verified against
-  // `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs`, whose Graffiti Reports
-  // layer has `incident_uid` as `UuidGenerator` in a saved style and
-  // `TextEdit` at the layer's own level).
-  const fieldConfig = directChild(maplayer, 'fieldConfiguration')
-  for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
-    const name = field.getAttribute('name')
-    if (!name || result[name]) continue
+  for (const [name, editWidget] of layerEditWidgets(maplayer)) {
+    if (result[name]) continue
 
-    const editWidget = directChild(field, 'editWidget')
     if (editWidget?.getAttribute('type') !== 'ValueMap') continue
 
     const mapList = editWidget.querySelector(':scope > config > Option[type="Map"] > Option[type="List"][name="map"]')
@@ -359,22 +346,12 @@ function parseFieldValueMaps(maplayer: Element): Record<string, FieldValueMapEnt
  */
 function parseFieldValueRelations(maplayer: Element): Record<string, FieldValueRelation> {
   const result: Record<string, FieldValueRelation> = {}
-  // The layer's own block, not a saved alternate style's.
-  const fieldConfig = directChild(maplayer, 'fieldConfiguration')
-  for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
-    const name = field.getAttribute('name')
-    if (!name || result[name]) continue
+  for (const [name, editWidget] of layerEditWidgets(maplayer)) {
+    if (result[name]) continue
 
-    const editWidget = directChild(field, 'editWidget')
     if (editWidget?.getAttribute('type') !== 'ValueRelation') continue
 
-    const options = new Map<string, string>()
-    for (const option of editWidget.querySelectorAll(':scope > config > Option[type="Map"] > Option')) {
-      const key = option.getAttribute('name')
-      const value = option.getAttribute('value')
-      if (key && value !== null) options.set(key, value)
-    }
-    const isOn = (key: string) => options.get(key) === 'true' || options.get(key) === '1'
+    const options = readOptionMap(editWidget)
 
     const layerId = readTrimmedOption(options, 'Layer') ?? ''
     const layerName = readTrimmedOption(options, 'LayerName') ?? ''
@@ -382,18 +359,18 @@ function parseFieldValueRelations(maplayer: Element): Record<string, FieldValueR
     const valueField = readTrimmedOption(options, 'Value')
     if ((!layerId && !layerName) || !keyField || !valueField) continue
 
-    const orderField = isOn('OrderByField') ? readTrimmedOption(options, 'OrderByFieldName') : null
+    const orderField = readFlag(options, 'OrderByField') ? readTrimmedOption(options, 'OrderByFieldName') : null
     result[name] = {
       layerId,
       layerName,
       keyField,
       valueField,
       filterExpression: readTrimmedOption(options, 'FilterExpression') ?? '',
-      allowNull: isOn('AllowNull'),
-      allowMulti: isOn('AllowMulti'),
-      orderBy: isOn('OrderByValue') ? 'value' : orderField ? 'field' : 'key',
-      orderField: isOn('OrderByValue') ? null : orderField,
-      descending: isOn('OrderByDescending')
+      allowNull: readFlag(options, 'AllowNull'),
+      allowMulti: readFlag(options, 'AllowMulti'),
+      orderBy: readFlag(options, 'OrderByValue') ? 'value' : orderField ? 'field' : 'key',
+      orderField: readFlag(options, 'OrderByValue') ? null : orderField,
+      descending: readFlag(options, 'OrderByDescending')
     }
   }
   return result
@@ -450,22 +427,12 @@ const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
  */
 function parseFieldAttachments(maplayer: Element): Record<string, FieldAttachment> {
   const result: Record<string, FieldAttachment> = {}
-  // A saved alternate style embeds its own <fieldConfiguration>, which can
-  // disagree with the layer's own.
-  const fieldConfig = directChild(maplayer, 'fieldConfiguration')
-  for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
-    const name = field.getAttribute('name')
-    if (!name || result[name]) continue
+  for (const [name, editWidget] of layerEditWidgets(maplayer)) {
+    if (result[name]) continue
 
-    const editWidget = directChild(field, 'editWidget')
     if (editWidget?.getAttribute('type') !== 'ExternalResource') continue
 
-    const options = new Map<string, string>()
-    for (const option of editWidget.querySelectorAll(':scope > config > Option[type="Map"] > Option')) {
-      const key = option.getAttribute('name')
-      const value = option.getAttribute('value')
-      if (key && value !== null) options.set(key, value)
-    }
+    const options = readOptionMap(editWidget)
 
     const storageMode = options.get('StorageMode')
     if (storageMode !== undefined && !SINGLE_FILE_STORAGE_MODES.has(Number(storageMode))) continue
@@ -548,12 +515,10 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   // first, so the widget's identifier stands only where there is none. The
   // widget's shortening to a string field's declared length is not followed:
   // a `.qgs` file does not carry a WFS field's length.
-  const fieldConfig = directChild(maplayer, 'fieldConfiguration')
   const seenWidgets = new Set<string>()
   const allowNullOff = new Set<string>()
-  for (const field of fieldConfig?.querySelectorAll(':scope > field') ?? []) {
-    const name = field.getAttribute('name')
-    if (!name || seenWidgets.has(name)) continue
+  for (const [name, field] of layerFields(maplayer)) {
+    if (seenWidgets.has(name)) continue
     seenWidgets.add(name)
     const widgetType = directChild(field, 'editWidget')?.getAttribute('type')
     if (widgetType === 'Hidden') ruleFor(name).hidden = true
@@ -650,16 +615,7 @@ function readWidgetOptions(
   ruleFor: (name: string) => FieldEditRule,
   allowNullOff: Set<string>
 ): void {
-  const options = new Map<string, string>()
-  for (const option of directChild(field, 'editWidget')?.querySelectorAll(':scope > config > Option[type="Map"] > Option') ?? []) {
-    const key = option.getAttribute('name')
-    const value = option.getAttribute('value')
-    if (key && value !== null) options.set(key, value)
-  }
-  const flag = (key: string, fallback: boolean): boolean => {
-    const value = options.get(key)
-    return value === undefined ? fallback : value === 'true' || value === '1'
-  }
+  const options = readOptionMap(directChild(field, 'editWidget'))
   const number = (key: string): number | undefined => {
     const text = options.get(key)?.trim()
     if (!text) return undefined
@@ -673,7 +629,7 @@ function readWidgetOptions(
         checkedValue: readTrimmedOption(options, 'CheckedState'),
         uncheckedValue: readTrimmedOption(options, 'UncheckedState'),
         showStoredValue: options.get('TextDisplayMethod') === '1',
-        allowNull: flag('AllowNullState', false)
+        allowNull: readFlag(options, 'AllowNullState', false)
       }
       return
     case 'Range': {
@@ -689,7 +645,7 @@ function readWidgetOptions(
       if (precision !== undefined && Number.isInteger(precision) && precision >= 0) range.precision = precision
       if (suffix) range.suffix = suffix
       if (Object.keys(range).length > 0) ruleFor(name).range = range
-      if (!flag('AllowNull', true)) allowNullOff.add(name)
+      if (!readFlag(options, 'AllowNull', true)) allowNullOff.add(name)
       return
     }
     case 'DateTime': {
@@ -697,8 +653,8 @@ function readWidgetOptions(
       // cannot tell here. ISO 8601 and the default for a date are what the
       // app already reads, so they write nothing.
       const format = options.get('field_format')?.trim()
-      if (format && format !== 'yyyy-MM-dd' && !flag('field_iso_format', false)) ruleFor(name).dateFormat = format
-      if (!flag('allow_null', true)) allowNullOff.add(name)
+      if (format && format !== 'yyyy-MM-dd' && !readFlag(options, 'field_iso_format', false)) ruleFor(name).dateFormat = format
+      if (!readFlag(options, 'allow_null', true)) allowNullOff.add(name)
     }
   }
 }
@@ -1114,6 +1070,45 @@ function parseOpacity(maplayer: Element): number {
   if (!text) return 1
   const value = Number(text)
   return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 1
+}
+
+/**
+ * The layer's own `<fieldConfiguration>` fields that have a name, as
+ * `[name, <field>]`, in document order. A saved alternate style embeds its
+ * own `<fieldConfiguration>`, which can disagree with the layer's own, so only
+ * the direct child of `<maplayer>` is read (see docs/gotchas.md).
+ */
+function* layerFields(maplayer: Element): Generator<[string, Element]> {
+  for (const field of directChild(maplayer, 'fieldConfiguration')?.querySelectorAll(':scope > field') ?? []) {
+    const name = field.getAttribute('name')
+    if (name) yield [name, field]
+  }
+}
+
+/** The named fields' `<editWidget>`, as `[name, <editWidget>]`; null where a field has none. */
+function* layerEditWidgets(maplayer: Element): Generator<[string, Element | null]> {
+  for (const [name, field] of layerFields(maplayer)) yield [name, directChild(field, 'editWidget')]
+}
+
+/**
+ * A flat widget config as key and value: the widget's `<Option type="Map">`
+ * members that have a name and a `value`. An `<Option type="invalid">` that
+ * QGIS writes for an unset key has no `value` and is left out.
+ */
+function readOptionMap(editWidget: Element | null): Map<string, string> {
+  const options = new Map<string, string>()
+  for (const option of editWidget?.querySelectorAll(':scope > config > Option[type="Map"] > Option') ?? []) {
+    const key = option.getAttribute('name')
+    const value = option.getAttribute('value')
+    if (key && value !== null) options.set(key, value)
+  }
+  return options
+}
+
+/** A Boolean widget option: `true` or `1` is on, any other value off, and an absent key `fallback`. */
+function readFlag(options: Map<string, string>, key: string, fallback = false): boolean {
+  const value = options.get(key)
+  return value === undefined ? fallback : value === 'true' || value === '1'
 }
 
 function directChild(parent: Element, tag: string): Element | null {

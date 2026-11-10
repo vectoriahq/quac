@@ -1,6 +1,7 @@
 import { listQuacExtension } from '../model/quacExtension.ts'
 import { STAC_VERSION } from '../model/Stac.ts'
 import { readDataAsset } from '../model/stacAssetRoles.ts'
+import { readNonBlank } from '../util/nonBlankText.ts'
 
 import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac.ts'
 
@@ -63,8 +64,8 @@ function normalizeCollection(collection: StacCollection): StacCollection {
     links: collection.links ?? []
   }
 
-  const declaresWfsFields = readNonEmptyString(collection['quac:wfs_endpoint'])
-    && readNonEmptyString(collection['quac:wfs_type_name'])
+  const declaresWfsFields = readNonBlank(collection['quac:wfs_endpoint'])
+    && readNonBlank(collection['quac:wfs_type_name'])
   if (!declaresWfsFields) {
     const sniffed = parseWfsGetFeatureUrl(readDataAsset(collection)?.href ?? '')
     if (sniffed) {
@@ -120,8 +121,8 @@ function wrapAsCatalog(root: StacCollection): StacCatalog {
 export function resolveWfsCollectionSource(
   collection: StacCollection
 ): { endpoint: string, typeName: string } | null {
-  const endpoint = readNonEmptyString(collection['quac:wfs_endpoint'])
-  const typeName = readNonEmptyString(collection['quac:wfs_type_name'])
+  const endpoint = readNonBlank(collection['quac:wfs_endpoint'])
+  const typeName = readNonBlank(collection['quac:wfs_type_name'])
   if (endpoint && typeName) return { endpoint, typeName }
 
   return parseWfsGetFeatureUrl(readDataAsset(collection)?.href ?? '')
@@ -152,8 +153,4 @@ export function parseWfsGetFeatureUrl(href: string): { endpoint: string, typeNam
   } catch {
     return null
   }
-}
-
-function readNonEmptyString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value.trim() : null
 }
