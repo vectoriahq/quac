@@ -12,3 +12,5 @@ server=True
 homepage=https://github.com/vectoriahq/quac
 tracker=https://github.com/vectoriahq/quac/issues
 repository=https://github.com/vectoriahq/quac
+icon=icon.png
+tags=stac,catalog,qgis server,wfs,wms

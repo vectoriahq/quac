@@ -1,0 +1,44 @@
+name: Build the QGIS plugin
+
+# Builds the QUAC catalogue plugin's zip, for the QGIS plugin repository, and
+# attaches it to a GitHub release whose tag is the plugin's folder name and
+# version, such as quac_catalogue@0.1.0. The zip is uploaded to
+# plugins.qgis.org by hand.
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build quac_catalogue
+    if: startsWith(github.event.release.tag_name, 'quac_catalogue@')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check the tag matches the plugin's version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(cd packages/quac-qgis-server && python3 -c "from build_plugin import read_metadata; print(read_metadata()['version'])")
+          expected="quac_catalogue@$version"
+          if [ "$TAG" != "$expected" ]; then
+            echo "::error::The release's tag is $TAG, but quac_catalogue/metadata.txt gives $expected. Change the version in metadata.txt, or publish a release tagged $expected."
+            exit 1
+          fi
+      - name: Tests
+        run: npm run test:server
+      - name: Build the zip
+        id: zip
+        run: echo "path=$(python3 packages/quac-qgis-server/build_plugin.py "$RUNNER_TEMP/plugin")" >> "$GITHUB_OUTPUT"
+      - name: Attach the zip to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          ZIP: ${{ steps.zip.outputs.path }}
+        run: gh release upload "$TAG" "$ZIP" --repo "$GITHUB_REPOSITORY"

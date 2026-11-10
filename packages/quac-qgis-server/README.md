@@ -4,7 +4,7 @@ The QUAC catalogue plugin for QGIS Server, and the Python it is built on.
 
 ## The plugin
 
-`quac_catalogue/` is the plugin. On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>` answers the open project's catalogue as one STAC document with its Collections inlined. An installed copy holds `quac_server` inside its folder; the CI job copies it in.
+`quac_catalogue/` is the plugin. On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>` answers the open project's catalogue as one STAC document with its Collections inlined. An installed copy holds `quac_server` inside its folder. `build_plugin.py` lays it out that way, both for the plugin's zip and for the QGIS Server job. The plugin's `icon.png` is `assets/quac-mark.svg` drawn at 128 pixels square.
 
 - It reads the project's stored text and builds the catalogue with `quac_server`, taking from QGIS what the text does not hold: each field's type and each layer's WGS84 box (`qgis_inputs.py`). The links name the address QGIS Server's own `QgsServerProjectUtils.wmsServiceUrl` gives.
 - It keeps one copy per project, server address and modification time while QGIS's access controls allow a shared copy, which is while no access-control plugin gives a cache key (`QgsAccessControl.fillCacheKey`), and builds each answer afresh otherwise. The `X-QUAC-Cache` header says `hit`, `miss` or `off`.
@@ -38,7 +38,11 @@ Where a Python function does what its JavaScript counterpart does in a different
 ## Running it
 
 ```bash
-npm run test:quac-server
+npm run test:server
+```
+
+```bash
+python3 packages/quac-qgis-server/build_plugin.py dist
 ```
 
 ```bash
