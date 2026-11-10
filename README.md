@@ -44,7 +44,7 @@ QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary
 
 - **A cloud-native catalogue can carry a map.** Add QUAC fields to a Portolan catalogue and an application reading it knows how to show each layer and what its form should hold. [QUAC and Portolan](#quac-and-portolan) says how the two fit.
 - **A layer is described the same way wherever its data lives.** The fields for forms, rules, relations and styles are the same for a GeoParquet file, a QGIS Server or WFS layer, or an ArcGIS Feature Service. Only a field naming where the data is, such as `quac:wfs_endpoint`, belongs to one kind of source.
-- **QUAC restates settings rather than inventing them.** A field that carries a setting QGIS, QField, Mergin Maps or an ArcGIS client already acts on is marked stable in the spec; a field whose meaning depends on Groundwork alone is marked experimental.
+- **QUAC restates settings rather than inventing them.** A field that carries a setting QGIS, QField, Mergin Maps or an ArcGIS client already acts on is marked stable in the spec; a field whose meaning depends on a single application is marked experimental.
 - **An application can take one field and ignore the rest.** Every field is optional, and an absent field means the source said nothing.
 
 ## QUAC and Portolan
