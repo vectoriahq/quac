@@ -1,0 +1,59 @@
+name: Publish the schema
+
+# Copies the QUAC schema to the gh-pages branch, at the path its $id names
+# under https://vectoriahq.github.io/quac/, such as v0.1.0/schema.json.
+# GitHub Pages serves that branch. Each version is a folder of its own, and
+# a folder already on the branch stays there, so every schema a catalogue
+# may list keeps its address.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/quac/src/schema/quac.schema.json
+      - .github/workflows/schema-pages.yml
+  workflow_dispatch:
+
+concurrency:
+  group: schema-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Copy the schema to gh-pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Copy the schema to the path its $id names
+        run: |
+          prefix='https://vectoriahq.github.io/quac/'
+          id=$(node -p "require('./packages/quac/src/schema/quac.schema.json').\$id")
+          case "$id" in
+            "$prefix"v*/schema.json) ;;
+            *) echo "::error::The schema's \$id is $id, which is not under $prefix."; exit 1 ;;
+          esac
+          target="${id#"$prefix"}"
+          cp packages/quac/src/schema/quac.schema.json "$RUNNER_TEMP/schema.json"
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git fetch --depth 1 origin gh-pages; then
+            git switch -c gh-pages FETCH_HEAD
+          else
+            git switch --orphan gh-pages
+          fi
+          touch .nojekyll
+          mkdir -p "$(dirname "$target")"
+          cp "$RUNNER_TEMP/schema.json" "$target"
+          git add .nojekyll "$target"
+          if git diff --cached --quiet; then
+            echo "gh-pages already holds this schema at $target."
+          else
+            git commit -m "Publish $target"
+            git push origin gh-pages
+          fi
