@@ -1,6 +1,6 @@
 # QUAC logo
 
-A duck swimming, seen from above and heading top-left. Its head is the diagonal element of the QGIS logo, kept at that element's width with its chevron and two-face shading: a rounded orange bill with two small nostrils near its base, a yellow chevron, and a rounded green head with two dark, lens-shaped eyes, each with a white highlight. A brown body grows out of the corners where the yellow meets the head, runs back along the head's sides, swells into a full oval and ends in a feathered tail. Every part is split along the middle, and the right-hand half is lighter.
+A duck swimming, seen from above and heading top-left. Its head is the diagonal element of the QGIS logo, kept at that element's width with its chevron and two-face shading: a rounded orange bill with two small nostrils near its base, a yellow chevron, and a rounded green head with two dark, lens-shaped eyes, each with a white highlight. The brown body's front edges carry the yellow chevron's back edge straight on past the head; the body then rounds into a teardrop that tapers to a pointed tail. Two darker folded wings lie on the back, with a narrow V of body showing between them, their tips meeting just short of the tail. Every part is shaded in two halves, the right-hand half lighter.
 
 | File | Use |
 | --- | --- |
@@ -19,6 +19,7 @@ The wordmark is Inter Display Bold, converted to outlines so it needs no font in
 | Yellow chevron | `#f0e64a` | `#f2ea65` |
 | Head | `#589632` | `#71a651` |
 | Body | `#8a5528` | `#9c6f4a` |
+| Wings | `#5f3a1c` | `#73492a` |
 | Nostrils | `#8a5528` | `#8a5528` |
 | Eyes | `#161616` | `#161616` |
 | Eye highlight | `#ffffff` | `#ffffff` |
