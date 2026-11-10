@@ -1,3 +1,5 @@
+<img src="assets/quac-mark.svg" alt="QUAC logo" width="96">
+
 # QUAC
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. It is made by Vectoria.
@@ -81,7 +83,7 @@ The JavaScript package makes no network request. It builds a catalogue from what
 
 The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.1.0/schema.json`. Any draft-07 validator checks a Catalog with its Collections inline, or a single Collection, against it. It checks only `quac:` fields: any other field passes, and a `quac:` field the schema does not define fails. A catalogue says it follows QUAC by listing the schema's address in `stac_extensions`.
 
-The [Publish the schema](.github/workflows/schema-pages.yml) workflow copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, and GitHub Pages serves that branch at `https://vectoriahq.github.io/quac/`.
+The [Publish the schema and front page](.github/workflows/schema-pages.yml) workflow copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, and writes the site's front page from [`site/`](site/), listing every version. GitHub Pages serves that branch at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/).
 
 ## What this repository holds
 
