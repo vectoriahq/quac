@@ -25,4 +25,4 @@ The wordmark is Inter Display Bold, converted to outlines so it needs no font in
 | Eye highlight | `#ffffff` | `#ffffff` |
 | Wordmark | `#161616` | `#f4f4f4` on dark |
 
-The orange, yellow and green are the QGIS logo's own. Each lit half is the shaded colour with 15% white over it, as in the QGIS element.
+The orange, yellow and green are the QGIS logo's own. The lit halves of the bill, chevron, head and body are the shaded colour with 15% white over it, as in the QGIS element; the wings take a smaller step so they stay a richer brown.
