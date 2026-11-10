@@ -4,18 +4,41 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. It is made by Vectoria.
 
-With QUAC you can:
+**What QUAC lets you know about a catalogue**
 
-- **Take a QGIS project's forms to the web.** A street-tree layer's species list, its height range of 0 to 80 metres and its locked fields are set in QGIS. QUAC carries them in a catalogue, so a web or mobile app shows the same form without opening QGIS.
-- **Ask QGIS Server for the whole map in one request.** With the QUAC plugin, `SERVICE=QUAC&REQUEST=GetCatalogue` answers every layer the project publishes, with its fields, whether it can be edited and its edit locks. With an access-control plugin installed, each person gets only what they may see.
-- **Give cloud-native files a map.** A catalogue of GeoParquet files can carry each layer's form, value lists, relations and style, so an app can show the layers and build their forms with no GIS server behind them.
-- **Read many sources one way.** The JavaScript package builds a QUAC catalogue from a QGIS project, a WFS, WMS or OGC API Features service, or ArcGIS layers, so an app reads one format instead of one per source.
+**Map**
+- the layer to make active when it opens
+- the view it opens on
+- which layers start switched on
+- groups that show one layer at a time
+
+**Layers**
+- read-only layers, and locked edits: adding, changing, moving, deleting
+- private layers, such as lookup tables to keep out of a layer list
+- related layers, such as inspections that belong to a site
+- the field that names each feature in a list
+- scale range and opacity
+
+**Fields**
+- choices from a fixed list or from another layer
+- number ranges, steps and units
+- date formats and checkbox values
+- required and unique fields, and rules with their messages
+- default values, and fields that keep the last value entered
+- fields that can't be changed, or only while a condition holds
+
+**Forms**
+- field order
+- fields shown only while a condition holds, such as "Cause of damage" once "Damaged" is ticked
+
+**Sources**
+- QGIS projects and QGIS Server, WFS, WMS, OGC API Features and ArcGIS
 
 ## Where QUAC fits
 
-Cloud-native geospatial publishes data as plain files rather than through a server. The data sits in object storage in formats built to be read over the web, such as GeoParquet, PMTiles and Cloud Optimized GeoTIFF, and a STAC catalogue says what each dataset is and where it lives. [Portolan](https://github.com/portolan-sdi/portolan-spec) specifies how to publish such a catalogue with no server or API to run. Query engines such as DuckDB read the files directly, and table formats such as Apache Iceberg keep their versions.
+A STAC catalogue says what data exists, where it is and how to read it, and [Portolan](https://github.com/portolan-sdi/portolan-spec) says how to publish one for cloud-native data with no server to run.
 
-That stack says what data exists, where it is and how to read it. It does not say how a map should show the data or how people should edit it: which fields a form shows and in what order, what each field accepts and defaults to, which edits are locked, how one layer's records relate to another's, how each layer is drawn, and which layers are grouped or shown at the start. Today that lives in a QGIS project file, a GIS server's configuration or an ArcGIS Web Map, each in its own shape and read mainly by the software that wrote it.
+A catalogue does not say how a map should show that data or how people should edit it. That lives in a QGIS project, a GIS server's configuration or an ArcGIS Web Map, each in its own shape and read mainly by the software that wrote it.
 
 QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary STAC Collection with `quac:` fields added, so:
 
