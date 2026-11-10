@@ -106,6 +106,13 @@ QUAC is pre-1.0. Version 0.1.0 of the JavaScript package is on npm as [`@vectori
 
 The [Publish to npm](.github/workflows/npm-publish.yml) workflow then checks the tag against the version, runs the types and tests, and publishes the package to npm.
 
+To try a change before it is released, publish a test version from its pull request's branch:
+
+1. On the branch, set the version to a test version, such as `0.2.0-next.1`.
+2. Publish a GitHub release from that branch, tagged `@vectoriahq/quac@0.2.0-next.1`, with **Set as a pre-release** ticked.
+
+npm lists a test version under its `next` tag, so `npm install @vectoriahq/quac` still installs the last full release, and `npm install @vectoriahq/quac@0.2.0-next.1` installs the test version. Before the pull request merges, set the version to the release it will become.
+
 ## Releasing the QGIS plugin
 
 1. Set the new version in `packages/quac-qgis-server/quac_catalogue/metadata.txt` and merge it to `main`.
