@@ -95,6 +95,13 @@ QUAC began inside Groundwork, Vectoria's web app for capturing and editing spati
 
 QUAC is pre-1.0 and not yet released.
 
+## Releasing the JavaScript package
+
+1. Set the new version in `packages/quac/package.json` and merge it to `main`.
+2. Publish a GitHub release from `main` whose tag is the package's name and that version, such as `@vectoriahq/quac@0.1.0`.
+
+The [Publish to npm](.github/workflows/npm-publish.yml) workflow then checks the tag against the version, runs the types and tests, and publishes the package to npm.
+
 ## Licence
 
 Copyright 2026 Vectoria Pty Ltd.

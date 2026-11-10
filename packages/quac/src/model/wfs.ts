@@ -1,4 +1,4 @@
-import type { FeatureFilter } from './featureFilter'
+import type { FeatureFilter } from './featureFilter.ts'
 
 /**
  * Supported high-level WFS operation names used by the app.

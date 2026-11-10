@@ -1,15 +1,15 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { generateStacCatalogueFromWms } from './wmsStacCatalogue'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
-import { readCollectionWms } from '../model/stacWms'
-import { parseGetProjectSettings } from '../parse/parseGetProjectSettings'
+import { generateStacCatalogueFromWms } from './wmsStacCatalogue.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { readCollectionWms } from '../model/stacWms.ts'
+import { parseGetProjectSettings } from '../parse/parseGetProjectSettings.ts'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti-get-project-settings.xml?raw'
 
-import type { WfsCapabilities } from '../model/wfs'
-import type { WmsLayerGroup } from '../model/WmsProject'
+import type { WfsCapabilities } from '../model/wfs.ts'
+import type { WmsLayerGroup } from '../model/WmsProject.ts'
 
 const project = parseGetProjectSettings(fixtureXml)
 

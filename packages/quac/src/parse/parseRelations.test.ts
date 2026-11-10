@@ -1,8 +1,8 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseQgsXml } from './parseQgsXml'
+import { parseQgsXml } from './parseQgsXml.ts'
 import fixtureXml from '../tests/fixtures/qgis/related-datasets/street-trees.qgs?raw'
 
 /**

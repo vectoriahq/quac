@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest'
 import {
   generateStacCatalogueFromOgcCollections,
   resolveOgcCollectionSource
-} from './ogcFeaturesStacCatalogue'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
+} from './ogcFeaturesStacCatalogue.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 
-import type { OgcCollection } from '../model/ogcFeatures'
+import type { OgcCollection } from '../model/ogcFeatures.ts'
 
 const COLLECTIONS = 'https://example.test/api/collections'
 

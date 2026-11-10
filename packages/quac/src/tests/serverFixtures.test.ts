@@ -1,10 +1,10 @@
-import './linkedomDomParser'
+import './linkedomDomParser.ts'
 
 import { readFileSync } from 'node:fs'
 
 import { describe, expect, it } from 'vitest'
 
-import { generateServerStacCatalogue, generateStacCatalogue, parseQgsXml, readProjectXml } from '../index'
+import { generateServerStacCatalogue, generateStacCatalogue, parseQgsXml, readProjectXml } from '../index.ts'
 import publishingQgs from './fixtures/qgis/server-publishing/publishing.qgs?raw'
 
 /** Every fixture project, by path. */

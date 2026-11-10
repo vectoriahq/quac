@@ -5,12 +5,12 @@ import {
   readArcgisCatalogueItemId,
   readArcgisNotShownReason,
   resolveArcgisCollectionSource
-} from './arcgisStacCatalogue'
-import { readCollectionScaleRange, readCollectionVisibility } from './normalizedProject'
-import { collectCollectionStyles, getDefaultStyle } from '../model/stacStyles'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
+} from './arcgisStacCatalogue.ts'
+import { readCollectionScaleRange, readCollectionVisibility } from './normalizedProject.ts'
+import { collectCollectionStyles, getDefaultStyle } from '../model/stacStyles.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 
-import type { ArcgisLayerSet } from '../model/arcgis'
+import type { ArcgisLayerSet } from '../model/arcgis.ts'
 
 const BOTANICAL = 'https://services3.arcgis.com/x/arcgis/rest/services/BotanicalSignificance/FeatureServer/0'
 const VEGETATION = 'https://services3.arcgis.com/x/arcgis/rest/services/VegetationZones/FeatureServer/0'

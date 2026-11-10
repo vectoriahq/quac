@@ -1,6 +1,6 @@
 import { strFromU8, unzipSync } from 'fflate'
 
-import { getLowerCaseExtension } from '../util/fileName'
+import { getLowerCaseExtension } from '../util/fileName.ts'
 
 /**
  * Returns a QGIS project file's XML, ready for `parseQgsXml`.

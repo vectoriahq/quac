@@ -4,10 +4,10 @@ import {
   normalizeExternalStacCatalogue,
   parseWfsGetFeatureUrl,
   resolveWfsCollectionSource
-} from './externalStacCatalogue'
-import { QUAC_SCHEMA_URL } from '../model/quacExtension'
+} from './externalStacCatalogue.ts'
+import { QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
 
-import type { StacCatalog, StacCollection } from '../model/Stac'
+import type { StacCatalog, StacCollection } from '../model/Stac.ts'
 
 /**
  * Documents as they are read from somewhere else: missing the fields the profile

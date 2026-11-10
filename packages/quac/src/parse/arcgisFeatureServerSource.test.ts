@@ -1,13 +1,13 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseDataSource } from './parseDataSource'
-import { parseQgsXml } from './parseQgsXml'
-import { readArcgisNotShownReason, resolveArcgisCollectionSource } from '../generate/arcgisStacCatalogue'
-import { generateStacCatalogue } from '../generate/stacCatalogue'
-import { readDataAsset } from '../model/stacAssetRoles'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
+import { parseDataSource } from './parseDataSource.ts'
+import { parseQgsXml } from './parseQgsXml.ts'
+import { readArcgisNotShownReason, resolveArcgisCollectionSource } from '../generate/arcgisStacCatalogue.ts'
+import { generateStacCatalogue } from '../generate/stacCatalogue.ts'
+import { readDataAsset } from '../model/stacAssetRoles.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 import kindersXml from '../tests/fixtures/qgis/arcgis-feature-service/kinders.qgs?raw'
 
 const KINDERS_URL = 'https://gis.example.test/arcgis/rest/services/Kinders/FeatureServer/0'

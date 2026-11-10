@@ -1,8 +1,8 @@
-import { listQuacExtension } from '../model/quacExtension'
-import { STAC_VERSION } from '../model/Stac'
-import { readDataAsset } from '../model/stacAssetRoles'
+import { listQuacExtension } from '../model/quacExtension.ts'
+import { STAC_VERSION } from '../model/Stac.ts'
+import { readDataAsset } from '../model/stacAssetRoles.ts'
 
-import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac'
+import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac.ts'
 
 /**
  * Converts a STAC document fetched from somewhere else to the Groundwork

@@ -1,11 +1,11 @@
-import { generateStacFromNormalized, slugify } from './normalizedProject'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats'
-import { WFS_CAPABILITIES_VERSION } from '../util/wfsVersions'
+import { generateStacFromNormalized, slugify } from './normalizedProject.ts'
+import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
+import { WFS_CAPABILITIES_VERSION } from '../util/wfsVersions.ts'
 
 
-import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject'
-import type { StacAsset, StacCatalog } from '../model/Stac'
-import type { WfsCapabilities, WfsFeatureTypeSummary } from '../model/wfs'
+import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject.ts'
+import type { StacAsset, StacCatalog } from '../model/Stac.ts'
+import type { WfsCapabilities, WfsFeatureTypeSummary } from '../model/wfs.ts'
 
 /**
  * Generates a STAC Catalog tree from a WFS GetCapabilities response:

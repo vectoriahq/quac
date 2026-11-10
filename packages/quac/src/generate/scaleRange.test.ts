@@ -1,12 +1,12 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionScaleRange } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionScaleRange } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { StacCollection } from '../model/Stac'
+import type { StacCollection } from '../model/Stac.ts'
 
 /**
  * QGIS's scale-dependent visibility, from the `<maplayer>` attributes through

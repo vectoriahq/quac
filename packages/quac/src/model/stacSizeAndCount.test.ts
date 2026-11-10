@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionRowCount, readDataAssetFileSize } from './stacSizeAndCount'
+import { readCollectionRowCount, readDataAssetFileSize } from './stacSizeAndCount.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 function collection(fields: Record<string, unknown>, dataAsset: Record<string, unknown> = {}): StacCollection {
   return {

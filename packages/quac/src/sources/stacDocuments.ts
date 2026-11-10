@@ -1,4 +1,4 @@
-import type { StacCatalog, StacCollection } from '../model/Stac'
+import type { StacCatalog, StacCollection } from '../model/Stac.ts'
 
 /**
  * Pure helpers over a fetched STAC document, used by `StacEndpointAdapter` as

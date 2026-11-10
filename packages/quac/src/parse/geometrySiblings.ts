@@ -1,6 +1,6 @@
-import { GEOMETRY_TYPE_OPTION } from './parseDataSource'
+import { GEOMETRY_TYPE_OPTION } from './parseDataSource.ts'
 
-import type { FileDataSource, LayerEntry, LayerGroup, QgsProject } from '../model/QgsProject'
+import type { FileDataSource, LayerEntry, LayerGroup, QgsProject } from '../model/QgsProject.ts'
 
 /**
  * The project's layers that QGIS split out of one file by shape, which

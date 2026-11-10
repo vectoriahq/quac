@@ -1,6 +1,6 @@
-import { parseDataDefinedEditable } from './parseDataDefinedEditable'
+import { parseDataDefinedEditable } from './parseDataDefinedEditable.ts'
 
-import type { LayerFormLayout } from '../model/QgsProject'
+import type { LayerFormLayout } from '../model/QgsProject.ts'
 
 /**
  * Reads a layer's Drag and Drop Designer form: the fields its `<attributeEditorForm>`

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateStacCatalogueFromFolder } from './folderStacCatalogue'
-import { collectCollectionStyles } from '../model/stacStyles'
+import { generateStacCatalogueFromFolder } from './folderStacCatalogue.ts'
+import { collectCollectionStyles } from '../model/stacStyles.ts'
 
-import type { FolderCatalogueFile } from './folderStacCatalogue'
+import type { FolderCatalogueFile } from './folderStacCatalogue.ts'
 
 function file(overrides: Partial<FolderCatalogueFile> = {}): FolderCatalogueFile {
   return {

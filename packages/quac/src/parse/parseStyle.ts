@@ -1,6 +1,6 @@
-import { devLog } from '../util/devLog'
+import { devLog } from '../util/devLog.ts'
 
-import type { LayerStyle } from '../model/QgsProject'
+import type { LayerStyle } from '../model/QgsProject.ts'
 
 /**
  * Captures all named styles defined for a layer, plus the index of the

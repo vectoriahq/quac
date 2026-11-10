@@ -1,11 +1,11 @@
-import { generateStacFromNormalized, slugify, withSelfLink } from './normalizedProject'
-import { encodeAssetPath } from '../model/stacHref'
-import { FILE_EXTENSION, FILE_SIZE_FIELD } from '../model/stacSizeAndCount'
-import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles'
-import { declaredMediaTypeForFile } from '../util/catalogueFileFormats'
+import { generateStacFromNormalized, slugify, withSelfLink } from './normalizedProject.ts'
+import { encodeAssetPath } from '../model/stacHref.ts'
+import { FILE_EXTENSION, FILE_SIZE_FIELD } from '../model/stacSizeAndCount.ts'
+import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles.ts'
+import { declaredMediaTypeForFile } from '../util/catalogueFileFormats.ts'
 
-import type { NormalizedLayer, NormalizedProject } from './normalizedProject'
-import type { StacAsset, StacCatalog } from '../model/Stac'
+import type { NormalizedLayer, NormalizedProject } from './normalizedProject.ts'
+import type { StacAsset, StacCatalog } from '../model/Stac.ts'
 
 /**
  * Generates a STAC Catalog for a cloud folder that holds layer files and no

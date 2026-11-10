@@ -1,8 +1,8 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseLayerStyles } from './parseStyle'
+import { parseLayerStyles } from './parseStyle.ts'
 
 /**
  * `categorisedField` is read from the renderer's own `attr`, gated on the

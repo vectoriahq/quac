@@ -1,7 +1,7 @@
-import { isTrueValue, readCustomProperty } from './customProperties'
-import { propertyChild, propertyList, propertyText, readPropertyBlock } from './projectProperties'
+import { isTrueValue, readCustomProperty } from './customProperties.ts'
+import { propertyChild, propertyList, propertyText, readPropertyBlock } from './projectProperties.ts'
 
-import type { EditLock, LayerLocks, LockedEdit, WfsTransactionLayers } from '../model/QgsProject'
+import type { EditLock, LayerLocks, LockedEdit, WfsTransactionLayers } from '../model/QgsProject.ts'
 
 /**
  * The layer the QFieldSync plugin names as the one a project opens with as

@@ -1,8 +1,8 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseWmsCrsList, parseWmsPublishing } from './parseWmsPublishing'
+import { parseWmsCrsList, parseWmsPublishing } from './parseWmsPublishing.ts'
 
 function rootOf(properties: string): Element {
   return new DOMParser().parseFromString(`<qgis><properties>${properties}</properties></qgis>`, 'text/xml').documentElement

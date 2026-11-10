@@ -1,4 +1,4 @@
-import type { StacAsset, StacCollection } from './Stac'
+import type { StacAsset, StacCollection } from './Stac.ts'
 
 /**
  * Selecting a Collection's data asset.

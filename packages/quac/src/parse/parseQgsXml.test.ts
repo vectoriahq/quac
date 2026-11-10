@@ -1,10 +1,10 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseDataSource } from './parseDataSource'
-import { parseQgsXml } from './parseQgsXml'
-import { generateStacCatalogue } from '../generate/stacCatalogue'
+import { parseDataSource } from './parseDataSource.ts'
+import { parseQgsXml } from './parseQgsXml.ts'
+import { generateStacCatalogue } from '../generate/stacCatalogue.ts'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti.qgs?raw'
 
 describe('parseQgsXml — graffiti fixture', () => {

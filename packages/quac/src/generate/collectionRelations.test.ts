@@ -1,15 +1,15 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { QUAC_RELATED_TO_FIELD, readCollectionRelatedTo } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { STAC_VERSION } from '../model/Stac'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { QUAC_RELATED_TO_FIELD, readCollectionRelatedTo } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { STAC_VERSION } from '../model/Stac.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 import fixtureXml from '../tests/fixtures/qgis/related-datasets/street-trees.qgs?raw'
 
-import type { StacCollection } from '../model/Stac'
+import type { StacCollection } from '../model/Stac.ts'
 
 const PARENT_ID = 'street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90'
 const CHILD_ID = 'tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47'

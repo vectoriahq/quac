@@ -3,7 +3,7 @@ import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
 import referenceDoc from '../../spec/README.md?raw'
-import { generateServerStacCatalogue, generateStacCatalogue, parseQgsXml } from '../index'
+import { generateServerStacCatalogue, generateStacCatalogue, parseQgsXml } from '../index.ts'
 import everyFieldJson from './examples/every-field.json?raw'
 import schemaJson from './quac.schema.json?raw'
 

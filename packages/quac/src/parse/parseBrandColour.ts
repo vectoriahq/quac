@@ -1,4 +1,4 @@
-import { propertyList, readPropertyBlock } from './projectProperties'
+import { propertyList, readPropertyBlock } from './projectProperties.ts'
 
 /** The project colour label Groundwork reads as the map's brand colour, compared ignoring case. */
 export const BRAND_COLOUR_LABEL = 'Brand'

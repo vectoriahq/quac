@@ -1,6 +1,6 @@
-import { qgisServerNamesOf } from './stacCatalogue'
+import { qgisServerNamesOf } from './stacCatalogue.ts'
 
-import type { LayerEntry, LayerGroup, QgsProject } from '../model/QgsProject'
+import type { LayerEntry, LayerGroup, QgsProject } from '../model/QgsProject.ts'
 
 /** A project's layer tree as QGIS Server publishes it (`serverLayerTree`). */
 export interface ServerLayerTree {

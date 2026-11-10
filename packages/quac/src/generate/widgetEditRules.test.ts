@@ -1,12 +1,12 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldEditRules } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionFieldEditRules } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { StacCollection, TableColumn } from '../model/Stac'
+import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
 /**
  * QGIS's Checkbox, Range and Date/Time widgets, through to

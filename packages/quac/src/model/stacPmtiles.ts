@@ -1,6 +1,6 @@
-import { findAssetByRole } from './stacAssetRoles'
+import { findAssetByRole } from './stacAssetRoles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 /**
  * A Collection's PMTiles rendering derivative — the vector tile archive a

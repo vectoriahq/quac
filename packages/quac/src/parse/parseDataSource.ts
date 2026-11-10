@@ -1,9 +1,9 @@
-import { wmsEndpoint } from '../model/stacWms'
-import { wmtsEndpoint } from '../model/stacWmts'
+import { wmsEndpoint } from '../model/stacWms.ts'
+import { wmtsEndpoint } from '../model/stacWmts.ts'
 
-import type { DelimitedTextOptions } from '../model/delimitedText'
-import type { FeatureFilter } from '../model/featureFilter'
-import type { DataSource, FileDataSource } from '../model/QgsProject'
+import type { DelimitedTextOptions } from '../model/delimitedText.ts'
+import type { FeatureFilter } from '../model/featureFilter.ts'
+import type { DataSource, FileDataSource } from '../model/QgsProject.ts'
 
 /**
  * Parses a QGIS <datasource> string into a typed descriptor.

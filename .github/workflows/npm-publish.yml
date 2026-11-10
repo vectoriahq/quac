@@ -1,0 +1,49 @@
+name: Publish to npm
+
+# Publishes @vectoriahq/quac when a GitHub release is published whose tag
+# is the package's name and version, such as @vectoriahq/quac@0.1.0.
+#
+# npm accepts the publish from this workflow by trusted publishing, which
+# needs the id-token permission. Where the NPM_TOKEN secret is set, npm
+# falls back to it when trusted publishing is not set up for the package.
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish @vectoriahq/quac
+    if: startsWith(github.event.release.tag_name, '@vectoriahq/quac@')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Check the tag matches the package's version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          expected="@vectoriahq/quac@$(node -p "require('./packages/quac/package.json').version")"
+          if [ "$TAG" != "$expected" ]; then
+            echo "::error::The release's tag is $TAG, but packages/quac/package.json gives $expected. Change the version in package.json, or publish a release tagged $expected."
+            exit 1
+          fi
+      - run: npm ci
+      - name: Types
+        run: npm run typecheck
+      - name: Tests
+        run: npm test
+      - name: Publish
+        run: npm publish --workspace @vectoriahq/quac
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

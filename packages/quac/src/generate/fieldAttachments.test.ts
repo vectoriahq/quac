@@ -1,12 +1,12 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldAttachments } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionFieldAttachments } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { TableColumn } from '../model/Stac'
+import type { TableColumn } from '../model/Stac.ts'
 
 /**
  * QGIS's Attachment edit widget, which it registers as `ExternalResource`,

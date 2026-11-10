@@ -1,11 +1,11 @@
-import { readCustomPropertyList } from './customProperties'
-import { parseDataSource } from './parseDataSource'
-import { parseFormLayout } from './parseFormLayout'
-import { parseQfieldSyncLocks } from './parseQfieldSync'
-import { parseLayerStyles } from './parseStyle'
-import { readQgisExpression, unescapeStringLiteral } from './qgisExpression'
-import { resolveFieldIconAddress } from '../model/fieldIconAddress'
-import { devLog } from '../util/devLog'
+import { readCustomPropertyList } from './customProperties.ts'
+import { parseDataSource } from './parseDataSource.ts'
+import { parseFormLayout } from './parseFormLayout.ts'
+import { parseQfieldSyncLocks } from './parseQfieldSync.ts'
+import { parseLayerStyles } from './parseStyle.ts'
+import { readQgisExpression, unescapeStringLiteral } from './qgisExpression.ts'
+import { resolveFieldIconAddress } from '../model/fieldIconAddress.ts'
+import { devLog } from '../util/devLog.ts'
 
 import type {
   BoundingBox,
@@ -25,7 +25,7 @@ import type {
   LayerResourceMetadata,
   LayerScaleRange,
   ServerHiddenFields
-} from '../model/QgsProject'
+} from '../model/QgsProject.ts'
 
 /**
  * Parses the <projectlayers> block into a list of LayerEntry. Annotation

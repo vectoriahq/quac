@@ -1,4 +1,4 @@
-import { propertyList, readPropertyBlock } from './projectProperties'
+import { propertyList, readPropertyBlock } from './projectProperties.ts'
 
 /**
  * The project's own variables (Project Properties > Variables), by name. QGIS

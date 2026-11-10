@@ -1,6 +1,6 @@
-import { devLog } from '../util/devLog'
+import { devLog } from '../util/devLog.ts'
 
-import type { LayerGroup, LayerTreeNode } from '../model/QgsProject'
+import type { LayerGroup, LayerTreeNode } from '../model/QgsProject.ts'
 
 /**
  * Parses the <layer-tree-group> root into a tree of groups + layer leaves.

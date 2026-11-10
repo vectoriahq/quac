@@ -1,8 +1,8 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseMerginFilters } from './parseMergin'
+import { parseMerginFilters } from './parseMergin.ts'
 
 const filter = (overrides: Record<string, unknown> = {}) => ({
   filter_name: 'Priority',

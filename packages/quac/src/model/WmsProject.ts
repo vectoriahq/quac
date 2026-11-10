@@ -1,4 +1,4 @@
-import type { LayerScaleRange } from './QgsProject'
+import type { LayerScaleRange } from './QgsProject.ts'
 
 /**
  * Typed in-memory representation of a QGIS Server WMS GetProjectSettings

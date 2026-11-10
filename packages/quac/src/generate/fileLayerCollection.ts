@@ -1,9 +1,9 @@
-import { generateStacFromNormalized, slugify } from './normalizedProject'
-import { QUAC_LAYER_NAME } from './stacCatalogue'
-import { encodeAssetPath } from '../model/stacHref'
-import { declaredMediaTypeForFile, GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats'
+import { generateStacFromNormalized, slugify } from './normalizedProject.ts'
+import { QUAC_LAYER_NAME } from './stacCatalogue.ts'
+import { encodeAssetPath } from '../model/stacHref.ts'
+import { declaredMediaTypeForFile, GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
-import type { StacCollection } from '../model/Stac'
+import type { StacCollection } from '../model/Stac.ts'
 
 /**
  * The fields a Collection for a file dropped onto the map is built from.

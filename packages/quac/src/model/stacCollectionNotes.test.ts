@@ -5,9 +5,9 @@ import {
   readCollectionDeprecation,
   readCollectionSelfHref,
   readCollectionThumbnail
-} from './stacCollectionNotes'
+} from './stacCollectionNotes.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 function collection(fields: Record<string, unknown> = {}): StacCollection {
   return { type: 'Collection', id: 'provinces', links: [], ...fields } as unknown as StacCollection

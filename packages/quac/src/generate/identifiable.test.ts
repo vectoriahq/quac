@@ -1,13 +1,13 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
 
-import { readCollectionIdentifiable } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { generateStacCatalogueFromWms } from './wmsStacCatalogue'
-import { parseGetProjectSettings } from '../parse/parseGetProjectSettings'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionIdentifiable } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { generateStacCatalogueFromWms } from './wmsStacCatalogue.ts'
+import { parseGetProjectSettings } from '../parse/parseGetProjectSettings.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
 function mapLayerXml(id: string, name: string, flags: string): string {
   return `<maplayer type="vector" geometry="Line"><id>${id}</id><datasource>./${id}.json</datasource>`

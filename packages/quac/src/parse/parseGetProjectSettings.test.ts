@@ -1,9 +1,9 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseGetProjectSettings } from './parseGetProjectSettings'
-import { generateStacCatalogueFromWms } from '../generate/wmsStacCatalogue'
+import { parseGetProjectSettings } from './parseGetProjectSettings.ts'
+import { generateStacCatalogueFromWms } from '../generate/wmsStacCatalogue.ts'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti-get-project-settings.xml?raw'
 
 

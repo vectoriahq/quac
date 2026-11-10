@@ -1,9 +1,9 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseBrandColour } from './parseBrandColour'
-import { parseQgsXml } from './parseQgsXml'
+import { parseBrandColour } from './parseBrandColour.ts'
+import { parseQgsXml } from './parseQgsXml.ts'
 
 const parse = (properties: string) =>
   parseBrandColour(new DOMParser().parseFromString(`<qgis><properties>${properties}</properties></qgis>`, 'text/xml').documentElement)

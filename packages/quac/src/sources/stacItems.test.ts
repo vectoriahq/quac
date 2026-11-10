@@ -9,10 +9,10 @@ import {
   readItemsHref,
   readItemTimestamp,
   sortItemsNewestFirst
-} from './stacItems'
-import { imageryCollection, itemsPageOne } from '../tests/fixtures/stacApi'
+} from './stacItems.ts'
+import { imageryCollection, itemsPageOne } from '../tests/fixtures/stacApi/index.ts'
 
-import type { StacCollection, StacItem } from '../model/Stac'
+import type { StacCollection, StacItem } from '../model/Stac.ts'
 
 /**
  * The fixtures these run against are hand-authored to the structure a STAC API

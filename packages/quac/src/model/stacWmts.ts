@@ -1,5 +1,5 @@
-import type { WmtsDataSource } from './QgsProject'
-import type { StacCollection, StacLink } from './Stac'
+import type { WmtsDataSource } from './QgsProject.ts'
+import type { StacCollection, StacLink } from './Stac.ts'
 
 /** A WMTS layer's settings as a `rel: "wmts"` web-map-links link holds them. */
 export interface StacWmtsSource {

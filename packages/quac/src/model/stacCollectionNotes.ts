@@ -1,6 +1,6 @@
-import { findAssetByRole } from './stacAssetRoles'
+import { findAssetByRole } from './stacAssetRoles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 /**
  * What a published catalogue says about a Collection for the person choosing
