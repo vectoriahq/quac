@@ -19,6 +19,10 @@ npm run test:server
 
 The first runs the JavaScript tests, the second checks the JavaScript's types, and the third runs the plugin's Python tests. The QGIS Server workflow, `.github/workflows/qgis-server.yml`, runs the plugin inside QGIS Server; it cannot run in an agent's container, so push and read its run.
 
+## Releasing
+
+`RELEASING.md` says how the JavaScript package, the QGIS plugin, and the schema and site are published.
+
 ## Keeping the two implementations in agreement
 
 Each module under `packages/quac-qgis-server/quac_server/` mirrors the JavaScript module of the same name in `packages/quac/src/`. A change under `packages/quac/src/parse/` or `generate/` that moves a saved catalogue needs the same change in the Python, and `packages/quac-qgis-server/README.md` says how the tests keep them in agreement.

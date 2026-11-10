@@ -4,11 +4,41 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. It is made by Vectoria.
 
+**What QUAC lets you know about a catalogue**
+
+**Map**
+- the layer to make active when it opens
+- the view it opens on
+- which layers start switched on
+- groups that show one layer at a time
+
+**Layers**
+- read-only layers, and locked edits: adding, changing, moving, deleting
+- private layers, such as lookup tables to keep out of a layer list
+- related layers, such as inspections that belong to a site
+- the field that names each feature in a list
+- scale range and opacity
+
+**Fields**
+- choices from a fixed list or from another layer
+- number ranges, steps and units
+- date formats and checkbox values
+- required and unique fields, and rules with their messages
+- default values, and fields that keep the last value entered
+- fields that can't be changed, or only while a condition holds
+
+**Forms**
+- field order
+- fields shown only while a condition holds, such as "Cause of damage" once "Damaged" is ticked
+
+**Sources**
+- QGIS projects and QGIS Server, WFS, WMS, OGC API Features and ArcGIS
+
 ## Where QUAC fits
 
-Cloud-native geospatial publishes data as plain files rather than through a server. The data sits in object storage in formats built to be read over the web, such as GeoParquet, PMTiles and Cloud Optimized GeoTIFF, and a STAC catalogue says what each dataset is and where it lives. [Portolan](https://github.com/portolan-sdi/portolan-spec) specifies how to publish such a catalogue with no server or API to run. Query engines such as DuckDB read the files directly, and table formats such as Apache Iceberg keep their versions.
+A STAC catalogue says what data exists, where it is and how to read it, and [Portolan](https://github.com/portolan-sdi/portolan-spec) says how to publish one for cloud-native data with no server to run.
 
-That stack says what data exists, where it is and how to read it. It does not say how a map should show the data or how people should edit it: which fields a form shows and in what order, what each field accepts and defaults to, which edits are locked, how one layer's records relate to another's, how each layer is drawn, and which layers are grouped or shown at the start. Today that lives in a QGIS project file, a GIS server's configuration or an ArcGIS Web Map, each in its own shape and read mainly by the software that wrote it.
+A catalogue does not say how a map should show that data or how people should edit it. That lives in a QGIS project, a GIS server's configuration or an ArcGIS Web Map, each in its own shape and read mainly by the software that wrote it.
 
 QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary STAC Collection with `quac:` fields added, so:
 
@@ -83,8 +113,6 @@ The JavaScript package makes no network request. It builds a catalogue from what
 
 The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.1.0/schema.json`. Any draft-07 validator checks a Catalog with its Collections inline, or a single Collection, against it. It checks only `quac:` fields: any other field passes, and a `quac:` field the schema does not define fails. A catalogue says it follows QUAC by listing the schema's address in `stac_extensions`.
 
-The [Publish the schema and front page](.github/workflows/schema-pages.yml) workflow copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, and writes the site's front page from [`site/`](site/), listing every version. GitHub Pages serves that branch at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/).
-
 ## What this repository holds
 
 - **The spec**, the field reference and its per-field examples: [`packages/quac/spec/`](packages/quac/spec/).
@@ -98,28 +126,6 @@ QUAC began inside Groundwork, Vectoria's web app for capturing and editing spati
 ## Status
 
 QUAC is pre-1.0. Version 0.1.0 of the JavaScript package is on npm as [`@vectoriahq/quac`](https://www.npmjs.com/package/@vectoriahq/quac). The QGIS Server plugin is not yet released.
-
-## Releasing the JavaScript package
-
-1. Set the new version in `packages/quac/package.json` and merge it to `main`.
-2. Publish a GitHub release from `main` whose tag is the package's name and that version, such as `@vectoriahq/quac@0.1.0`.
-
-The [Publish to npm](.github/workflows/npm-publish.yml) workflow then checks the tag against the version, runs the types and tests, and publishes the package to npm.
-
-To try a change before it is released, publish a test version from its pull request's branch:
-
-1. On the branch, set the version to a test version, such as `0.2.0-next.1`.
-2. Publish a GitHub release from that branch, tagged `@vectoriahq/quac@0.2.0-next.1`, with **Set as a pre-release** ticked.
-
-npm lists a test version under its `next` tag, so `npm install @vectoriahq/quac` still installs the last full release, and `npm install @vectoriahq/quac@0.2.0-next.1` installs the test version. Before the pull request merges, set the version to the release it will become.
-
-## Releasing the QGIS plugin
-
-1. Set the new version in `packages/quac-qgis-server/quac_catalogue/metadata.txt` and merge it to `main`.
-2. Publish a GitHub release from `main` whose tag is the plugin's folder name and that version, such as `quac_catalogue@0.1.0`.
-3. Download the zip the [Build the QGIS plugin](.github/workflows/plugin-release.yml) workflow attaches to the release, and upload it at [plugins.qgis.org](https://plugins.qgis.org/plugins/add/).
-
-The workflow checks the tag against the version and runs the plugin's tests before it builds the zip.
 
 ## Licence
 
