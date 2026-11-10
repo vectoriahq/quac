@@ -2,6 +2,7 @@ import { readHttpsAddress } from '../model/fieldIconAddress.ts'
 import { declareQuacExtension } from '../model/quacExtension.ts'
 import { STAC_VERSION } from '../model/Stac.ts'
 import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { readNonBlank } from '../util/nonBlankText.ts'
 
 import type { EditLock, LayerLocks, LockedEdit, FieldAttachment, FieldCheckbox, FieldConstraintExpression, FieldDefaultExpression, FieldDefaultValue, FieldEditRule, FieldFixedValue, FieldRange, FormLayoutField, LayerFormLayout, LayerScaleRange, ProjectMeasurement } from '../model/QgsProject.ts'
 import type { StacAsset, StacCatalog, StacCollection, StacExtent, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnDataType, TableColumnType, TableColumnValue, TableColumnValueRelation } from '../model/Stac.ts'
@@ -570,24 +571,30 @@ export function readCatalogueInitialView(catalog: StacCatalog): NormalizedBbox |
 
 /** The field the source nominates as the layer's title attribute. */
 export function readCollectionDisplayField(collection: StacCollection): string | null {
-  const value = collection['quac:display_field']
-  return typeof value === 'string' && value.trim() ? value.trim() : null
+  return readNonBlank(collection['quac:display_field'])
+}
+
+/**
+ * Each entry of a Collection's `table:columns` that is an object with a
+ * non-blank `name`, as `[trimmed name, column]`, in declared order. An entry
+ * of any other shape, or a `table:columns` that is not a list, yields nothing.
+ */
+function* declaredColumns(collection: StacCollection): Generator<[string, Record<string, unknown>]> {
+  const columns = collection['table:columns']
+  if (!Array.isArray(columns)) return
+  for (const column of columns) {
+    const candidate = readObject(column)
+    const name = readNonBlank(candidate?.name)
+    if (candidate && name) yield [name, candidate]
+  }
 }
 
 /** Field display labels from STAC Table column titles or descriptions. */
 export function readCollectionFieldAliases(collection: StacCollection): Record<string, string> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const aliases: Record<string, string> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = typeof candidate.name === 'string' ? candidate.name.trim() : ''
-    const title = typeof candidate.title === 'string' ? candidate.title.trim() : ''
-    const description = typeof candidate.description === 'string' ? candidate.description.trim() : ''
-    const alias = title || description
-    if (name && alias) aliases[name] = alias
+  for (const [name, column] of declaredColumns(collection)) {
+    const alias = readNonBlank(column.title) ?? readNonBlank(column.description)
+    if (alias) aliases[name] = alias
   }
   return aliases
 }
@@ -599,30 +606,15 @@ export function readCollectionFieldAliases(collection: StacCollection): Record<s
  * `collectFieldNames` does not.
  */
 export function readCollectionFieldNames(collection: StacCollection): string[] {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return []
-
-  const names: string[] = []
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const name = (column as Record<string, unknown>).name
-    if (typeof name === 'string' && name.trim()) names.push(name.trim())
-  }
-  return names
+  return Array.from(declaredColumns(collection), ([name]) => name)
 }
 
 /** Each declared column `type`, keyed by field name. A column with no `type` is absent. */
 export function readCollectionFieldTypes(collection: StacCollection): Record<string, string> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const types: Record<string, string> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = typeof candidate.name === 'string' ? candidate.name.trim() : ''
-    const type = typeof candidate.type === 'string' ? candidate.type.trim() : ''
-    if (name && type) types[name] = type
+  for (const [name, column] of declaredColumns(collection)) {
+    const type = readNonBlank(column.type)
+    if (type) types[name] = type
   }
   return types
 }
@@ -633,18 +625,12 @@ export function readCollectionFieldTypes(collection: StacCollection): Record<str
  * other kind, is dropped, and a column left with no entries is absent.
  */
 export function readCollectionFieldValues(collection: StacCollection): Record<string, TableColumnValue[]> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const picklists: Record<string, TableColumnValue[]> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = typeof candidate.name === 'string' ? candidate.name.trim() : ''
-    if (!name || !Array.isArray(candidate.values)) continue
+  for (const [name, column] of declaredColumns(collection)) {
+    if (!Array.isArray(column.values)) continue
 
     const entries: TableColumnValue[] = []
-    for (const entry of candidate.values) {
+    for (const entry of column.values) {
       if (!entry || typeof entry !== 'object') continue
       const { value, label, icon } = entry as Record<string, unknown>
       const isValue = typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))
@@ -665,16 +651,10 @@ export function readCollectionFieldValues(collection: StacCollection): Record<st
  * `order_field`, reads as ordered by key.
  */
 export function readCollectionFieldValueRelations(collection: StacCollection): Record<string, TableColumnValueRelation> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const relations: Record<string, TableColumnValueRelation> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = readTrimmedString(candidate.name)
-    const declared = candidate['quac:value_relation']
-    if (!name || !declared || typeof declared !== 'object') continue
+  for (const [name, column] of declaredColumns(collection)) {
+    const declared = column['quac:value_relation']
+    if (!declared || typeof declared !== 'object') continue
 
     const entry = declared as Record<string, unknown>
     const lookup = readTrimmedString(entry.collection)
@@ -785,16 +765,10 @@ export function readCollectionPrivate(collection: StacCollection): boolean {
  * omitted or unrecognised `relative_storage` as absolute.
  */
 export function readCollectionFieldAttachments(collection: StacCollection): Record<string, FieldAttachment> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const attachments: Record<string, FieldAttachment> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = typeof candidate.name === 'string' ? candidate.name.trim() : ''
-    const declared = candidate['quac:attachment']
-    if (!name || !declared || typeof declared !== 'object' || Array.isArray(declared)) continue
+  for (const [name, column] of declaredColumns(collection)) {
+    const declared = column['quac:attachment']
+    if (!declared || typeof declared !== 'object' || Array.isArray(declared)) continue
     const fields = declared as Partial<TableColumnAttachment>
 
     attachments[name] = {
@@ -828,17 +802,9 @@ export function readCollectionFieldAttachments(collection: StacCollection): Reco
  * with no expression text is left out.
  */
 export function readCollectionFieldEditRules(collection: StacCollection): Record<string, FieldEditRule> {
-  const columns = collection['table:columns']
-  if (!Array.isArray(columns)) return {}
-
   const relations = readCollectionFieldValueRelations(collection)
   const rules: Record<string, FieldEditRule> = {}
-  for (const column of columns) {
-    if (!column || typeof column !== 'object') continue
-    const candidate = column as Record<string, unknown>
-    const name = typeof candidate.name === 'string' ? candidate.name.trim() : ''
-    if (!name) continue
-
+  for (const [name, candidate] of declaredColumns(collection)) {
     const readOnly = candidate['quac:editable'] === false
     const defaultValue = readColumnDefault(candidate['quac:default'])
     const constraints = readObject(candidate['quac:constraints'])
@@ -900,13 +866,7 @@ export function readCollectionFormLayout(collection: StacCollection): Collection
   const order = collection[QUAC_FORM_ORDER_FIELD]
   if (!Array.isArray(order)) return null
 
-  const columns = new Map<string, Record<string, unknown>>()
-  const declared = collection['table:columns']
-  for (const column of Array.isArray(declared) ? declared : []) {
-    const candidate = readObject(column)
-    const name = readNonBlank(candidate?.name)
-    if (candidate && name) columns.set(name, candidate)
-  }
+  const columns = new Map(declaredColumns(collection))
 
   const fields: FormLayoutField[] = []
   const placed = new Set<string>()
@@ -990,10 +950,6 @@ function readObject(value: unknown): Record<string, unknown> | null {
 
 const ATTACHMENT_VIEWERS = ['image', 'web', 'audio', 'video'] as const
 const ATTACHMENT_RELATIVE_STORAGE = ['absolute', 'project', 'default-root'] as const
-
-function readNonBlank(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value.trim() : null
-}
 
 /** Whether the source declares the layer editable. */
 export function readCollectionEditable(collection: StacCollection): boolean | null {

@@ -3,6 +3,11 @@ name: Publish to npm
 # Publishes @vectoriahq/quac when a GitHub release is published whose tag
 # is the package's name and version, such as @vectoriahq/quac@0.1.0.
 #
+# A release marked as a pre-release publishes a test version, such as
+# 0.2.0-next.1, under npm's `next` tag, so `npm install @vectoriahq/quac`
+# still installs the last full release. Its version must hold a hyphen, and a
+# full release's must not.
+#
 # npm accepts the publish from this workflow by trusted publishing, which
 # needs the id-token permission. Where the NPM_TOKEN secret is set, npm
 # falls back to it when trusted publishing is not set up for the package.
@@ -38,12 +43,30 @@ jobs:
             echo "::error::The release's tag is $TAG, but packages/quac/package.json gives $expected. Change the version in package.json, or publish a release tagged $expected."
             exit 1
           fi
+      - name: Check the version suits the kind of release
+        env:
+          PRERELEASE: ${{ github.event.release.prerelease }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          case "$TAG" in
+            @vectoriahq/quac@*-*) is_test=true ;;
+            *) is_test=false ;;
+          esac
+          if [ "$PRERELEASE" != "$is_test" ]; then
+            if [ "$PRERELEASE" = true ]; then
+              echo "::error::This release is marked as a pre-release, but its version has no hyphen. A test version looks like 0.2.0-next.1."
+            else
+              echo "::error::This release's version has a hyphen, so it is a test version. Mark the release as a pre-release, or give it a version with no hyphen."
+            fi
+            exit 1
+          fi
       - run: npm ci
       - name: Types
         run: npm run typecheck
       - name: Tests
         run: npm test
       - name: Publish
-        run: npm publish --workspace @vectoriahq/quac
+        run: npm publish --workspace @vectoriahq/quac --tag "$NPM_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TAG: ${{ github.event.release.prerelease && 'next' || 'latest' }}

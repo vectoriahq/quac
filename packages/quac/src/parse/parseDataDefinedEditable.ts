@@ -1,3 +1,5 @@
+import { isTrueValue } from './customProperties.ts'
+
 /**
  * Reads each field's active data-defined **Editable** property, the button
  * beside a field's Editable box in QGIS's Attributes Form, as one QGIS
@@ -59,8 +61,7 @@ function readProperty(property: Element): string | null {
 
   switch (Number.parseInt(values.get('type') ?? '', 10)) {
     case 1: {
-      const value = (values.get('val') ?? '').trim().toLowerCase()
-      return value === '' || value === '0' || value === 'false' ? 'false' : 'true'
+      return isTrueValue((values.get('val') ?? '').trim()) ? 'true' : 'false'
     }
     case 2: {
       const field = values.get('field')?.trim()
