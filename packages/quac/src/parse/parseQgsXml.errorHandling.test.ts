@@ -6,7 +6,7 @@
 // it silently patches broken markup instead of flagging it.
 import { describe, expect, it } from 'vitest'
 
-import { parseQgsXml } from './parseQgsXml'
+import { parseQgsXml } from './parseQgsXml.ts'
 
 describe('parseQgsXml — error handling', () => {
   it('throws a clear error for malformed XML', () => {

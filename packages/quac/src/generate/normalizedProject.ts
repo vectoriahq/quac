@@ -1,10 +1,10 @@
-import { readHttpsAddress } from '../model/fieldIconAddress'
-import { declareQuacExtension } from '../model/quacExtension'
-import { STAC_VERSION } from '../model/Stac'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
+import { readHttpsAddress } from '../model/fieldIconAddress.ts'
+import { declareQuacExtension } from '../model/quacExtension.ts'
+import { STAC_VERSION } from '../model/Stac.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 
-import type { EditLock, LayerLocks, LockedEdit, FieldAttachment, FieldCheckbox, FieldConstraintExpression, FieldDefaultExpression, FieldDefaultValue, FieldEditRule, FieldFixedValue, FieldRange, FormLayoutField, LayerFormLayout, LayerScaleRange, ProjectMeasurement } from '../model/QgsProject'
-import type { StacAsset, StacCatalog, StacCollection, StacExtent, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnDataType, TableColumnType, TableColumnValue, TableColumnValueRelation } from '../model/Stac'
+import type { EditLock, LayerLocks, LockedEdit, FieldAttachment, FieldCheckbox, FieldConstraintExpression, FieldDefaultExpression, FieldDefaultValue, FieldEditRule, FieldFixedValue, FieldRange, FormLayoutField, LayerFormLayout, LayerScaleRange, ProjectMeasurement } from '../model/QgsProject.ts'
+import type { StacAsset, StacCatalog, StacCollection, StacExtent, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnDataType, TableColumnType, TableColumnValue, TableColumnValueRelation } from '../model/Stac.ts'
 
 /**
  * Source-agnostic intermediate model + the single STAC generator that

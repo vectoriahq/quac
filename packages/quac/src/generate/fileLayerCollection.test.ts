@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { generateCollectionForDroppedFile, generateCollectionForLinkedFile } from './fileLayerCollection'
+import { generateCollectionForDroppedFile, generateCollectionForLinkedFile } from './fileLayerCollection.ts'
 
 const OPTIONS = {
   collectionId: 'roads.geojson',

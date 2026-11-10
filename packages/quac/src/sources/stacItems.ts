@@ -1,6 +1,6 @@
-import { STAC_VERSION } from '../model/Stac'
+import { STAC_VERSION } from '../model/Stac.ts'
 
-import type { StacCollection, StacItem, StacLink } from '../model/Stac'
+import type { StacCollection, StacItem, StacLink } from '../model/Stac.ts'
 
 /**
  * Reading the Items inside a STAC API's Collection.

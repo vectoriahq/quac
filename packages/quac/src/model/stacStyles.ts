@@ -1,4 +1,4 @@
-import type { StacAsset, StacCollection } from './Stac'
+import type { StacAsset, StacCollection } from './Stac.ts'
 
 /**
  * A Collection's styles — the assets with the `style` role.

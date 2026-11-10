@@ -1,5 +1,5 @@
-import type { WmsDataSource } from './QgsProject'
-import type { StacCollection, StacLink } from './Stac'
+import type { WmsDataSource } from './QgsProject.ts'
+import type { StacCollection, StacLink } from './Stac.ts'
 
 /**
  * The CRS a QGIS Server layer is requested in: the map's own when the server

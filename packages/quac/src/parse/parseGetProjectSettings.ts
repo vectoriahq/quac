@@ -1,6 +1,6 @@
-import { devLog } from '../util/devLog'
+import { devLog } from '../util/devLog.ts'
 
-import type { LayerScaleRange } from '../model/QgsProject'
+import type { LayerScaleRange } from '../model/QgsProject.ts'
 import type {
   WmsAttribute,
   WmsBoundingBox,
@@ -9,7 +9,7 @@ import type {
   WmsLayerTreeNode,
   WmsProject,
   WmsStyle
-} from '../model/WmsProject'
+} from '../model/WmsProject.ts'
 
 /**
  * Parses a QGIS Server WMS GetProjectSettings XML response into a typed

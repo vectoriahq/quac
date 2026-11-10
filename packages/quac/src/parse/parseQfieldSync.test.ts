@@ -1,8 +1,8 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseQfieldSyncLocks, parseWfsTransactionLayers } from './parseQfieldSync'
+import { parseQfieldSyncLocks, parseWfsTransactionLayers } from './parseQfieldSync.ts'
 
 const element = (xml: string) => new DOMParser().parseFromString(xml, 'text/xml').documentElement
 

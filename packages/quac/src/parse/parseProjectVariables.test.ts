@@ -1,9 +1,9 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseProjectVariables } from './parseProjectVariables'
-import { parseQgsXml } from './parseQgsXml'
+import { parseProjectVariables } from './parseProjectVariables.ts'
+import { parseQgsXml } from './parseQgsXml.ts'
 
 const parse = (properties: string) =>
   parseProjectVariables(new DOMParser().parseFromString(`<qgis><properties>${properties}</properties></qgis>`, 'text/xml').documentElement)

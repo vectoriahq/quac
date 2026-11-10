@@ -1,26 +1,26 @@
-import { arcgisQueryAsset } from './arcgisStacCatalogue'
+import { arcgisQueryAsset } from './arcgisStacCatalogue.ts'
 import {
   QUAC_MEASUREMENT_FIELD,
   slugify,
   generateStacFromNormalized,
   unionBboxes,
   withSelfLink
-} from './normalizedProject'
-import { wfsGetFeatureAsset } from './wfsStacCatalogue'
-import { delimitedTextField, QUAC_DELIMITED_TEXT } from '../model/delimitedText'
-import { featureFilterField, QUAC_FEATURE_FILTER } from '../model/featureFilter'
-import { readDataAsset } from '../model/stacAssetRoles'
-import { decodeAssetPath, encodeAssetPath } from '../model/stacHref'
-import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles'
-import { buildWmsLink, WEB_MAP_LINKS_EXTENSION } from '../model/stacWms'
-import { buildWmtsLink } from '../model/stacWmts'
-import { buildXyzLink } from '../model/stacXyz'
-import { findGeometrySiblings, readSiblingShapes, siblingCollectionId } from '../parse/geometrySiblings'
-import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats'
+} from './normalizedProject.ts'
+import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
+import { delimitedTextField, QUAC_DELIMITED_TEXT } from '../model/delimitedText.ts'
+import { featureFilterField, QUAC_FEATURE_FILTER } from '../model/featureFilter.ts'
+import { readDataAsset } from '../model/stacAssetRoles.ts'
+import { decodeAssetPath, encodeAssetPath } from '../model/stacHref.ts'
+import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles.ts'
+import { buildWmsLink, WEB_MAP_LINKS_EXTENSION } from '../model/stacWms.ts'
+import { buildWmtsLink } from '../model/stacWmts.ts'
+import { buildXyzLink } from '../model/stacXyz.ts'
+import { findGeometrySiblings, readSiblingShapes, siblingCollectionId } from '../parse/geometrySiblings.ts'
+import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
-import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject'
-import type { BoundingBox, EditLock, FieldAttachment, FieldConstraintExpression, FieldControl, FieldDefaultValue, FieldEditRule, FieldValueMapEntry, FieldValueRelation, FileDataSource, LayerEntry, LayerFormLayout, LayerGroup, LayerLocks, LayerStyle, LockedEdit, PresetFilter, ProjectMeasurement, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing } from '../model/QgsProject'
-import type { StacAsset, StacCatalog, StacCollection, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnConstraints, TableColumnDefault, TableColumnType, TableColumnValueRelation } from '../model/Stac'
+import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject.ts'
+import type { BoundingBox, EditLock, FieldAttachment, FieldConstraintExpression, FieldControl, FieldDefaultValue, FieldEditRule, FieldValueMapEntry, FieldValueRelation, FileDataSource, LayerEntry, LayerFormLayout, LayerGroup, LayerLocks, LayerStyle, LockedEdit, PresetFilter, ProjectMeasurement, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing } from '../model/QgsProject.ts'
+import type { StacAsset, StacCatalog, StacCollection, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnConstraints, TableColumnDefault, TableColumnType, TableColumnValueRelation } from '../model/Stac.ts'
 import type { FeatureCollection } from 'geojson'
 
 /**

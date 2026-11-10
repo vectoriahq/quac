@@ -1,14 +1,14 @@
-import './linkedomDomParser'
+import './linkedomDomParser.ts'
 
 import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
-import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromArcgisLayers, generateStacCatalogueFromWfsCapabilities, parseQgsXml } from '../index'
+import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromArcgisLayers, generateStacCatalogueFromWfsCapabilities, parseQgsXml } from '../index.ts'
 import schemaJson from '../schema/quac.schema.json?raw'
 
-import type { ArcgisLayerSet } from '../model/arcgis'
-import type { StacCatalog, StacCollection } from '../model/Stac'
-import type { WfsCapabilities } from '../model/wfs'
+import type { ArcgisLayerSet } from '../model/arcgis.ts'
+import type { StacCatalog, StacCollection } from '../model/Stac.ts'
+import type { WfsCapabilities } from '../model/wfs.ts'
 
 /**
  * The first tier of QUAC's fixtures: one small example per field, under

@@ -1,4 +1,4 @@
-import type { QgsProject } from '../model/QgsProject'
+import type { QgsProject } from '../model/QgsProject.ts'
 
 /**
  * Wraps a layer's inline <renderer-v2> subtree into the standalone QML

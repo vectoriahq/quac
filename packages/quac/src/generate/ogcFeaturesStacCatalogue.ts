@@ -1,10 +1,10 @@
-import { generateStacFromNormalized, slugify } from './normalizedProject'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats'
+import { generateStacFromNormalized, slugify } from './normalizedProject.ts'
+import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 
-import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject'
-import type { OgcCollection } from '../model/ogcFeatures'
-import type { StacAsset, StacCatalog, StacCollection } from '../model/Stac'
+import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject.ts'
+import type { OgcCollection } from '../model/ogcFeatures.ts'
+import type { StacAsset, StacCatalog, StacCollection } from '../model/Stac.ts'
 
 /**
  * Generates a STAC Catalog tree from an OGC API - Features `/collections`

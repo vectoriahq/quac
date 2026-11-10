@@ -1,13 +1,13 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { FieldEditRule } from '../model/QgsProject'
-import type { StacCollection, TableColumn } from '../model/Stac'
+import type { FieldEditRule } from '../model/QgsProject.ts'
+import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
 /**
  * QGIS's Attributes Form settings, through to `quac:editable`,

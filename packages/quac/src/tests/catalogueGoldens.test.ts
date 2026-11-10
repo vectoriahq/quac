@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 
-import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromWms, parseGetProjectSettings, parseQgsXml, serverLayerTree } from '../index'
+import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromWms, parseGetProjectSettings, parseQgsXml, serverLayerTree } from '../index.ts'
 
 /**
  * The second tier of QUAC's fixtures: for each whole-project fixture, the

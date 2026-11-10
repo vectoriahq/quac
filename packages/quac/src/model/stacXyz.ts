@@ -1,4 +1,4 @@
-import type { StacCollection, StacLink } from './Stac'
+import type { StacCollection, StacLink } from './Stac.ts'
 
 /**
  * The placeholders a web-map-links v1.3.0 `rel: "xyz"` link's template must

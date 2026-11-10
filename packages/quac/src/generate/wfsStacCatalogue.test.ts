@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { TABLE_EXTENSION } from './normalizedProject'
-import { generateStacCatalogueFromWfsCapabilities } from './wfsStacCatalogue'
+import { TABLE_EXTENSION } from './normalizedProject.ts'
+import { generateStacCatalogueFromWfsCapabilities } from './wfsStacCatalogue.ts'
 import capabilitiesJson from '../tests/fixtures/wfs/two-feature-types-capabilities.json?raw'
 
-import type { WfsCapabilities } from '../model/wfs'
+import type { WfsCapabilities } from '../model/wfs.ts'
 
 const ENDPOINT = 'https://example.org/geoserver/wfs'
 

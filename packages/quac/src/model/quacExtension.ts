@@ -1,4 +1,4 @@
-import type { StacCatalog, StacCollection } from './Stac'
+import type { StacCatalog, StacCollection } from './Stac.ts'
 
 /**
  * The QUAC schema's address, as its `$id` gives it. A catalogue lists it in

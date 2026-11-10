@@ -1,6 +1,6 @@
-import { propertyList, propertyText } from './projectProperties'
+import { propertyList, propertyText } from './projectProperties.ts'
 
-import type { WmsPublishing } from '../model/QgsProject'
+import type { WmsPublishing } from '../model/QgsProject.ts'
 
 /**
  * The project's WMS publishing, from Project Properties → QGIS Server → WMS

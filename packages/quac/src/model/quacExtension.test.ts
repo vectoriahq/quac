@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { QUAC_SCHEMA_URL, declareQuacExtension, isNewerQuacMajor, readQuacVersion } from './quacExtension'
+import { QUAC_SCHEMA_URL, declareQuacExtension, isNewerQuacMajor, readQuacVersion } from './quacExtension.ts'
 import schemaJson from '../schema/quac.schema.json?raw'
 
-import type { StacCatalog, StacCollection } from './Stac'
+import type { StacCatalog, StacCollection } from './Stac.ts'
 
 const TABLE = 'https://stac-extensions.github.io/table/v1.3.0/schema.json'
 

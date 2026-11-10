@@ -1,6 +1,6 @@
-import { readDataAsset } from './stacAssetRoles'
+import { readDataAsset } from './stacAssetRoles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 /**
  * A Collection's declared file size and row count: `file:size` on its `data`

@@ -1,7 +1,7 @@
-import { isFormattableQtDatePattern } from './qtDateFormat'
-import { compileQtRegex } from './qtRegex'
+import { isFormattableQtDatePattern } from './qtDateFormat.ts'
+import { compileQtRegex } from './qtRegex.ts'
 
-import type { MeasureFactors } from './parseMeasurement'
+import type { MeasureFactors } from './parseMeasurement.ts'
 import type { Filter } from 'geostyler-style'
 
 type Comparison = '=' | '!=' | '<>' | '<' | '<=' | '>' | '>='

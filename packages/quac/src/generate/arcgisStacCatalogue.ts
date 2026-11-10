@@ -1,10 +1,10 @@
-import { generateStacFromNormalized, slugify, unionBboxes } from './normalizedProject'
-import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats'
+import { generateStacFromNormalized, slugify, unionBboxes } from './normalizedProject.ts'
+import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles.ts'
+import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
-import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject'
-import type { ArcgisField, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisResolvedLayer } from '../model/arcgis'
-import type { StacAsset, StacCatalog, StacCollection, StacLink, TableColumn, TableColumnType } from '../model/Stac'
+import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject.ts'
+import type { ArcgisField, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisResolvedLayer } from '../model/arcgis.ts'
+import type { StacAsset, StacCatalog, StacCollection, StacLink, TableColumn, TableColumnType } from '../model/Stac.ts'
 
 /**
  * Generates a STAC Catalog from an ArcGIS Online Web Map or Feature Service,

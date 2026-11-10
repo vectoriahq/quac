@@ -1,6 +1,6 @@
-import { devLog } from '../util/devLog'
+import { devLog } from '../util/devLog.ts'
 
-import type { MapExtent } from '../model/QgsProject'
+import type { MapExtent } from '../model/QgsProject.ts'
 
 /**
  * Reads the initial map view extent from <mapcanvas><extent>.

@@ -1,4 +1,4 @@
-import type { LayerGroup, LayerTreeNode } from '../model/QgsProject'
+import type { LayerGroup, LayerTreeNode } from '../model/QgsProject.ts'
 
 /**
  * Walks the QGIS layer tree and records each layer-leaf's effective `checked`

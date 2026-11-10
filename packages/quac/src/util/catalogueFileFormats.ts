@@ -1,4 +1,4 @@
-import { getLowerCaseExtension } from './fileName'
+import { getLowerCaseExtension } from './fileName.ts'
 
 /**
  * What a catalogue says about each file format: its extensions and the media

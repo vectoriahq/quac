@@ -1,6 +1,6 @@
-import { readDataAsset } from './stacAssetRoles'
+import { readDataAsset } from './stacAssetRoles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 /**
  * How a QGIS Delimited Text data source splits its file, and the catalogue

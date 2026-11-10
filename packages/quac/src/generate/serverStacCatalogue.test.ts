@@ -1,15 +1,15 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { generateServerStacCatalogue, serverWmsEndpoint } from './serverStacCatalogue'
-import { QUAC_SCHEMA_URL } from '../model/quacExtension'
-import { collectCatalogueCollections } from '../model/stacTreeWalk'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { generateServerStacCatalogue, serverWmsEndpoint } from './serverStacCatalogue.ts'
+import { QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
+import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 import fixtureXml from '../tests/fixtures/qgis/related-datasets/street-trees.qgs?raw'
 import serverAddresses from '../tests/fixtures/server-addresses.json'
 
-import type { StacCatalog, StacCollection, TableColumn } from '../model/Stac'
+import type { StacCatalog, StacCollection, TableColumn } from '../model/Stac.ts'
 
 const TREES_ID = 'street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90'
 const INSPECTIONS_ID = 'tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47'

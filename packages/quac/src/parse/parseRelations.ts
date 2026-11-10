@@ -1,6 +1,6 @@
-import { devLog } from '../util/devLog'
+import { devLog } from '../util/devLog.ts'
 
-import type { QgsRelation, QgsRelationFieldPair } from '../model/QgsProject'
+import type { QgsRelation, QgsRelationFieldPair } from '../model/QgsProject.ts'
 
 /**
  * Parses `<qgis><relations>` into the project's declared relations.

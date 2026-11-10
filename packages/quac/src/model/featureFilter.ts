@@ -1,6 +1,6 @@
-import { readDataAsset } from './stacAssetRoles'
+import { readDataAsset } from './stacAssetRoles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 /**
  * The filter a QGIS file layer sets on its data in Layer Properties > Source >

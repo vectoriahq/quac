@@ -1,9 +1,9 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { qmlForLayer } from './qmlForLayer'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { qmlForLayer } from './qmlForLayer.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti.qgs?raw'
 
 

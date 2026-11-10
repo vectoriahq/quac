@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionPmtiles } from './stacPmtiles'
+import { readCollectionPmtiles } from './stacPmtiles.ts'
 
-import type { StacCollection } from './Stac'
+import type { StacCollection } from './Stac.ts'
 
 function collection(overrides: Partial<StacCollection>): StacCollection {
   return {

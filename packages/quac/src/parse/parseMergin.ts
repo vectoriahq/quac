@@ -1,7 +1,7 @@
-import { isTrueValue } from './customProperties'
-import { propertyChild, propertyText, readPropertyBlock } from './projectProperties'
+import { isTrueValue } from './customProperties.ts'
+import { propertyChild, propertyText, readPropertyBlock } from './projectProperties.ts'
 
-import type { PresetFilter } from '../model/QgsProject'
+import type { PresetFilter } from '../model/QgsProject.ts'
 
 /** The Mergin Maps filter types the filter row has a control for; `Text`, a "contains" search, is not one. */
 const READ_FILTER_TYPES = new Set(['Number', 'Date', 'Checkbox', 'Single select', 'Multi select'])

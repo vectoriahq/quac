@@ -1,13 +1,13 @@
-import { buildStacExtent, unionBboxes, withDataType } from './normalizedProject'
-import { serverLayerTree, wmsPublishedLayerIds } from './serverLayerTree'
-import { generateStacCatalogue } from './stacCatalogue'
-import { wfsGetFeatureAsset } from './wfsStacCatalogue'
-import { mapQtTypeToStacTableType } from './wmsStacCatalogue'
-import { declareQuacExtension, QUAC_SCHEMA_URL } from '../model/quacExtension'
-import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS } from '../model/stacWms'
+import { buildStacExtent, unionBboxes, withDataType } from './normalizedProject.ts'
+import { serverLayerTree, wmsPublishedLayerIds } from './serverLayerTree.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
+import { mapQtTypeToStacTableType } from './wmsStacCatalogue.ts'
+import { declareQuacExtension, QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
+import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS } from '../model/stacWms.ts'
 
-import type { BoundingBox, LayerEntry, QgsProject } from '../model/QgsProject'
-import type { StacCatalog, StacCollection, StacLink, TableColumn } from '../model/Stac'
+import type { BoundingBox, LayerEntry, QgsProject } from '../model/QgsProject.ts'
+import type { StacCatalog, StacCollection, StacLink, TableColumn } from '../model/Stac.ts'
 
 /**
  * The catalogue a QGIS Server would serve for a project: the QUAC plugin's

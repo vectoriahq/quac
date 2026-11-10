@@ -3,12 +3,12 @@
 // so a constraint with `>` would not reach the reader as QGIS wrote it.
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldEditRules } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionFieldEditRules } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { FieldEditRule } from '../model/QgsProject'
-import type { StacCollection, TableColumn } from '../model/Stac'
+import type { FieldEditRule } from '../model/QgsProject.ts'
+import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
 /**
  * A QGIS constraint expression (`<constraintExpressions>`, with its strength as

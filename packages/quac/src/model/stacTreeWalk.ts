@@ -1,4 +1,4 @@
-import type { StacCatalog, StacCollection } from './Stac'
+import type { StacCatalog, StacCollection } from './Stac.ts'
 
 /**
  * Collects every Collection in a Catalog tree, depth-first, in the order the

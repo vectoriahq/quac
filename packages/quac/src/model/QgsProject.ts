@@ -13,9 +13,9 @@
  *   - future server-side hosting can reuse the same types
  */
 
-import type { DelimitedTextOptions } from './delimitedText'
-import type { FeatureFilter } from './featureFilter'
-import type { TableColumnValueRelation } from './Stac'
+import type { DelimitedTextOptions } from './delimitedText.ts'
+import type { FeatureFilter } from './featureFilter.ts'
+import type { TableColumnValueRelation } from './Stac.ts'
 
 /** The unit names QGIS saves under <Measurement> (`QgsUnitTypes::encodeUnit`), such as `ha` and `meters`. */
 export interface ProjectMeasurement {

@@ -1,12 +1,12 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { findGeometrySiblings } from './geometrySiblings'
-import { parseDataSource } from './parseDataSource'
-import { parseQgsXml } from './parseQgsXml'
+import { findGeometrySiblings } from './geometrySiblings.ts'
+import { parseDataSource } from './parseDataSource.ts'
+import { parseQgsXml } from './parseQgsXml.ts'
 import annotationsXml from '../tests/fixtures/qgis/geometry-sublayers/annotations.qgs?raw'
-import { annotationsProjectWith, annotationsProjectWithSource } from '../tests/geometrySublayersFixture'
+import { annotationsProjectWith, annotationsProjectWithSource } from '../tests/geometrySublayersFixture.ts'
 
 const POINT_ID = 'annotations_point_0b6c2f1e_8d4a_4e7b_9c31_5f2a7d8e1b01'
 const LINE_ID = 'annotations_line_1c7d3a2f_9e5b_4f8c_8d42_6a3b8e9f2c02'

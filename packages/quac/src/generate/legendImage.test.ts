@@ -1,12 +1,12 @@
-import '../tests/linkedomDomParser'
+import '../tests/linkedomDomParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionLegendImage } from './normalizedProject'
-import { generateStacCatalogue } from './stacCatalogue'
-import { parseQgsXml } from '../parse/parseQgsXml'
+import { readCollectionLegendImage } from './normalizedProject.ts'
+import { generateStacCatalogue } from './stacCatalogue.ts'
+import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
-import type { StacCollection } from '../model/Stac'
+import type { StacCollection } from '../model/Stac.ts'
 
 /** A QGIS layer's legend placeholder image, through to `quac:legend_image` on its Collection and back out again. */
 

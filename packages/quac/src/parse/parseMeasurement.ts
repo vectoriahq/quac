@@ -1,6 +1,6 @@
-import { propertyText, readPropertyBlock } from './projectProperties'
+import { propertyText, readPropertyBlock } from './projectProperties.ts'
 
-import type { ProjectMeasurement } from '../model/QgsProject'
+import type { ProjectMeasurement } from '../model/QgsProject.ts'
 
 /**
  * How many of a unit make up one square metre, for the area units QGIS saves

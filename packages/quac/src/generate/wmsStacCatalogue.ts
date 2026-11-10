@@ -1,15 +1,15 @@
 import {
   slugify,
   generateStacFromNormalized
-} from './normalizedProject'
-import { wfsGetFeatureAsset } from './wfsStacCatalogue'
-import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, wmsEndpoint } from '../model/stacWms'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats'
+} from './normalizedProject.ts'
+import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
+import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, wmsEndpoint } from '../model/stacWms.ts'
+import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
-import type { NormalizedBbox, NormalizedLayer, NormalizedNode, NormalizedProject } from './normalizedProject'
-import type { StacAsset, StacCatalog, StacLink, TableColumn, TableColumnType } from '../model/Stac'
-import type { WfsCapabilities } from '../model/wfs'
-import type { WmsAttribute, WmsBoundingBox, WmsLayer, WmsLayerTreeNode, WmsProject } from '../model/WmsProject'
+import type { NormalizedBbox, NormalizedLayer, NormalizedNode, NormalizedProject } from './normalizedProject.ts'
+import type { StacAsset, StacCatalog, StacLink, TableColumn, TableColumnType } from '../model/Stac.ts'
+import type { WfsCapabilities } from '../model/wfs.ts'
+import type { WmsAttribute, WmsBoundingBox, WmsLayer, WmsLayerTreeNode, WmsProject } from '../model/WmsProject.ts'
 
 /**
  * Generates a STAC Catalog tree from a parsed WmsProject (from QGIS Server

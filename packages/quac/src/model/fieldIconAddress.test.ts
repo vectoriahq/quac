@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ICON_LIBRARIES, isIconLibraryAddress, readHttpsAddress, resolveFieldIconAddress } from './fieldIconAddress'
+import { ICON_LIBRARIES, isIconLibraryAddress, readHttpsAddress, resolveFieldIconAddress } from './fieldIconAddress.ts'
 import referenceDoc from '../../spec/README.md?raw'
 
 
