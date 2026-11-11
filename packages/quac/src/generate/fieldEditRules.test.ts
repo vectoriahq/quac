@@ -85,7 +85,7 @@ describe('quac:editable and quac:default on a table:columns entry', () => {
     expect(readCollectionFieldEditRules(collection).last_edited?.defaultValue).toEqual({ kind: 'now', onUpdate: true })
   })
 
-  it('leaves out an expression the app cannot fill', () => {
+  it('leaves out an expression a reader cannot fill', () => {
     const collection = collectionFor('<defaults><default field="last_edited" expression="@user_account_name" applyOnUpdate="1"/></defaults>')
 
     expect(column(collection, 'last_edited')).not.toHaveProperty('quac:default')
