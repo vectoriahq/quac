@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 # The QUAC schema's address, as its `$id` gives it.
-QUAC_SCHEMA_URL = 'https://vectoriahq.github.io/quac/v0.1.0/schema.json'
+QUAC_SCHEMA_URL = 'https://vectoriahq.github.io/quac/v0.2.0/schema.json'
 
 
 def _has_quac_key(value: Any) -> bool:

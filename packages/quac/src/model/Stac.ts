@@ -164,6 +164,8 @@ export interface TableColumn {
   'quac:constraints'?: TableColumnConstraints
   /** Written only as `true`: the source's form never shows the column. */
   'quac:hidden'?: true
+  /** Written only as `false`: a search of the layer's features skips the column. */
+  'quac:searchable'?: false
   /** Written only as `true`: a new feature is offered the value last entered in the column. */
   'quac:reuse_last_value'?: true
   /**

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://vectoriahq.github.io/quac/v0.1.0/schema.json",
+  "$id": "https://vectoriahq.github.io/quac/v0.2.0/schema.json",
   "title": "QUAC: Quite Useful Additions for Catalogs",
   "description": "The fields of QUAC (Quite Useful Additions for Catalogs): the fields a STAC catalogue carries under the quac: prefix to say how a layer is drawn, edited and set up, as a source such as a QGIS project declares it. Validates a Catalog with its inlined collections and catalogs, or a single Collection. Only quac: fields are checked: any other field passes, and a quac: field this schema does not define fails. A field is written only when the source declares it, so an absent field means the source said nothing.",
   "type": "object",
@@ -517,6 +517,10 @@
         "quac:hidden": {
           "description": "The form never shows the field. Written from a QGIS Hidden widget.",
           "const": true
+        },
+        "quac:searchable": {
+          "description": "A search of the layer's features skips the field. Written from QGIS's Not searchable.",
+          "const": false
         },
         "quac:reuse_last_value": {
           "description": "A new feature or record is offered the value last entered in the field. Written from QGIS's Reuse last entered value.",

@@ -786,11 +786,12 @@ export function readCollectionFieldAttachments(collection: StacCollection): Reco
 /**
  * What each column says about changing it, keyed by field name — the
  * counterpart of the `quac:editable`, `quac:default`,
- * `quac:constraints`, `quac:hidden` and
+ * `quac:constraints`, `quac:hidden`, `quac:searchable` and
  * `quac:reuse_last_value` writes in `stacCatalogue.ts`. A column
  * declaring none of them is absent from the result.
  *
- * Only `quac:editable: false` makes a field read-only, and only
+ * Only `quac:editable: false` makes a field read-only, only
+ * `quac:searchable: false` keeps it out of a search, and only
  * `quac:hidden: true`, `quac:reuse_last_value: true` and `quac:color: true`
  * set theirs. A `quac:icon` that is not an `https://` address is left out, as
  * is a `quac:control` other than `buttons` or `dropdown`.
@@ -820,13 +821,14 @@ export function readCollectionFieldEditRules(collection: StacCollection): Record
     const range = readColumnRange(candidate['quac:range'])
     const dateFormat = readNonBlank(candidate['quac:date_format'])
     const colour = candidate['quac:color'] === true
+    const notSearchable = candidate['quac:searchable'] === false
     const icon = readHttpsAddress(candidate['quac:icon'])
     const control = candidate['quac:control'] === 'buttons' || candidate['quac:control'] === 'dropdown' ? candidate['quac:control'] : null
     const defaultExpression = readDefaultExpression(candidate['quac:default'])
     const relation = relations[name]
     // A field storing several keys gets no list, so no rule about its blank choice.
     const valueRelation = relation && relation.allow_multi !== true ? { allowNull: relation.allow_null === true, relation } : null
-    if (valueRelation || readOnly || defaultValue || defaultExpression || notNull || unique || constraintExpression || hidden || reuseLastValue || duplicatePolicy || checkbox || range || dateFormat || colour || icon || control) {
+    if (valueRelation || readOnly || defaultValue || defaultExpression || notNull || unique || constraintExpression || hidden || reuseLastValue || duplicatePolicy || checkbox || range || dateFormat || colour || notSearchable || icon || control) {
       rules[name] = {
         readOnly, defaultValue, notNull, unique, hidden, reuseLastValue, duplicatePolicy,
         ...(constraintExpression ? { constraintExpression } : {}),
@@ -835,6 +837,7 @@ export function readCollectionFieldEditRules(collection: StacCollection): Record
         ...(range ? { range } : {}),
         ...(dateFormat ? { dateFormat } : {}),
         ...(colour ? { colour } : {}),
+        ...(notSearchable ? { notSearchable } : {}),
         ...(icon ? { icon } : {}),
         ...(control ? { control } : {}),
         ...(valueRelation ? { valueRelation } : {})

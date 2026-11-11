@@ -5,7 +5,7 @@ import type { StacCatalog, StacCollection } from './Stac.ts'
  * `stac_extensions` to say which QUAC it follows. Written from this one
  * constant, so the address changes in one place when the schema moves.
  */
-export const QUAC_SCHEMA_URL = 'https://vectoriahq.github.io/quac/v0.1.0/schema.json'
+export const QUAC_SCHEMA_URL = 'https://vectoriahq.github.io/quac/v0.2.0/schema.json'
 
 // A QUAC schema address is a folder named for its version, holding the
 // schema file `QUAC_SCHEMA_URL` names. Only the path is matched, not the host.

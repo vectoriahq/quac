@@ -96,6 +96,7 @@
         {
           "name": "asset_ref",
           "quac:hidden": true,
+          "quac:searchable": false,
           "quac:constraints": { "unique": "enforced" },
           "quac:in_form": false
         },

@@ -11,8 +11,8 @@ import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
 /**
  * QGIS's Attributes Form settings, through to `quac:editable`,
- * `quac:default`, `quac:constraints`, `quac:hidden`, `quac:color` and
- * `quac:reuse_last_value` on the field's `table:columns` entry and back
+ * `quac:default`, `quac:constraints`, `quac:hidden`, `quac:searchable`,
+ * `quac:color` and `quac:reuse_last_value` on the field's `table:columns` entry and back
  * out again. The `<defaults>`, `<editable>`, `<constraints>` and widget
  * shapes are the ones `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs` writes.
  */
@@ -456,6 +456,34 @@ describe('quac:hidden', () => {
     expect(column(collection, 'notes')?.['quac:hidden']).toBe(true)
     expect(column(collection, 'last_edited')).not.toHaveProperty('quac:hidden')
     expect(readCollectionFieldEditRules(collection)).toEqual({ notes: { ...NO_RULE, hidden: true } })
+  })
+})
+
+describe('quac:searchable', () => {
+  function flagged(name: string, flags: string): string {
+    return `<field name="${name}" configurationFlags="${flags}"><editWidget type="TextEdit"><config><Option/></config></editWidget></field>`
+  }
+
+  it('writes Not searchable, alone or beside other flags, and reads it back', () => {
+    const collection = collectionFor('', '<fieldConfiguration>'
+      + flagged('notes', 'NotSearchable')
+      + flagged('last_edited', 'HideFromWms|NotSearchable')
+      + flagged('species', 'HideFromWfs')
+      + '</fieldConfiguration>')
+
+    expect(column(collection, 'notes')?.['quac:searchable']).toBe(false)
+    expect(column(collection, 'last_edited')?.['quac:searchable']).toBe(false)
+    expect(column(collection, 'species')).not.toHaveProperty('quac:searchable')
+    expect(readCollectionFieldEditRules(collection)).toEqual({
+      notes: { ...NO_RULE, notSearchable: true },
+      last_edited: { ...NO_RULE, notSearchable: true }
+    })
+  })
+
+  it('reads no rule from a catalogue value other than false', () => {
+    const collection = { ...collectionFor(''), 'table:columns': [{ name: 'notes', 'quac:searchable': true }, { name: 'last_edited', 'quac:searchable': 'false' }] } as unknown as StacCollection
+
+    expect(readCollectionFieldEditRules(collection)).toEqual({})
   })
 })
 

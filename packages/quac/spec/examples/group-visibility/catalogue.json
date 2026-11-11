@@ -5,7 +5,7 @@
   "description": "A hand-written catalogue of basemaps.",
   "links": [],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
   ],
   "catalogs": [
     {
@@ -15,7 +15,7 @@
       "description": "Aerial imagery with labels.",
       "links": [],
       "stac_extensions": [
-        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "quac:visibility_checked": true,
       "collections": [

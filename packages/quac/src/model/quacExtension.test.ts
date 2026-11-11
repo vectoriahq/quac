@@ -60,7 +60,7 @@ describe('declareQuacExtension', () => {
 
 describe('readQuacVersion', () => {
   it('reads the version from the QUAC schema address, among other extensions', () => {
-    expect(readQuacVersion({ stac_extensions: [TABLE, QUAC_SCHEMA_URL] })).toBe('0.1.0')
+    expect(readQuacVersion({ stac_extensions: [TABLE, QUAC_SCHEMA_URL] })).toBe('0.2.0')
     expect(readQuacVersion({ stac_extensions: ['https://example.org/schemas/quac/v2.3.4/schema.json'] })).toBe('2.3.4')
   })
 
