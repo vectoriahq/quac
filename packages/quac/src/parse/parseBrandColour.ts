@@ -11,8 +11,8 @@ export const BRAND_COLOUR_LABEL = 'Brand'
  * `src/core/project/qgsproject.cpp`), each colour in
  * `QgsColorUtils::colorToString` form, which starts `r,g,b,a,`
  * (`src/core/qgscolorutils.cpp`, `qgis/QGIS@master`, read 2026-10-25). The
- * first matching label wins. The app decodes the text: this package reads no
- * colours of its own.
+ * first matching label wins. The reading application decodes the text: this
+ * package reads no colours of its own.
  */
 export function parseBrandColour(qgisRoot: Element): string | null {
   const palette = readPropertyBlock(qgisRoot, 'Palette')

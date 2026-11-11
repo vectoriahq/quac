@@ -100,7 +100,7 @@ function fileToNormalized(file: FolderCatalogueFile): NormalizedLayer {
   const hasSize = Number.isSafeInteger(file.size) && (file.size as number) > 0
   if (hasSize) assets.data[FILE_SIZE_FIELD] = file.size
 
-  // A style is declared, never embedded — the app fetches it live on every load,
+  // A style is declared, never embedded — a reader fetches it live on every load,
   // the same as a style a project file refers to. Keyed by the style file's name so
   // it reads as one entry in a style set, like every other source's styles.
   if (file.styleRelPath) {

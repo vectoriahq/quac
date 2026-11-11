@@ -418,7 +418,7 @@ const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
  *   </editWidget>
  *
  * The widget writes more keys than these four; the rest are left behind
- * because nothing in the app acts on them. A value-less `<Option type="invalid">`,
+ * and the catalogue does not carry them. A value-less `<Option type="invalid">`,
  * which QGIS writes for an unset key, is skipped rather than read as blank.
  * A widget whose `StorageMode` picks a directory or several files is not an
  * attachment here.
@@ -482,10 +482,9 @@ const NOW_EXPRESSIONS = new Set(['now()', '$now', 'to_date(now())', 'to_datetime
  *
  * A default is kept as a `defaultValue` where `parseDefaultExpression` reads it,
  * as a `defaultExpression` where only `readQgisExpression` does, and otherwise
- * left out: the app evaluates no other expression. A constraint expression
- * follows the same rule. A field the `<editable>` block does not list
- * is editable. A field with none of these settings is absent from the
- * returned map.
+ * left out. A constraint expression follows the same rule. A field the
+ * `<editable>` block does not list is editable. A field with none of these
+ * settings is absent from the returned map.
  */
 function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   const result: Record<string, FieldEditRule> = {}
@@ -541,7 +540,7 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   // (`QgsVectorLayer::readSymbology`, `src/core/vector/qgsvectorlayer.cpp`, and
   // `QgsFieldConstraints`, `src/core/qgsfieldconstraints.h`, `qgis/QGIS@master`,
   // read 2026-10-23). An expression is kept only where `readQgisExpression`
-  // reads it: the app evaluates no other.
+  // reads it.
   const constraintExpressions = new Map<string, { expression: string, description: string }>()
   for (const node of directChild(maplayer, 'constraintExpressions')?.querySelectorAll(':scope > constraint') ?? []) {
     const name = node.getAttribute('field')

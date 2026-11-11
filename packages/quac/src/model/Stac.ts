@@ -60,8 +60,8 @@ export interface StacCollection {
 /**
  * An organisation that had a hand in the Collection's data. STAC's `roles` are
  * `licensor`, `producer`, `processor` and `host`. This is where credit lines
- * come from — the app builds the on-screen attribution out of these names and
- * URLs rather than storing a pre-written string.
+ * come from — an application reading the catalogue builds the on-screen
+ * attribution out of these names and URLs, and no pre-written string is stored.
  */
 export interface StacProvider {
   name: string

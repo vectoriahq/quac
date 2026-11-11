@@ -7,8 +7,8 @@ import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac.ts'
 
 /**
  * Converts a STAC document fetched from somewhere else to the QUAC
- * profile (`packages/quac/spec/README.md`), so the rest of the app reads one shape
- * whatever the source.
+ * profile (`packages/quac/spec/README.md`), so everything downstream reads one
+ * shape whatever the source.
  *
  * Everything the source declared is kept — this fills gaps, it never
  * overwrites. Three gaps get filled:

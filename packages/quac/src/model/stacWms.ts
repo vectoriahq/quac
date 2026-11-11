@@ -3,7 +3,7 @@ import type { StacCollection, StacLink } from './Stac.ts'
 
 /**
  * The CRS a QGIS Server layer is requested in: the map's own when the server
- * offers it, so the server draws it without the app reprojecting the image.
+ * offers it, so the server draws it without the reading application reprojecting the image.
  */
 export const PREFERRED_WMS_CRS = 'EPSG:3857'
 

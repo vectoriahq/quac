@@ -7,7 +7,7 @@ import { DOMParser } from 'linkedom'
 globalThis.DOMParser = DOMParser as unknown as typeof globalThis.DOMParser
 
 // linkedom has no XMLSerializer; its nodes already stringify back to markup,
-// so wrap that in the same interface the app's parsers call.
+// so wrap that in the same interface this package's parsers call.
 globalThis.XMLSerializer = class {
   serializeToString(node: { toString(): string }): string {
     return node.toString()

@@ -127,7 +127,7 @@ const LOOKUPS = ['overlay_within', 'overlay_intersects', 'aggregate']
  */
 const PARENT_GEOMETRY_CALLS = ['intersects', 'geometry', '$geometry', '@parent']
 
-/** The `aggregate` kinds read (`QgsAggregateCalculator::aggregates`). */
+/** The `aggregate` kinds this reader takes, which the caller works out (`QgsAggregateCalculator::aggregates`). */
 export const LOOKUP_AGGREGATES = ['count', 'min', 'max', 'concatenate'] as const
 
 /**
@@ -156,11 +156,11 @@ export const LAYER_LOOKUP = 'layer_lookup'
 /** The functions that take a date as their first argument, where `now()` may stand. */
 const DATE_TAKERS = ['format_date', 'year', 'month', 'day', 'week', 'day_of_week', 'hour', 'minute', 'second']
 
-/** The aggregates read, which scan the records of a layer. */
+/** The aggregates this reader reads, which scan the records of a layer. */
 const AGGREGATES = ['maximum', 'minimum']
 
 /**
- * The values QGIS gives a feature from its geometry that this reader reads, and
+ * The values QGIS gives a feature from its geometry that this reader takes, and
  * the unit each is in: an area or a distance. They are written with no
  * brackets (`$area`).
  */
@@ -688,7 +688,7 @@ function findAddedIntervals(node: ExpressionNode): ExpressionNode[] {
 }
 
 /**
- * Whether an expression's reads of other layers are in the forms read.
+ * Whether an expression's reads of other layers are ones the caller can answer.
  * With `allowed` false, it holds none. Otherwise each `overlay_within` or
  * `overlay_intersects` gives an expression and is the array that
  * `array_first` or a whole-number `[index]` reads; each `aggregate` is a

@@ -179,7 +179,7 @@ function buildAssets(
 
 /**
  * The collection's tile template, absolute, or null where it publishes none
- * this app can draw.
+ * this package reads.
  *
  * Only a `{z}`/`{x}`/`{y}` template counts. A `tiles` link is also how a
  * service points at an OGC API - Tiles tileset document, which describes its

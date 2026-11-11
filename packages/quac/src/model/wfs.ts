@@ -1,7 +1,7 @@
 import type { FeatureFilter } from './featureFilter.ts'
 
 /**
- * Supported high-level WFS operation names used by the app.
+ * The high-level WFS operation names this package models.
  */
 export type WfsOperationName = 'GetCapabilities' | 'DescribeFeatureType' | 'GetFeature' | 'Transaction'
 

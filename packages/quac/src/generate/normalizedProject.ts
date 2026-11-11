@@ -292,7 +292,7 @@ export interface NormalizedProject {
 
 /**
  * Records where a catalogue came from as the Catalog's `self` link, so the
- * document says it rather than the app holding it alongside. Sources with no
+ * document says it rather than a reader holding it alongside. Sources with no
  * address of their own leave it off.
  */
 export function withSelfLink(catalogue: StacCatalog, selfHref: string | undefined): StacCatalog {
