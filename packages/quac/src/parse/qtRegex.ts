@@ -1,6 +1,6 @@
 /**
  * QGIS hands a regular expression to Qt's `QRegularExpression`, which is PCRE2;
- * Groundwork runs it as a JavaScript `RegExp`. The two engines differ in many
+ * this package runs it as a JavaScript `RegExp`. The two engines differ in many
  * corners (`pcre2pattern`, PCRE2 10.4x, read 2026-10-27), so this file reads
  * only the forms listed here, written so that both give the same answer, and
  * gives null for any other pattern, so the expression is not read rather than
@@ -291,7 +291,7 @@ const COMPILED = new Map<string, RegExp | null>()
 
 /**
  * A PCRE2 pattern as a JavaScript `RegExp` that matches what QGIS matches, or
- * null where Groundwork cannot translate it, or where the result does not
+ * null where this package cannot translate it, or where the result does not
  * compile. `unicode` is QGIS's `UseUnicodePropertiesOption`: on for the
  * `regexp_` functions, off for `~`. The `RegExp` is shared, so a caller that
  * matches globally makes its own from its `source` and `flags`.

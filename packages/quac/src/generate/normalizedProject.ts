@@ -292,7 +292,7 @@ export interface NormalizedProject {
 
 /**
  * Records where a catalogue came from as the Catalog's `self` link, so the
- * document says it rather than the app holding it alongside. Sources with no
+ * document says it rather than a reader holding it alongside. Sources with no
  * address of their own leave it off.
  */
 export function withSelfLink(catalogue: StacCatalog, selfHref: string | undefined): StacCatalog {
@@ -520,7 +520,7 @@ const DATA_TYPE_BY_COLUMN_TYPE: Record<TableColumnType, TableColumnDataType> = {
 /**
  * The column with `data_type` written beside its `type`, as the Table
  * extension recommends. A `type` outside `TableColumnType`, such as a QGIS
- * Server type name Groundwork does not map, gets no `data_type`.
+ * Server type name this package does not map, gets no `data_type`.
  */
 export function withDataType(column: TableColumn): TableColumn {
   const type = column.type

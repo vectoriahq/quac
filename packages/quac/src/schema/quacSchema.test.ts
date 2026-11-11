@@ -13,8 +13,8 @@ const schema = JSON.parse(schemaJson) as {
 const validator = new Validator(JSON.parse(schemaJson), '7', false)
 
 /**
- * Every fixture project, by path. Groundwork's own projects, basemap catalogues
- * and profile document are checked by Groundwork's own tests.
+ * Every fixture project, by path. Projects, basemap catalogues and profile
+ * documents outside this repository are checked by their own tests.
  */
 const PROJECTS = import.meta.glob(['../tests/fixtures/qgis/**/*.qgs'], {
   query: '?raw',

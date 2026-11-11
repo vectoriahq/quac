@@ -6,7 +6,7 @@ import type { StacCollection, StacItem, StacLink } from '../model/Stac.ts'
  * Reading the Items inside a STAC API's Collection.
  *
  * A static catalogue puts its data on the Collection — one downloadable asset,
- * which `classifyStacCollectionFormat` reads and the rest of the app loads. A
+ * which `classifyStacCollectionFormat` reads and a reading application loads. A
  * STAC API does not: its Collections have no such asset, and every file sits on
  * an Item inside, reached through the Collection's `rel: "items"` link. Without
  * this module every Collection a STAC API lists classifies as unsupported.
@@ -231,7 +231,7 @@ function itemBaseUrl(item: StacItem, itemAddress: string): string {
  *
  * An Item's asset href may be relative to the item document — `./scene.tif`
  * beside it. By the time a loader reads that href the document it was relative
- * to is gone, so without this the app resolves it against its own address and
+ * to is gone, so without this the loader resolves it against its own address and
  * fetches nothing. An href already absolute passes through
  * unchanged, and one that cannot be resolved is left as it stands.
  */

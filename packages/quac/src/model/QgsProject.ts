@@ -38,7 +38,7 @@ export interface QgsProject {
   layerTree: LayerGroup
   /** Relations from <relations>, each joining a parent layer to a child layer. */
   relations?: QgsRelation[]
-  /** Project-level <projectMetadata>, as far as Groundwork reads it. */
+  /** Project-level <projectMetadata>, as far as QUAC reads it. */
   metadata: ProjectMetadata
   /** The area and distance units `$area`, `$length` and `$perimeter` are given in; null where the project saves none. */
   measurement?: ProjectMeasurement | null
@@ -68,7 +68,7 @@ export interface QgsProject {
 }
 
 /**
- * The parts of QGIS's project-level `<projectMetadata>` Groundwork reads.
+ * The parts of QGIS's project-level `<projectMetadata>` this package reads.
  * QGIS's own dialog (Project Properties > Metadata) writes the element on
  * every project, empty fields and all — `abstract` and `author` are null only
  * when the author left them blank, checked against a saved QGIS project
@@ -206,7 +206,7 @@ export interface LayerEntry {
   styles: LayerStyle[]
   /** Index into styles[] of the active style; -1 if no styles were captured. */
   activeStyleIndex: number
-  /** The layer's `<resourceMetadata>`, as far as Groundwork reads it. */
+  /** The layer's `<resourceMetadata>`, as far as QUAC reads it. */
   resourceMetadata: LayerResourceMetadata
   /** The layer's `<attribution>` element — a credit line, separate from resourceMetadata. */
   attribution: LayerAttribution | null
@@ -240,7 +240,7 @@ export interface LayerEntry {
   fieldAttachments: Record<string, FieldAttachment>
   /**
    * What the Attributes Form says about changing each field: whether its
-   * Editable box is unticked, and a default value Groundwork can fill in.
+   * Editable box is unticked, and a default value an application can fill in.
    * Fields with neither are absent.
    */
   fieldEditRules: Record<string, FieldEditRule>
@@ -317,7 +317,7 @@ export interface WfsTransactionLayers {
 }
 
 /**
- * The parts of QGIS's per-layer `<resourceMetadata>` Groundwork reads.
+ * The parts of QGIS's per-layer `<resourceMetadata>` this package reads.
  * `abstract`, `contacts` and `temporalInterval`'s `<period>` shape verified
  * against a saved QGIS project, whose `<resourceMetadata>`
  * has those fields written but empty on that fixture. `<license>` and
@@ -373,7 +373,7 @@ export interface FieldValueMapEntry {
 }
 
 /**
- * A field's Value Relation edit widget, as far as Groundwork reads it: the
+ * A field's Value Relation edit widget, as far as QUAC reads it: the
  * lookup layer it names, the fields stored and shown, and how the list is
  * filtered and ordered. The widget's group, description, column count and
  * completer settings are not read.
@@ -402,7 +402,7 @@ export interface FieldValueRelation {
 }
 
 /**
- * A field's Attachment edit widget, as far as Groundwork reads it. QGIS calls
+ * A field's Attachment edit widget, as far as QUAC reads it. QGIS calls
  * the widget `ExternalResource`; the field holds a file's path rather than
  * text.
  */
@@ -417,7 +417,7 @@ export interface FieldAttachment {
   relativeStorage: 'absolute' | 'project' | 'default-root'
 }
 
-/** A layer's Drag and Drop Designer form, as far as Groundwork reads it: which fields it places, in its order. */
+/** A layer's Drag and Drop Designer form, as far as QUAC reads it: which fields it places, in its order. */
 export interface LayerFormLayout {
   fields: FormLayoutField[]
 }
@@ -444,7 +444,7 @@ export interface FormLayoutField {
 export interface FieldEditRule {
   /** True where the source shows the field but does not let anyone change it. */
   readOnly: boolean
-  /** The value the field is filled with, or null where the source declares none Groundwork can fill. */
+  /** The value the field is filled with, or null where the source declares none an application can fill. */
   defaultValue: FieldDefaultValue | null
   /**
    * The field's Not null constraint: `enforced` refuses a blank, `warn` lets

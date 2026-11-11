@@ -1,5 +1,5 @@
 /**
- * Minimal STAC type definitions for the documents Groundwork generates.
+ * Minimal STAC type definitions for the documents this package generates.
  *
  * The shape these types describe — a Catalog of Collections, one Collection
  * per layer, vendor fields under `quac:` —
@@ -60,8 +60,8 @@ export interface StacCollection {
 /**
  * An organisation that had a hand in the Collection's data. STAC's `roles` are
  * `licensor`, `producer`, `processor` and `host`. This is where credit lines
- * come from — the app builds the on-screen attribution out of these names and
- * URLs rather than storing a pre-written string.
+ * come from — an application reading the catalogue builds the on-screen
+ * attribution out of these names and URLs, and no pre-written string is stored.
  */
 export interface StacProvider {
   name: string
@@ -76,7 +76,7 @@ export interface StacProvider {
  * why `packages/quac/src/sources/stacItems.ts` exists: a Collection served by an API
  * has no downloadable asset, and the Items inside it have them all.
  *
- * Only the fields Groundwork reads are named. `properties.datetime` is what
+ * Only the fields this package reads are named. `properties.datetime` is what
  * orders an item list. An Item may have `start_datetime` / `end_datetime`
  * instead; which of the three STAC requires was not established here — no
  * specification document was reachable — so `readItemTimestamp` takes
@@ -145,7 +145,7 @@ export interface TableColumn {
    * precedence when both are present.
    */
   title?: string
-  /** The column's type: the `TableColumnType` an adapter maps the source's type to, or, for a QGIS Server type Groundwork does not map, its lowercased type name. */
+  /** The column's type: the `TableColumnType` an adapter maps the source's type to, or, for a QGIS Server type this package does not map, its lowercased type name. */
   type?: string
   /** The column's type as a STAC common metadata data type, written beside a `type` that maps to one. */
   data_type?: TableColumnDataType
@@ -284,7 +284,7 @@ export interface TableColumnConstraints {
   expression?: { expression: string; description?: string; strength: 'enforced' | 'warn' }
 }
 
-/** The column types Groundwork's adapters map a source's declared field types to. */
+/** The column types the adapters map a source's declared field types to. */
 export type TableColumnType = 'string' | 'int' | 'long' | 'double' | 'boolean' | 'date' | 'time' | 'timestamp'
 
 /**

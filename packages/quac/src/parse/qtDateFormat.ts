@@ -192,12 +192,12 @@ const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/
  * `fcnDayOfWeek` and `fcnWeek`, `src/core/expression/qgsexpressionfunction.cpp`,
  * `qgis/QGIS@16eddb2`, read 2026-10-26). The value is read as `format_date`
  * reads one (`readQtDateTime`) and the part is taken in its zone. A field QGIS
- * holds as a date-time reaches Groundwork as ISO text, so such text counts as a
+ * holds as a date-time reaches this function as ISO text, so such text counts as a
  * date-time. QGIS takes no time from a date alone and no weekday from a time
  * alone, so `hour`, `minute` and `second` of `2026-10-06`, and `day_of_week` of
  * `14:05`, are null, where QGIS reports an error. A time alone is read on
  * 0001-01-01, so its `year`, `month`, `day` and `week` are 1. `day_of_week`
- * counts from 0 for Sunday. QGIS also takes a span of time, which Groundwork never makes.
+ * counts from 0 for Sunday. QGIS also takes a span of time, which this function does not read.
  */
 export function qtDatePart(part: string, value: unknown): number | null {
   const moment = readQtDateTime(value)
@@ -229,7 +229,7 @@ function namePart(locale: string, options: Intl.DateTimeFormatOptions, epoch: nu
  * `qgis/QGIS@16eddb2`, read 2026-10-26). A `Z` anywhere after the pattern's
  * first character shows the moment in UTC. Month and day names, am and pm and
  * the digits are in `language`; QGIS uses the computer's own language when
- * none is given, and Groundwork uses `en-AU`, as `format_number` does. Null
+ * none is given, and this function uses `en-AU`, as `format_number` does. Null
  * for a pattern holding `t` and for a language the browser cannot read.
  */
 export function formatQtDateTime(value: QtDateTime, pattern: string, language?: string | null): string | null {

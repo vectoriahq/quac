@@ -10,7 +10,7 @@
  * with a `rel: "items"` link to the Items holding the data, with the item
  * list answering as a GeoJSON FeatureCollection with `rel: "next"`.
  *
- * So the tests over them establish that Groundwork behaves as intended against
+ * So the tests over them establish that this package behaves as intended against
  * documents of this shape, and not that real services produce this shape.
  * Replacing them with captured responses is what would turn them into evidence
  * about real servers; until then, treat a passing suite as covering the design

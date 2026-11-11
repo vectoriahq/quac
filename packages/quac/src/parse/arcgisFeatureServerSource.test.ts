@@ -49,8 +49,8 @@ describe('a QGIS layer read through the arcgisfeatureserver provider', () => {
     expect(resolveArcgisCollectionSource(collection!)).toEqual({ layerUrl: KINDERS_URL, where: null })
     expect(readArcgisNotShownReason(collection!)).toBeNull()
     expect(readDataAsset(collection!)?.href).toBe(`${KINDERS_URL}/query?where=1%3D1&outFields=*&outSR=4326&f=geojson`)
-    // Not read-only in the project: that Groundwork saves no edit to the
-    // service is the app's edit rule, which a demo map sets aside.
+    // Not read-only in the project: whether edits are written back to the
+    // service is left to the application reading the catalogue.
     expect(collection!['quac:editable']).toBe(true)
     const ticked = kindersXml.replace(/(<maplayer[^>]*?)readOnly="0"/, '$1readOnly="1"')
     const [readOnly] = collectCatalogueCollections(generateStacCatalogue(parseQgsXml(ticked)))

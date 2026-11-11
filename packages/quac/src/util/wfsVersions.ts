@@ -1,4 +1,4 @@
-// The WFS versions Groundwork speaks. Kept free of imports so a catalogue
+// The WFS versions this package speaks. Kept free of imports so a catalogue
 // generator can read them without loading the WFS client, which loads OpenLayers.
 
 export const DEFAULT_WFS_VERSION = '1.1.0'

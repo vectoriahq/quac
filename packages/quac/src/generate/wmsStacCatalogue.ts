@@ -164,7 +164,8 @@ function wmsLayerToNormalized(
 /**
  * A GetMap link for a layer QGIS Server publishes only over WMS. The style is
  * left empty, which asks the server for the layer's default style. No version
- * is stated, so the app asks the server for it when the layer is first shown.
+ * is stated, so an application reading the catalogue asks the server for one
+ * when the layer is first shown.
  */
 function buildQgisServerWmsLink(endpoint: string, layer: WmsLayer): StacLink {
   return {

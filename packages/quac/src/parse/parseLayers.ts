@@ -399,7 +399,7 @@ const RELATIVE_STORAGE: FieldAttachment['relativeStorage'][] = ['absolute', 'pro
 const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
 
 /**
- * Reads every field's Attachment edit widget into what Groundwork acts on,
+ * Reads every field's Attachment edit widget into what the catalogue records,
  * keyed by field name. QGIS registers the widget as `ExternalResource`
  * (`QgsEditorWidgetRegistry::initEditors`,
  * `src/gui/editorwidgets/core/qgseditorwidgetregistry.cpp`, `qgis/QGIS@master`,
@@ -418,7 +418,7 @@ const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
  *   </editWidget>
  *
  * The widget writes more keys than these four; the rest are left behind
- * because nothing in the app acts on them. A value-less `<Option type="invalid">`,
+ * and the catalogue does not carry them. A value-less `<Option type="invalid">`,
  * which QGIS writes for an unset key, is skipped rather than read as blank.
  * A widget whose `StorageMode` picks a directory or several files is not an
  * attachment here.
@@ -454,7 +454,7 @@ function parseFieldAttachments(maplayer: Element): Record<string, FieldAttachmen
 const NOW_EXPRESSIONS = new Set(['now()', '$now', 'to_date(now())', 'to_datetime(now())'])
 
 /**
- * Reads the Attributes Form settings Groundwork acts on for every field, keyed
+ * Reads the Attributes Form settings the catalogue records for every field, keyed
  * by field name. QGIS writes them as blocks of the layer's own, shown here as
  * `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs` writes them:
  *
@@ -482,10 +482,9 @@ const NOW_EXPRESSIONS = new Set(['now()', '$now', 'to_date(now())', 'to_datetime
  *
  * A default is kept as a `defaultValue` where `parseDefaultExpression` reads it,
  * as a `defaultExpression` where only `readQgisExpression` does, and otherwise
- * left out: the app evaluates no other expression. A constraint expression
- * follows the same rule. A field the `<editable>` block does not list
- * is editable. A field with none of these settings is absent from the
- * returned map.
+ * left out. A constraint expression follows the same rule. A field the
+ * `<editable>` block does not list is editable. A field with none of these
+ * settings is absent from the returned map.
  */
 function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   const result: Record<string, FieldEditRule> = {}
@@ -541,7 +540,7 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
   // (`QgsVectorLayer::readSymbology`, `src/core/vector/qgsvectorlayer.cpp`, and
   // `QgsFieldConstraints`, `src/core/qgsfieldconstraints.h`, `qgis/QGIS@master`,
   // read 2026-10-23). An expression is kept only where `readQgisExpression`
-  // reads it: the app evaluates no other.
+  // reads it.
   const constraintExpressions = new Map<string, { expression: string, description: string }>()
   for (const node of directChild(maplayer, 'constraintExpressions')?.querySelectorAll(':scope > constraint') ?? []) {
     const name = node.getAttribute('field')
@@ -649,9 +648,9 @@ function readWidgetOptions(
       return
     }
     case 'DateTime': {
-      // A date or date-time field ignores `field_format`, which Groundwork
-      // cannot tell here. ISO 8601 and the default for a date are what the
-      // app already reads, so they write nothing.
+      // A date or date-time field ignores `field_format`, which this parser
+      // cannot tell here. ISO 8601 and the default for a date are what an
+      // application already reads, so they write nothing.
       const format = options.get('field_format')?.trim()
       if (format && format !== 'yyyy-MM-dd' && !readFlag(options, 'field_iso_format', false)) ruleFor(name).dateFormat = format
       if (!readFlag(options, 'allow_null', true)) allowNullOff.add(name)
@@ -676,8 +675,8 @@ function constraintStrength(strength: string | null): 'enforced' | 'warn' | null
  * and reads the older block first so the newer one wins
  * (`QgsEditFormConfig::readXml`, `src/core/editform/qgseditformconfig.cpp`,
  * `qgis/QGIS@master`, read 2026-10-23). `AllowedDefaultOff` reads as not
- * reused: it is off until someone ticks it in QGIS's own form, which
- * Groundwork's form has no tick for.
+ * reused: it is off until someone ticks it in QGIS's own form, which a
+ * reading application's form may have no tick for.
  */
 function parseReuseLastValue(maplayer: Element): Map<string, boolean> {
   const reuse = new Map<string, boolean>()
@@ -694,7 +693,7 @@ function parseReuseLastValue(maplayer: Element): Map<string, boolean> {
 }
 
 /**
- * Reads a default-value expression Groundwork can fill: one of
+ * Reads a default-value expression an application can fill: one of
  * `NOW_EXPRESSIONS`, `uuid()` or `$uuid` with an optional format, or a lone
  * literal. Anything else, such as a field reference, a variable or a
  * calculation, is null.

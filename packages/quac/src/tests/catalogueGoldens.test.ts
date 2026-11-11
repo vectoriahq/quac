@@ -14,7 +14,7 @@ import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalog
  * Each project is read from its text alone, with its file name as the
  * project's path, as a project in a cloud folder is. No companion data is
  * given, so no column is typed from loaded features, and no initial view,
- * which Groundwork works out by reprojecting outside the package.
+ * which an application works out by reprojecting outside the package.
  *
  * Each project also has the catalogue the QUAC plugin's route would serve for
  * it, saved as `<name>.server.catalogue.json`: the second expected catalogue,

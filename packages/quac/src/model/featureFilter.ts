@@ -9,7 +9,7 @@ import type { StacCollection } from './Stac.ts'
  *
  * Its language is the one the layer's provider reads. OGR writes it as
  * `|subset=` at the end of the data source and hands it to GDAL, whose SQL
- * this is for every file Groundwork reads with OGR (`QgsOgrProviderMetadata::decodeUri`,
+ * this is for every file read through OGR (`QgsOgrProviderMetadata::decodeUri`,
  * `src/core/providers/ogr/qgsogrprovidermetadata.cpp`, `qgis/QGIS@master`, read
  * 2026-10-26). The Delimited Text provider writes it as the `subset` query
  * item and reads it as a QGIS expression (`QgsDelimitedTextProvider`,

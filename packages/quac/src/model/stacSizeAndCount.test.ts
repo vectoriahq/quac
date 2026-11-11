@@ -18,7 +18,7 @@ describe('readDataAssetFileSize', () => {
     expect(readDataAssetFileSize(collection({}, { 'file:size': 1188770 }))).toBe(1188770)
   })
 
-  // Only the file Groundwork downloads counts, not a PMTiles derivative beside it.
+  // Only the data asset's file counts, not a PMTiles derivative beside it.
   it('ignores a size on an asset other than the data asset', () => {
     const withVisual = collection({}, {})
     withVisual.assets!.visual = { href: './roads.pmtiles', roles: ['visual'], 'file:size': 5 }
