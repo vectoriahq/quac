@@ -75,7 +75,7 @@
       "quac:opacity": 1,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "World Imagery"
     },
@@ -127,12 +127,12 @@
       "quac:opacity": 0.8,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "OpenStreetMap"
     }
   ],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.1.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
   ]
 }

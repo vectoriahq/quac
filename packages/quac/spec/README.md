@@ -2,7 +2,7 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. This page is for a developer reading a QUAC catalogue. For each field it says what the field means, when it is present, which kinds of source write it, how settled it is, and gives an example.
 
-QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.1.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
+QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.2.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
 
 ## The document
 
@@ -10,7 +10,7 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 **Children are inlined.** A Catalog carries its child Collections in a `collections` array and its child Catalogs in a `catalogs` array, so one document holds the whole tree. It may also carry `rel: "child"` links to where each child would sit as a separate document. A reader takes the inlined children and does not follow the `child` links of a child it already holds.
 
-**A catalogue says it follows QUAC** by listing the schema's address, `https://vectoriahq.github.io/quac/v0.1.0/schema.json`, in `stac_extensions`: always on the top-level Catalog, and on each nested Catalog or Collection that carries a `quac:` field of its own, whether on itself, in its summaries or on one of its assets, links or columns. That is how STAC lists an extension on each object that uses its fields, and it lets a reader learn which version of QUAC a document follows.
+**A catalogue says it follows QUAC** by listing the schema's address, `https://vectoriahq.github.io/quac/v0.2.0/schema.json`, in `stac_extensions`: always on the top-level Catalog, and on each nested Catalog or Collection that carries a `quac:` field of its own, whether on itself, in its summaries or on one of its assets, links or columns. That is how STAC lists an extension on each object that uses its fields, and it lets a reader learn which version of QUAC a document follows.
 
 **An absent field means the source said nothing.** Every QUAC field is optional and written only where the source declares it, so a missing field is never a "no". Where an absent field has a reading, such as "editable" or "full opacity", the field's entry gives it. An application can therefore read one QUAC field and ignore the rest.
 
