@@ -3,7 +3,15 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
-  "description": "QUAC, a STAC profile for describing the layers of a map, and the code that writes and reads it.",
+  "description": "Writes and reads QUAC, which adds map layer settings to STAC catalogues.",
+  "keywords": [
+    "stac",
+    "qgis",
+    "gis",
+    "geospatial",
+    "catalog",
+    "map"
+  ],
   "homepage": "https://github.com/vectoriahq/quac#readme",
   "bugs": {
     "url": "https://github.com/vectoriahq/quac/issues"

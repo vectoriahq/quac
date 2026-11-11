@@ -2,7 +2,7 @@
 
 # QUAC
 
-QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. It is made by Vectoria.
+QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 that adds map layer settings to a catalogue. Vectoria makes it.
 
 **What QUAC lets you know about a catalogue**
 

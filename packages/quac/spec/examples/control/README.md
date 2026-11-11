@@ -1,6 +1,6 @@
 # `quac:control`
 
-**The QGIS setting:** a layer variable named `quac_control_species`, set to `buttons` under **Variables** in the Trees layer's Layer Properties. The variable is Groundwork's own; QGIS's own form has no such setting.
+**The QGIS setting:** a layer variable named `quac_control_species`, set to `buttons` under **Variables** in the Trees layer's Layer Properties. The variable is QUAC's own; QGIS's own form has no such setting.
 
 **What the project file holds:** the layer's `variableNames` and `variableValues` custom properties, holding `quac_control_species` and `buttons`.
 

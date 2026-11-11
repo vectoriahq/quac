@@ -68,7 +68,7 @@ In this first stage the WFS, ArcGIS and OGC API Features producers take an appli
 
 **A producer states which fields it writes**, and is measured against its own list, not against every field this page defines.
 
-**Each field is stable or experimental.** A field is **experimental** where its meaning depends on one application, Groundwork, and **stable** where it restates a setting a source declares that other applications already act on, such as QGIS, QField, Mergin Maps or an ArcGIS client. Vectoria set this reading on 2026-11-05: no application but Groundwork read QUAC then, so a field read by only one application would otherwise make every field experimental. Some stable fields are marked **name under review**: their names and value shapes will be reviewed before QUAC's first release.
+**Each field is stable or experimental.** A field is **experimental** where its meaning depends on a single application, and **stable** where it restates a setting a source declares that other applications already act on, such as QGIS, QField, Mergin Maps or an ArcGIS client. Vectoria set this reading on 2026-11-05: only one application read QUAC then, so a field read by only one application would otherwise make every field experimental. Some stable fields are marked **name under review**: their names and value shapes will be reviewed before QUAC's first release.
 
 ## On a top-level Catalog
 
@@ -203,7 +203,7 @@ A layer read from ArcGIS:
 
 A QGIS project writes the first two for a layer read through QGIS's `arcgisfeatureserver` provider, with `quac:editable: false`. A source needing a sign-in or a header, or limited to a box, gets neither.
 
-Written by: ArcGIS; the first two also by QGIS project. `quac:arcgis_not_shown` is experimental, because its values are Groundwork's reasons for not loading a layer; the others are stable. Examples: `"https://services.arcgis.com/example/arcgis/rest/services/Species/FeatureServer/0"`, `"status = 'native'"`, `"not-a-feature-layer"`.
+Written by: ArcGIS; the first two also by QGIS project. `quac:arcgis_not_shown` is experimental, because its values are an application's reasons for not loading a layer, not ArcGIS's; the others are stable. Examples: `"https://services.arcgis.com/example/arcgis/rest/services/Species/FeatureServer/0"`, `"status = 'native'"`, `"not-a-feature-layer"`.
 
 ### Relations between layers
 
@@ -298,7 +298,7 @@ A name becomes the address of the icon's file in the library's npm package on js
 | `maki` | Maki | `@mapbox/maki` | 8 |
 | `temaki` | Temaki | `@rapideditor/temaki` | 5 |
 
-Written by: QGIS project. Experimental: the variable is Groundwork's own. Example: `"https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/building-monument.svg"`, from the column entry, since the example file has none on a Collection.
+Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/building-monument.svg"`, from the column entry, since the example file has none on a Collection.
 
 #### `quac:light_style` and `quac:dark_style`
 
@@ -479,13 +479,13 @@ Written by: QGIS project. Stable. Example: `"\"last_inspected\" IS NULL"`.
 
 The `https://` address of an icon drawn beside the field's name. From a layer variable named `quac_icon_` followed by the field's name, held in the layer's `variableNames` and `variableValues` custom properties (`QgsExpressionContextUtils::setLayerVariable`, `src/core/expression/qgsexpressioncontextutils.cpp`), including the form from before QGIS 3.20 (`src/core/qgsobjectcustomproperties.cpp`, read 2026-10-25). The value becomes an address as the Collection's `quac:icon` does. QGIS's own form shows no icon.
 
-Written by: QGIS project. Experimental: the variable is Groundwork's own. Example: `"https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/building-monument.svg"`.
+Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/building-monument.svg"`.
 
 ### `quac:control`
 
 How the edit form draws the field's list of choices: `buttons` or `dropdown`. From a layer variable named `quac_control_` followed by the field's name, held in the same lists as `quac:icon`'s, compared without regard to case or surrounding spaces; any other value writes nothing. QGIS's own form has no such setting: a Value Map is always a combo box (`src/ui/editorwidgets/qgsvaluemapconfigdlgbase.ui`, read 2026-10-26).
 
-Written by: QGIS project. Experimental: the variable is Groundwork's own. Example: `"buttons"`.
+Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"buttons"`.
 
 ### `quac:value_relation`
 
