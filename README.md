@@ -2,7 +2,7 @@
 
 # QUAC
 
-QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 that adds map layer settings to a catalogue. Vectoria makes it.
+QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 that adds map layer settings to a catalogue.
 
 **What QUAC lets you know about a catalogue**
 
@@ -38,14 +38,14 @@ QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacsp
 
 A STAC catalogue says what data exists, where it is and how to read it, and [Portolan](https://github.com/portolan-sdi/portolan-spec) says how to publish one for cloud-native data with no server to run.
 
-A catalogue does not say how a map should show that data or how people should edit it. That lives in a QGIS project, a GIS server's configuration or an ArcGIS Web Map, each in its own shape and read mainly by the software that wrote it.
+A catalogue does not say how a map should show that data or how people should edit it. That lives in a QGIS project, a GIS server's configuration or an ArcGIS Web Map, each in a format mostly read only by the software that wrote it.
 
-QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary STAC Collection with `quac:` fields added, so:
+QUAC puts it in the catalogue, beside the data. A QUAC Collection is an ordinary STAC Collection with `quac:` fields added.
 
-- **A cloud-native catalogue can carry a map.** Add QUAC fields to a Portolan catalogue and an application reading it knows how to show each layer and what its form should hold. [QUAC and Portolan](#quac-and-portolan) says how the two fit.
-- **A layer is described the same way wherever its data lives.** The fields for forms, rules, relations and styles are the same for a GeoParquet file, a QGIS Server or WFS layer, or an ArcGIS Feature Service. Only a field naming where the data is, such as `quac:wfs_endpoint`, belongs to one kind of source.
-- **QUAC restates settings rather than inventing them.** A field that carries a setting QGIS, QField, Mergin Maps or an ArcGIS client already acts on is marked stable in the spec; a field whose meaning depends on a single application is marked experimental.
-- **An application can take one field and ignore the rest.** Every field is optional, and an absent field means the source said nothing.
+- A Portolan catalogue with QUAC fields tells an application how to show each layer and what its form holds. [QUAC and Portolan](#quac-and-portolan) says how the two fit.
+- The fields for forms, rules, relations and styles are the same for a GeoParquet file, a QGIS Server or WFS layer and an ArcGIS Feature Service. Only a field that says where the data is, such as `quac:wfs_endpoint`, belongs to one kind of source.
+- A field that carries a setting QGIS, QField, Mergin Maps or an ArcGIS client already acts on is marked stable in the spec. A field that only one application gives meaning to is marked experimental.
+- Every field is optional, so an application can read the fields it knows and ignore the rest. A missing field means the source said nothing.
 
 ## QUAC and Portolan
 
@@ -55,9 +55,9 @@ Portolan sets the conventions a reader of a cloud-native catalogue relies on. QU
 - **Styles.** A style is a Collection asset with the `style` role, and the default style also carries the `default` role, as Portolan's core specification sets out.
 - **Fields.** Portolan describes a dataset's columns with the [Table extension](https://github.com/stac-extensions/table)'s `table:columns`. QUAC's settings for a field sit on that field's entry.
 
-[Portolan's core specification](https://github.com/portolan-sdi/portolan-spec/blob/main/specs/portolan/core.md) has no fields for forms, field rules, edit locks or relations between layers. Those are what QUAC adds, each under the `quac:` prefix, beside Portolan's fields and without changing them.
+[Portolan's core specification](https://github.com/portolan-sdi/portolan-spec/blob/main/specs/portolan/core.md) has no fields for forms, field rules, edit locks or relations between layers. QUAC adds them under the `quac:` prefix and leaves Portolan's fields as they are.
 
-One difference in shape: a QUAC catalogue is one document, with each Catalog carrying its Collections inline, where a Portolan catalogue keeps each Collection in a file of its own, linked with `rel: "child"`. The package reads the one-document form. An application reading a catalogue split across files gathers it into one document first.
+A Portolan catalogue keeps each Collection in a file of its own, linked with `rel: "child"`. A QUAC catalogue is one document, with each Catalog carrying its Collections inline. The package reads the one-document form. An application reading a catalogue split across files gathers it into one document first.
 
 ## What QUAC adds to a field
 
@@ -133,3 +133,9 @@ Copyright 2026 Vectoria Pty Ltd.
 
 - **The spec, the schema, the examples and the JavaScript package** are under the [Apache License 2.0](LICENSE), the licence of the STAC specification and its extension template.
 - **The QGIS Server plugin**, `packages/quac-qgis-server/`, is under the [GNU General Public License, version 2 or any later version](packages/quac-qgis-server/LICENSE), as the QGIS plugin repository asks of a plugin.
+
+## Made by Vectoria
+
+<a href="https://vectoria.com.au"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/vectoria-logo-dark.svg"><img src="assets/vectoria-logo.svg" alt="Vectoria" width="120"></picture></a>
+
+[vectoria.com.au](https://vectoria.com.au)
