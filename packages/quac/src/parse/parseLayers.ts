@@ -145,7 +145,7 @@ function serverHiddenFieldsOf(maplayer: Element): { serverHiddenFields?: ServerH
   const wms = new Set<string>()
   const wfs = new Set<string>()
   for (const [name, field] of layerFields(maplayer)) {
-    const flags = (field.getAttribute('configurationFlags') ?? '').split('|').map((flag) => flag.trim())
+    const flags = configurationFlagsOf(field)
     if (flags.includes('HideFromWms')) wms.add(name)
     if (flags.includes('HideFromWfs')) wfs.add(name)
   }
@@ -521,6 +521,11 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
     seenWidgets.add(name)
     const widgetType = directChild(field, 'editWidget')?.getAttribute('type')
     if (widgetType === 'Hidden') ruleFor(name).hidden = true
+    // The Fields tab's Not searchable, which QGIS's search of the active
+    // layer's features skips (`QgsActiveLayerFeaturesLocatorFilter`,
+    // `src/app/locator/qgsactivelayerfeatureslocatorfilter.cpp`,
+    // `qgis/QGIS@master`, read 2026-11-11).
+    if (configurationFlagsOf(field).includes('NotSearchable')) ruleFor(name).notSearchable = true
     // The widget has no settings of its own (`QgsColorWidgetFactory::configWidget`,
     // `src/gui/editorwidgets/qgscolorwidgetfactory.cpp`, `qgis/QGIS@master`,
     // read 2026-10-25).
@@ -1082,6 +1087,15 @@ function* layerFields(maplayer: Element): Generator<[string, Element]> {
     const name = field.getAttribute('name')
     if (name) yield [name, field]
   }
+}
+
+/**
+ * A `<fieldConfiguration><field>`'s `configurationFlags`: the Fields tab's
+ * Configuration column, saved as `Qgis::FieldConfigurationFlag` names joined
+ * by `|`, such as `NotSearchable|HideFromWms`, and `NoFlag` where none is set.
+ */
+function configurationFlagsOf(field: Element): string[] {
+  return (field.getAttribute('configurationFlags') ?? '').split('|').map((flag) => flag.trim())
 }
 
 /** The named fields' `<editWidget>`, as `[name, <editWidget>]`; null where a field has none. */

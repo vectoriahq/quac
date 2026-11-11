@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:searchable"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

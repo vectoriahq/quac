@@ -421,6 +421,12 @@ Written only as `true`: the source's form never shows the field. From a **Hidden
 
 Written by: QGIS project. Stable. Example: `true`.
 
+### `quac:searchable`
+
+Written only as `false`: a search of the layer's features skips the field. The field is still shown, filtered on and edited as before. From **Not searchable** in the **Configuration** column of the Fields tab (`<field configurationFlags>` holding `NotSearchable`, with any other flags joined by `|`). QGIS's search of the active layer's features skips such a field (`QgsActiveLayerFeaturesLocatorFilter`, `src/app/locator/qgsactivelayerfeatureslocatorfilter.cpp`, read 2026-11-11).
+
+Written by: QGIS project. Stable. Example: `false`.
+
 ### `quac:reuse_last_value`
 
 Written only as `true`: a new feature is offered the value last entered in the field. From **Reuse last entered value**, in either form QGIS reads: the newer `<reuseLastValuePolicy><field name reuseLastValuePolicy="AllowedDefaultOn">`, or the older `<reuseLastValue><field name reuseLastValue="1">`, the newer winning where both name a field (`QgsEditFormConfig::readXml`, `src/core/editform/qgseditformconfig.cpp`). `AllowedDefaultOff` is left out.

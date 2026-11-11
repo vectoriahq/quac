@@ -848,6 +848,9 @@ function unionExtent(layers: LayerEntry[], layerWgs84Extents: Map<string, Boundi
  *                  with, that it must not be blank, that the form never
  *                  shows it, and that a new feature is offered its last
  *                  value, from QGIS's Attributes Form
+ * - **quac:searchable**
+ *                  that a search of the layer's features skips the field,
+ *                  from QGIS's Not searchable in the Fields tab
  * - **quac:color**  that the field holds a colour, when QGIS's Color edit
  *                  widget declares one
  * - **quac:visible_when** / **quac:in_form** / **quac:editable_when**
@@ -933,6 +936,7 @@ function deriveTableColumns(
       }
     }
     if (editRule?.hidden) column['quac:hidden'] = true
+    if (editRule?.notSearchable) column['quac:searchable'] = false
     if (editRule?.reuseLastValue) column['quac:reuse_last_value'] = true
     if (editRule?.duplicatePolicy) column['quac:duplicate_policy'] = editRule.duplicatePolicy
     if (editRule?.checkbox) {

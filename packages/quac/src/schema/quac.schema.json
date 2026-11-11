@@ -518,6 +518,10 @@
           "description": "The form never shows the field. Written from a QGIS Hidden widget.",
           "const": true
         },
+        "quac:searchable": {
+          "description": "A search of the layer's features skips the field. Written from QGIS's Not searchable.",
+          "const": false
+        },
         "quac:reuse_last_value": {
           "description": "A new feature or record is offered the value last entered in the field. Written from QGIS's Reuse last entered value.",
           "const": true

@@ -497,6 +497,8 @@ export interface FieldEditRule {
   dateFormat?: string | null
   /** True where the field holds a colour: a QGIS Color widget. */
   colour?: boolean
+  /** True where the source's search of a layer's features skips the field: QGIS's Not searchable. */
+  notSearchable?: boolean
   /** The `https://` address of the icon drawn beside the field's name. Null or absent where it has none. */
   icon?: string | null
   /** The control the edit form draws the field's choices with. Null or absent where the source asks for none. */
