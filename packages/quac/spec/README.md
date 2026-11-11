@@ -2,7 +2,7 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. This page is for a developer reading a QUAC catalogue. For each field it says what the field means, when it is present, which kinds of source write it, how settled it is, and gives an example.
 
-QUAC is pre-1.0. Version 0.1.0 changes in place until its first release, and any field may change before then. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.1.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
+QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.1.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
 
 ## The document
 
@@ -68,7 +68,7 @@ In this first stage the WFS, ArcGIS and OGC API Features producers take an appli
 
 **A producer states which fields it writes**, and is measured against its own list, not against every field this page defines.
 
-**Each field is stable or experimental.** A field is **experimental** where its meaning depends on a single application, and **stable** where it restates a setting a source declares that other applications already act on, such as QGIS, QField, Mergin Maps or an ArcGIS client. Vectoria set this reading on 2026-11-05: only one application read QUAC then, so a field read by only one application would otherwise make every field experimental. Some stable fields are marked **name under review**: their names and value shapes will be reviewed before QUAC's first release.
+**Each field is stable or experimental.** A field is **experimental** where its meaning depends on a single application, and **stable** where it restates a setting a source declares that other applications already act on, such as QGIS, QField, Mergin Maps or an ArcGIS client. Vectoria set this reading on 2026-11-05: only one application read QUAC then, so a field read by only one application would otherwise make every field experimental. Some stable fields are marked **name under review**: their names and value shapes will be reviewed before QUAC 1.0.
 
 ## On a top-level Catalog
 
