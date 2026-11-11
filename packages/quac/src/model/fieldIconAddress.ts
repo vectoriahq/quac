@@ -1,5 +1,5 @@
 /**
- * The icon libraries Groundwork reads from jsDelivr, each pinned to the major
+ * The icon libraries this package addresses on jsDelivr, each pinned to the major
  * version of its package, so a release adds icons but never renames one. A
  * field's icon is named from them, and a
  * map symbol from one of them is painted in its style's colour. This

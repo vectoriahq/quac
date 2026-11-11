@@ -7,7 +7,7 @@ import type { StacCollection } from './Stac.ts'
  *
  * An href is a URI reference, not a file path, so the characters URIs reserve
  * have to be escaped in it. `#` and `?` are the two that bite: both are legal
- * in a file name on every service Groundwork reads, and both end the path when
+ * in a cloud folder's file names, and both end the path when
  * a reader takes an href apart. A folder holding `Building #3.geojson` written
  * unescaped publishes `./Building #3.geojson`, which reads back as `Building `
  * — a file no folder holds, so the layer is dropped.

@@ -4,7 +4,7 @@ import type { ProjectMeasurement } from '../model/QgsProject.ts'
 
 /**
  * How many of a unit make up one square metre, for the area units QGIS saves
- * as `<Measurement><AreaUnits>` that Groundwork converts. The saved names are
+ * as `<Measurement><AreaUnits>` that this package converts. The saved names are
  * `QgsUnitTypes::encodeUnit( Qgis::AreaUnit )` (`src/core/qgsunittypes.cpp`,
  * `qgis/QGIS@master`, read 2026-10-25). `deg2` is saved too and is left out: a
  * square degree is no fixed area.
@@ -25,7 +25,7 @@ const AREA_UNITS_PER_SQUARE_METRE: Record<string, number> = {
 
 /**
  * How many of a unit make up one metre, for the distance units QGIS saves as
- * `<Measurement><DistanceUnits>` that Groundwork converts. The saved names are
+ * `<Measurement><DistanceUnits>` that this package converts. The saved names are
  * `QgsUnitTypes::encodeUnit( Qgis::DistanceUnit )`, same file. `degrees` and
  * the survey chains are left out.
  */
@@ -45,7 +45,7 @@ const DISTANCE_UNITS_PER_METRE: Record<string, number> = {
 export const DEFAULT_MEASUREMENT: ProjectMeasurement = { areaUnit: 'm2', distanceUnit: 'meters' }
 
 /**
- * The factors that turn the metres and square metres Groundwork measures into
+ * The factors that turn metres and square metres into
  * the project's units, or null for a unit it does not convert. An expression
  * that measures in a unit with no factor is unreadable.
  */
@@ -66,8 +66,7 @@ export function measureFactorsOf(measurement: ProjectMeasurement | null | undefi
  * The project's area and distance units from `<properties><Measurement>`, as
  * QGIS writes them (`QgsProject::writeProject`, `src/core/project/qgsproject.cpp`).
  * Null where the project saves neither, which QGIS reads as square metres and
- * metres. The project's ellipsoid (`<Measure><Ellipsoid>`) is not read:
- * Groundwork measures on WGS 84 whatever the project says.
+ * metres. The project's ellipsoid (`<Measure><Ellipsoid>`) is not read.
  */
 export function parseProjectMeasurement(qgisRoot: Element): ProjectMeasurement | null {
   const block = readPropertyBlock(qgisRoot, 'Measurement')

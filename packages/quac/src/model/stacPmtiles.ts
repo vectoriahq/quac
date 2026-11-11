@@ -26,7 +26,7 @@ export interface StacPmtilesSource {
   /**
    * Layer names inside the archive to draw, from the link's `pmtiles:layers`.
    * Empty where the source declares none — web-map-links leaves the choice to
-   * the reader in that case, and Groundwork draws every layer the archive has.
+   * the reader in that case, which may draw every layer the archive has.
    */
   layers: string[]
 }

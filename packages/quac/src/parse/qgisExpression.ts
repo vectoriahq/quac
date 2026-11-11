@@ -127,7 +127,7 @@ const LOOKUPS = ['overlay_within', 'overlay_intersects', 'aggregate']
  */
 const PARENT_GEOMETRY_CALLS = ['intersects', 'geometry', '$geometry', '@parent']
 
-/** The `aggregate` kinds Groundwork works out (`QgsAggregateCalculator::aggregates`). */
+/** The `aggregate` kinds read (`QgsAggregateCalculator::aggregates`). */
 export const LOOKUP_AGGREGATES = ['count', 'min', 'max', 'concatenate'] as const
 
 /**
@@ -156,11 +156,11 @@ export const LAYER_LOOKUP = 'layer_lookup'
 /** The functions that take a date as their first argument, where `now()` may stand. */
 const DATE_TAKERS = ['format_date', 'year', 'month', 'day', 'week', 'day_of_week', 'hour', 'minute', 'second']
 
-/** The aggregates Groundwork reads, which scan the records of a layer. */
+/** The aggregates read, which scan the records of a layer. */
 const AGGREGATES = ['maximum', 'minimum']
 
 /**
- * The values QGIS gives a feature from its geometry that Groundwork reads, and
+ * The values QGIS gives a feature from its geometry that this reader reads, and
  * the unit each is in: an area or a distance. They are written with no
  * brackets (`$area`).
  */
@@ -300,7 +300,7 @@ function findRegexpPredicates(node: ExpressionNode): Array<ExpressionNode & { ki
   return [...own, ...childNodes(node).flatMap(findRegexpPredicates)]
 }
 
-/** A `format_date` call whose pattern and language are written-in text, and whose pattern Groundwork formats. */
+/** A `format_date` call whose pattern and language are written-in text, and whose pattern this package formats. */
 function isReadableFormatDate(call: ExpressionNode & { kind: 'call' }): boolean {
   const [, pattern, language] = call.args
   return pattern?.kind === 'text' && isFormattableQtDatePattern(pattern.value) && (language === undefined || language.kind === 'text')
@@ -309,7 +309,7 @@ function isReadableFormatDate(call: ExpressionNode & { kind: 'call' }): boolean 
 /**
  * A QGIS rule's condition as a GeoStyler filter: the condition's GeoStyler
  * function inside a `custom` function named `QGIS_CONDITION`, which
- * `geostyler-openlayers-parser` hands to the evaluator Groundwork gives it.
+ * `geostyler-openlayers-parser` hands to the evaluator the application gives it.
  * Null for a condition `readQgisExpression` cannot read. `measure` is the
  * project's units, which `$area` and `$length` need.
  */
@@ -652,7 +652,7 @@ function readCase(tokens: ExpressionToken[], index: number): Read {
   return isWord(tokens[next], 'end') ? { node: { kind: 'case', whens, otherwise }, next: next + 1 } : null
 }
 
-/** The fewest and most arguments a label function takes, or null for a function Groundwork does not read. */
+/** The fewest and most arguments a label function takes, or null for a function this reader does not read. */
 function argumentRangeOf(name: string): [min: number, max: number] | null {
   if (name === 'concat') return [1, Infinity]
   if (Object.hasOwn(ONE_ARGUMENT_FUNCTIONS, name)) return [1, 1]
@@ -688,7 +688,7 @@ function findAddedIntervals(node: ExpressionNode): ExpressionNode[] {
 }
 
 /**
- * Whether an expression's reads of other layers are ones Groundwork answers.
+ * Whether an expression's reads of other layers are in the forms read.
  * With `allowed` false, it holds none. Otherwise each `overlay_within` or
  * `overlay_intersects` gives an expression and is the array that
  * `array_first` or a whole-number `[index]` reads; each `aggregate` is a
@@ -797,7 +797,7 @@ function findCalls(node: ExpressionNode, ...names: string[]): Array<ExpressionNo
  * no feature (`expressionFormAttributes`,
  * `src/core/fieldformatter/qgsvaluerelationfieldformatter.cpp`,
  * `qgis/QGIS@master`, read 2026-10-24), so an argument that reads a field
- * gives a blank name and the filter is not used. Groundwork takes a text
+ * gives a blank name and the filter is not used. This reader takes a text
  * literal as the one constant argument. An empty list is an expression that
  * reads no form value.
  */

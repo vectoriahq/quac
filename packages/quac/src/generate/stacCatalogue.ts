@@ -492,8 +492,8 @@ function qgsLayerToNormalized(
     displayField: layer.displayField,
     visibilityChecked: layer.isVisible,
     // An image layer has no features to edit. An ArcGIS layer keeps the
-    // project's own Read-only tick: that Groundwork writes no edits back to the
-    // service is the app's edit rule, which a demo map sets aside.
+    // project's own Read-only tick: whether edits are written back to the
+    // service is left to the application reading the catalogue.
     editable: ds.kind === 'wms' || ds.kind === 'wmts' || ds.kind === 'xyz' ? false : layer.editable,
     identifiable: layer.queryable,
     scaleRange: layer.scaleRange,

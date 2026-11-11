@@ -2,8 +2,7 @@ let enabled = false
 
 /**
  * Turns the package's logging on or off. It is off until an application turns
- * it on; Groundwork turns it on in its development builds
- * (`src/startDevLogging.ts`, which `src/main.tsx` imports first).
+ * it on.
  */
 export function setDevLogging(on: boolean): void {
   enabled = on

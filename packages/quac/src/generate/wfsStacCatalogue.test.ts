@@ -13,7 +13,7 @@ const ENDPOINT = 'https://example.org/geoserver/wfs'
  * are exercised against a real GetCapabilities parse rather than a
  * hand-built object. The
  * parse is saved as JSON; `src/tests/wfsCapabilitiesFixture.test.ts` checks that
- * Groundwork's parser still produces it from the capabilities document.
+ * this package's parser still produces it from the capabilities document.
  */
 const capabilities = JSON.parse(capabilitiesJson) as WfsCapabilities
 

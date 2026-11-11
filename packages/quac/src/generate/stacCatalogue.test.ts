@@ -839,7 +839,7 @@ describe('reading a Collection back', () => {
 
 describe('addresses carrying a character URIs reserve', () => {
   /**
-   * `#` and `?` are legal in a file name on every service Groundwork reads, and
+   * `#` and `?` are legal in a cloud folder's file names, and
    * both end the path when an href is taken apart. Written unescaped they cut
    * the address in half: the data asset points to a file the folder does not hold,
    * so the layer is dropped, and the style address points to a layer the project

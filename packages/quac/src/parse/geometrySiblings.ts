@@ -4,7 +4,7 @@ import type { FileDataSource, LayerEntry, LayerGroup, QgsProject } from '../mode
 
 /**
  * The project's layers that QGIS split out of one file by shape, which
- * Groundwork shows as one layer: file layers whose sources are the same but
+ * the catalogue publishes as one layer: file layers whose sources are the same but
  * for `|geometrytype=`, each naming a different shape. Keyed by each sibling's
  * layer id, the value lists the whole set in the project's layer order (the
  * layers panel, then layers it does not list, in file order), so its first

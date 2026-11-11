@@ -6,7 +6,7 @@ import { readNonBlank } from '../util/nonBlankText.ts'
 import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac.ts'
 
 /**
- * Converts a STAC document fetched from somewhere else to the Groundwork
+ * Converts a STAC document fetched from somewhere else to the QUAC
  * profile (`packages/quac/spec/README.md`), so the rest of the app reads one shape
  * whatever the source.
  *
@@ -22,7 +22,7 @@ import type { StacCatalog, StacCollection, StacExtent } from '../model/Stac.ts'
  *
  * That last one is the fallback the profile allows: an external catalogue
  * cannot be expected to have our vendor fields, so its `data` asset href is
- * sniffed instead. Catalogues Groundwork generates have the fields, and the
+ * sniffed instead. Catalogues this package generates have the fields, and the
  * sniff never runs on them.
  *
  * Children linked as separate documents (`rel: "child"`) are not followed
