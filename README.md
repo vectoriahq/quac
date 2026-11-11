@@ -125,7 +125,7 @@ QUAC began inside Groundwork, Vectoria's web app for capturing and editing spati
 
 ## Status
 
-QUAC is pre-1.0. Version 0.1.0 of the JavaScript package is on npm as [`@vectoriahq/quac`](https://www.npmjs.com/package/@vectoriahq/quac). The QGIS Server plugin is not yet released.
+QUAC is pre-1.0. Version 0.2.0 of the JavaScript package is on npm as [`@vectoriahq/quac`](https://www.npmjs.com/package/@vectoriahq/quac). The QGIS Server plugin is not yet released.
 
 ## Licence
 
