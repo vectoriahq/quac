@@ -1,6 +1,6 @@
 # @vectoriahq/quac
 
-The JavaScript package for [QUAC](https://github.com/vectoriahq/quac), a profile of STAC 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate.
+Writes and reads [QUAC](https://github.com/vectoriahq/quac), which adds map layer settings to STAC 1.1.0 catalogues: how each layer is shown, how its fields are filled in and checked, and how its layers relate.
 
 The package writes QUAC catalogues from QGIS projects and other sources, and reads them back. It makes no network request: it builds a catalogue from what an application has already fetched, such as a QGIS project's text or a QGIS Server GetProjectSettings response.
 
