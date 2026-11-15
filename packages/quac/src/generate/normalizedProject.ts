@@ -1,6 +1,7 @@
 import { readHttpsAddress } from '../model/fieldIconAddress.ts'
 import { declareQuacExtension } from '../model/quacExtension.ts'
 import { STAC_VERSION } from '../model/Stac.ts'
+import { PROJ_CODE, PROJECTION_EXTENSION } from '../model/stacProjection.ts'
 import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 import { readNonBlank } from '../util/nonBlankText.ts'
 
@@ -411,6 +412,7 @@ function buildCollection(layer: NormalizedLayer, defaultProviders: StacProvider[
 
   const vectorGeometryTypes = geoJsonGeometryTypes(layer.wkbTypes ?? [])
   if (vectorGeometryTypes) stacExtensions.push(VECTOR_EXTENSION)
+  if (Object.values(layer.assets).some((asset) => typeof asset[PROJ_CODE] === 'string')) stacExtensions.push(PROJECTION_EXTENSION)
 
   const summaries: Record<string, unknown> = {}
   if (layer.geometryType) summaries['quac:geometry_type'] = [layer.geometryType]

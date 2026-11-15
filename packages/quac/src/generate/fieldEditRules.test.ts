@@ -86,7 +86,7 @@ describe('quac:editable and quac:default on a table:columns entry', () => {
   })
 
   it('leaves out an expression a reader cannot fill', () => {
-    const collection = collectionFor('<defaults><default field="last_edited" expression="$x" applyOnUpdate="1"/></defaults>')
+    const collection = collectionFor('<defaults><default field="last_edited" expression="centroid($geometry)" applyOnUpdate="1"/></defaults>')
 
     expect(column(collection, 'last_edited')).not.toHaveProperty('quac:default')
     expect(readCollectionFieldEditRules(collection)).toEqual({})
@@ -145,7 +145,7 @@ describe('a fixed default', () => {
     "'unterminated",
     "'Good' -- a comment",
     '5.',
-    '$x',
+    'x_max($geometry)',
     'to_date("a")'
   ])('leaves out %s', (expression) => {
     const { column: written, rule } = defaultFor(expression)
@@ -201,7 +201,7 @@ describe('the UUID Generator widget', () => {
   it('gives way to a default expression, which fills the field first', () => {
     const fields = '<fieldConfiguration>' + widget('notes', 'UuidGenerator') + '</fieldConfiguration>'
     const fixed = collectionFor('<defaults><default field="notes" expression="\'A-1\'" applyOnUpdate="0"/></defaults>', fields)
-    const unreadable = collectionFor('<defaults><default field="notes" expression="$y" applyOnUpdate="0"/></defaults>', fields)
+    const unreadable = collectionFor('<defaults><default field="notes" expression="x_min($geometry)" applyOnUpdate="0"/></defaults>', fields)
 
     expect(readCollectionFieldEditRules(fixed).notes).toEqual({
       ...NO_RULE,
@@ -561,7 +561,9 @@ describe('an expression default', () => {
     ['"inspected" + make_interval(days:="days")', '1', true],
     ['@mm_user_email', '1', true],
     ["coalesce(@cloud_useremail, 'unknown')", '0', false],
-    ['round(x(@position_coordinate), 6)', '0', false]
+    ['round(x(@position_coordinate), 6)', '0', false],
+    ['round($x, 2)', '1', true],
+    ["y(transform($geometry, @layer_crs, 'EPSG:4326'))", '0', false]
   ])('writes %s as kind expression and reads it back', (expression, applyOnUpdate, onUpdate) => {
     const { column: written, rule } = defaultFor(expression, applyOnUpdate)
 

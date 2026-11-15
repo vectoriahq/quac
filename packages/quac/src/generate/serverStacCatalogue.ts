@@ -4,6 +4,7 @@ import { generateStacCatalogue } from './stacCatalogue.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { mapQtTypeToStacTableType } from './wmsStacCatalogue.ts'
 import { declareQuacExtension, QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
+import { PROJECTION_EXTENSION } from '../model/stacProjection.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS } from '../model/stacWms.ts'
 
 import type { BoundingBox, LayerEntry, QgsProject } from '../model/QgsProject.ts'
@@ -226,7 +227,8 @@ function serveCollection(source: StacCollection, context: ServeContext): StacCol
     collection['quac:editable'] = false
   }
 
-  const extensions = (source.stac_extensions ?? []).filter((url) => url !== QUAC_SCHEMA_URL && url !== WEB_MAP_LINKS_EXTENSION)
+  // The served Collection gives the data asset afresh, without `proj:code`.
+  const extensions = (source.stac_extensions ?? []).filter((url) => url !== QUAC_SCHEMA_URL && url !== WEB_MAP_LINKS_EXTENSION && url !== PROJECTION_EXTENSION)
   extensions.push(WEB_MAP_LINKS_EXTENSION)
   if (extensions.length > 0) collection.stac_extensions = extensions
   else delete collection.stac_extensions

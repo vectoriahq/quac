@@ -557,7 +557,7 @@ function parseFieldEditRules(maplayer: Element, note: NoteSink): Record<string, 
     const onUpdate = node.getAttribute('applyOnUpdate') === '1'
     const defaultValue = parseDefaultExpression(expression, onUpdate)
     if (defaultValue) ruleFor(name).defaultValue = defaultValue
-    else if (readQgisExpression(expression, { geometry: true, aggregates: true, lookups: true, variables: true })) ruleFor(name).defaultExpression = { expression: expression.trim(), onUpdate }
+    else if (readQgisExpression(expression, { geometry: true, aggregates: true, lookups: true, variables: true, coordinates: true })) ruleFor(name).defaultExpression = { expression: expression.trim(), onUpdate }
     else note('default', name, expression.trim())
   }
 

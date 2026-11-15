@@ -101,7 +101,8 @@
           "quac:feature_filter": {
             "expression": "\"year7_2027\" = 'x'",
             "dialect": "ogr_sql"
-          }
+          },
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./catchments.qgs#Schools_Primary_2027_5a50fc9f_73ba_4ee3_8567_d61cdf643d33/default",
@@ -138,6 +139,7 @@
       "quac:opacity": 1,
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
@@ -188,7 +190,8 @@
           "quac:feature_filter": {
             "expression": "\"primary_2027\" = 'x'",
             "dialect": "ogr_sql"
-          }
+          },
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./catchments.qgs#schools_2027_08ea2d40_5a37_4225_9d6d_23a3cf409505/default",
@@ -225,6 +228,7 @@
       "quac:opacity": 1,
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
