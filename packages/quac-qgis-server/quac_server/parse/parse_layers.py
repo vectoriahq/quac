@@ -32,7 +32,7 @@ def parse_project_layers(qgis_root: Element) -> list[LayerEntry]:
         try:
             layer = _parse_map_layer(node)
         except Exception:  # noqa: BLE001 - as the JavaScript, one bad layer does not take down the project
-            continue
+            layer = None
         if layer is not None:
             layers.append(layer)
     return layers
