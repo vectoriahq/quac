@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+import './xmlParser.ts'
 import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
@@ -23,9 +23,7 @@ import type { StacCatalog, StacCollection, StacLink } from '../model/Stac.ts'
  * relative and each file reads from wherever it is served, such as the site
  * or a branch's raw files.
  *
- * jsdom parses the project because it decodes `&lt;` in an attribute, as a
- * browser does, and linkedom does not. `npx vitest run -u` rewrites the files,
- * to be read as a diff.
+ * `npx vitest run -u` rewrites the files, to be read as a diff.
  */
 
 const DEMO = '../../../../site/demo/'

@@ -1,4 +1,4 @@
-import './linkedomDomParser.ts'
+import './xmlParser.ts'
 
 import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
@@ -16,7 +16,7 @@ import type { WfsCapabilities } from '../model/wfs.ts'
  * `packages/quac/spec/examples/`, each a source holding the one setting that
  * writes the field and the catalogue it gives, cut down by `essentials` to the
  * tree and the `quac:` fields so a person can read it against the field
- * reference. A person reviews each one; `npm run test:quac:update` rewrites an
+ * reference. A person reviews each one; `npx vitest run -u` rewrites an
  * `expected.json` only to be read as a diff.
  *
  * The catalogue a QGIS Server serves for each example's QGIS project is saved

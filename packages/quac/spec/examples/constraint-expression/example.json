@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:constraints"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

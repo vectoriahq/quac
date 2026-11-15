@@ -1,4 +1,4 @@
-import './linkedomDomParser.ts'
+import './xmlParser.ts'
 
 import { readFileSync } from 'node:fs'
 

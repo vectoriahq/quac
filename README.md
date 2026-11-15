@@ -129,7 +129,7 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | Color widget | `quac:color` | [color](packages/quac/spec/examples/color/) |
 | Hidden widget | `quac:hidden` | [hidden](packages/quac/spec/examples/hidden/) |
 | UUID Generator widget | `quac:editable` and `quac:default` | |
-| Constraints | `quac:constraints` | [constraints](packages/quac/spec/examples/constraints/) |
+| Constraints | `quac:constraints` | [constraints](packages/quac/spec/examples/constraints/), [constraint-expression](packages/quac/spec/examples/constraint-expression/) |
 | Default value | `quac:default` | [default](packages/quac/spec/examples/default/) |
 | Editable, unticked | `quac:editable` | [column-editable](packages/quac/spec/examples/column-editable/) |
 | Reuse Last Entered Value | `quac:reuse_last_value` | [reuse-last-value](packages/quac/spec/examples/reuse-last-value/) |

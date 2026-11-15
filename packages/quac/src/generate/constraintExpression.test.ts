@@ -1,6 +1,4 @@
-// @vitest-environment jsdom
-// jsdom, not linkedom: linkedom leaves `&gt;` undecoded in an attribute value,
-// so a constraint with `>` would not reach the reader as QGIS wrote it.
+import '../tests/xmlParser.ts'
 import { describe, expect, it } from 'vitest'
 
 import { readCollectionFieldEditRules } from './normalizedProject.ts'

@@ -24,10 +24,17 @@ import type { PresetFilter, ProjectMetadata, ProjectNote, QgsProject } from '../
  *   3. Each sub-parser handles one concern and isolates its own failures —
  *      a malformed legend tree shouldn't take down the layer list, etc.
  *
- * Throws only when the XML itself is unparseable or has no <qgis> root.
+ * Throws only when `XMLSerializer` is missing, or the XML itself is
+ * unparseable or has no <qgis> root.
  * Sub-parser failures yield empty / null fields rather than exceptions.
  */
 export function parseQgsXml(xmlText: string): QgsProject {
+  // Each layer keeps its own XML through `XMLSerializer`. Without one, every
+  // layer would fail on its own and be skipped, leaving a project with no
+  // layers and no error.
+  if (typeof XMLSerializer === 'undefined') {
+    throw new Error('parseQgsXml needs XMLSerializer as well as DOMParser. A browser provides both; in Node, supply both from one library, such as jsdom.')
+  }
   const parser = new DOMParser()
   const doc = parser.parseFromString(xmlText, 'text/xml')
 
