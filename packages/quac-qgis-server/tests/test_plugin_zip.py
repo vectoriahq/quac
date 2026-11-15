@@ -38,6 +38,12 @@ class PluginZipTest(unittest.TestCase):
         for name in ('metadata.txt', '__init__.py', 'LICENSE', 'quac_server/__init__.py'):
             self.assertIn(f'quac_catalogue/{name}', self.names)
 
+    def test_metadata_states_qgis_4_support_by_its_maximum_version_alone(self) -> None:
+        # The QGIS plugin repository reads QGIS 4 support from qgisMaximumVersion and flags supportsQt6 as deprecated.
+        metadata = {key.lower(): value for key, value in read_metadata().items()}
+        self.assertNotIn('supportsqt6', metadata)
+        self.assertGreaterEqual(float(metadata['qgismaximumversion']), 4.99)
+
     def test_holds_the_bandit_settings_beside_metadata(self) -> None:
         # The QGIS plugin repository reads `.bandit` only at the plugin's top level.
         self.assertIn('quac_catalogue/.bandit', self.names)
