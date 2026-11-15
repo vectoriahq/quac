@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from qgis.core import QgsMapLayer, QgsReadWriteContext, QgsVectorLayer
+from qgis.core import QgsReadWriteContext, QgsVectorLayer
 from qgis.PyQt.QtCore import QBuffer, QIODevice, QMetaType, QVariant
 
 from .access import LayerAnswer
@@ -57,7 +57,7 @@ def field_types(project: Any) -> dict[str, dict[str, dict[str, str]]]:
     """Each valid vector layer's fields' types, by layer id and field name, as the server route takes them."""
     types: dict[str, dict[str, dict[str, str]]] = {}
     for layer in project.mapLayers().values():
-        if not layer.isValid() or layer.type() != _vector_layer_type():
+        if not isinstance(layer, QgsVectorLayer) or not layer.isValid():
             continue
         types[layer.id()] = {field.name(): {'type': qt_type_name(field), 'typeName': field.typeName()} for field in layer.fields()}
     return types
@@ -74,13 +74,6 @@ def layer_extents(project: Any) -> dict[str, BoundingBox]:
             continue
         extents[layer.id()] = BoundingBox(box.xMinimum(), box.yMinimum(), box.xMaximum(), box.yMaximum())
     return extents
-
-
-def _vector_layer_type() -> Any:
-    layer_type = getattr(QgsMapLayer, 'LayerType', None)
-    if layer_type is not None and hasattr(layer_type, 'VectorLayer'):
-        return layer_type.VectorLayer
-    return QgsMapLayer.VectorLayer
 
 
 def access_answers(project: Any, access_controls: Any, layer_ids_by_name: dict[str, list[str]], columns_by_name: dict[str, list[str]]) -> dict[str, LayerAnswer]:
