@@ -5,7 +5,6 @@ about=Used only by this repository's QGIS Server job.
 version=0.0.0
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
-supportsQt6=True
 author=Vectoria
 email=quac@vectoria.com.au
 server=True
