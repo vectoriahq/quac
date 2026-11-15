@@ -121,11 +121,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "via",
@@ -140,7 +140,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
         "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "vector:geometry_types": [
         "Point"
@@ -210,11 +210,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "via",
@@ -229,7 +229,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
         "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "vector:geometry_types": [
         "Point"
@@ -281,11 +281,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "xyz",
@@ -305,7 +305,7 @@
       "quac:max_zoom": 14,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Catchments Year 7 2007"
     },
@@ -354,11 +354,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "xyz",
@@ -378,12 +378,12 @@
       "quac:max_zoom": 14,
       "stac_extensions": [
         "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Catchments Primary 2027"
     }
   ],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
   ]
 }

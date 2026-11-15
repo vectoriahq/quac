@@ -40,21 +40,21 @@
         },
         {
           "rel": "parent",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "child",
-          "href": "./collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json",
+          "href": "./catalogs/water/collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json",
           "type": "application/json",
           "title": "Water: bores"
         },
         {
           "rel": "child",
-          "href": "./catalogs/monitoring/catalog.json",
+          "href": "./catalogs/water/catalogs/monitoring/catalog.json",
           "type": "application/json",
           "title": "Monitoring"
         }
@@ -106,15 +106,15 @@
           "links": [
             {
               "rel": "self",
-              "href": "./collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json"
+              "href": "./catalogs/water/collections/water_bores_1a2b3c4d_5e6f_4a7b_8c9d_0e1f2a3b4c01.json"
             },
             {
               "rel": "parent",
-              "href": "../catalog.json"
+              "href": "./catalogs/water/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../catalog.json"
+              "href": "./catalog.json"
             },
             {
               "rel": "via",
@@ -135,7 +135,7 @@
             "https://stac-extensions.github.io/table/v1.3.0/schema.json",
             "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
             "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-            "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
           ],
           "vector:geometry_types": [
             "Point"
@@ -165,19 +165,19 @@
           "links": [
             {
               "rel": "self",
-              "href": "./catalogs/monitoring/catalog.json"
+              "href": "./catalogs/water/catalogs/monitoring/catalog.json"
             },
             {
               "rel": "parent",
-              "href": "../../catalog.json"
+              "href": "./catalogs/water/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../../catalog.json"
+              "href": "./catalog.json"
             },
             {
               "rel": "child",
-              "href": "./collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json",
+              "href": "./catalogs/water/catalogs/monitoring/collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json",
               "type": "application/json",
               "title": "Sites"
             }
@@ -229,15 +229,15 @@
               "links": [
                 {
                   "rel": "self",
-                  "href": "./collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json"
+                  "href": "./catalogs/water/catalogs/monitoring/collections/sites_2b3c4d5e_6f7a_4b8c_9d0e_1f2a3b4c5d02.json"
                 },
                 {
                   "rel": "parent",
-                  "href": "../catalog.json"
+                  "href": "./catalogs/water/catalogs/monitoring/catalog.json"
                 },
                 {
                   "rel": "root",
-                  "href": "../catalog.json"
+                  "href": "./catalog.json"
                 },
                 {
                   "rel": "via",
@@ -254,7 +254,7 @@
                 "https://stac-extensions.github.io/table/v1.3.0/schema.json",
                 "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
                 "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-                "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+                "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
               ],
               "vector:geometry_types": [
                 "Point"
@@ -286,15 +286,15 @@
         },
         {
           "rel": "parent",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "child",
-          "href": "./collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json",
+          "href": "./catalogs/internal/collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json",
           "type": "application/json",
           "title": "Staff notes"
         }
@@ -346,15 +346,15 @@
           "links": [
             {
               "rel": "self",
-              "href": "./collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json"
+              "href": "./catalogs/internal/collections/staff_notes_3c4d5e6f_7a8b_4c9d_0e1f_2a3b4c5d6e03.json"
             },
             {
               "rel": "parent",
-              "href": "../catalog.json"
+              "href": "./catalogs/internal/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../catalog.json"
+              "href": "./catalog.json"
             },
             {
               "rel": "via",
@@ -377,7 +377,7 @@
             "https://stac-extensions.github.io/table/v1.3.0/schema.json",
             "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
             "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-            "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
           ],
           "vector:geometry_types": [
             "Point"
@@ -397,6 +397,6 @@
     }
   ],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
   ]
 }

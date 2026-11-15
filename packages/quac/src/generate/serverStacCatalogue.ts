@@ -5,6 +5,7 @@ import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { mapQtTypeToStacTableType } from './wmsStacCatalogue.ts'
 import { declareQuacExtension, QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
 import { PROJECTION_EXTENSION } from '../model/stacProjection.ts'
+import { catalogueFolder } from '../model/stacTreeWalk.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS } from '../model/stacWms.ts'
 
 import type { BoundingBox, LayerEntry, QgsProject } from '../model/QgsProject.ts'
@@ -89,7 +90,7 @@ export function generateServerStacCatalogue(project: QgsProject, options: Server
   const serveCatalog = (node: StacCatalog): StacCatalog => {
     const collections = (node.collections ?? []).filter((collection) => servedIds.has(collection.id)).map((collection) => serveCollection(collection, context))
     const catalogs = (node.catalogs ?? []).filter((child) => !restricted.has(child.title ?? '')).map(serveCatalog)
-    const served: StacCatalog = { ...node, links: [...node.links.filter((link) => link.rel !== 'child'), ...childLinks(collections, catalogs)] }
+    const served: StacCatalog = { ...node, links: [...node.links.filter((link) => link.rel !== 'child'), ...childLinks(catalogueFolder(node) ?? './', collections, catalogs)] }
     delete served.collections
     delete served.catalogs
     delete served.stac_extensions
@@ -176,10 +177,11 @@ export function serverWmsCrsList(project: QgsProject): string[] {
   return crsList
 }
 
-function childLinks(collections: StacCollection[], catalogs: StacCatalog[]): StacLink[] {
+/** A served Catalog's child links, from the top-level document as every relative href is: `folder` is the Catalog's own. */
+function childLinks(folder: string, collections: StacCollection[], catalogs: StacCatalog[]): StacLink[] {
   return [
-    ...collections.map((collection) => ({ rel: 'child', href: `./collections/${encodeURIComponent(collection.id)}.json`, type: 'application/json', title: collection.title })),
-    ...catalogs.map((catalog) => ({ rel: 'child', href: `./catalogs/${encodeURIComponent(catalog.id)}/catalog.json`, type: 'application/json', title: catalog.title }))
+    ...collections.map((collection) => ({ rel: 'child', href: `${folder}collections/${encodeURIComponent(collection.id)}.json`, type: 'application/json', title: collection.title })),
+    ...catalogs.map((catalog) => ({ rel: 'child', href: `${folder}catalogs/${encodeURIComponent(catalog.id)}/catalog.json`, type: 'application/json', title: catalog.title }))
   ]
 }
 

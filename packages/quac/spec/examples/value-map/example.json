@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:values"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

@@ -926,7 +926,7 @@ function deriveTableColumns(
     const alias = fieldAliases[name]
     if (alias) column.title = alias
     const values = fieldValueMaps[name]
-    if (values) column.values = values
+    if (values) column['quac:values'] = values
     const valueRelation = fieldValueRelations[name]
     if (valueRelation) column['quac:value_relation'] = valueRelation
     const attachment = fieldAttachments[name]

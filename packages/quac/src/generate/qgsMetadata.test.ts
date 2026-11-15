@@ -1,4 +1,4 @@
-import '../tests/linkedomDomParser.ts'
+import '../tests/xmlParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
@@ -181,9 +181,9 @@ describe('QGIS metadata flowing into the generated catalogue', () => {
   // "Archived" style declares a decoy map for the same field, ahead of the
   // real one in document order.
   it('carries the ValueMap picklist on its field’s table:columns entry, not a saved style’s decoy', () => {
-    const columns = collection['table:columns'] as { name: string, values?: unknown }[]
+    const columns = collection['table:columns'] as { name: string, 'quac:values'?: unknown }[]
     const statusColumn = columns.find((c) => c.name === 'status')
-    expect(statusColumn?.values).toEqual([
+    expect(statusColumn?.['quac:values']).toEqual([
       { value: 'waiting', label: 'Waiting' },
       { value: 'actioned', label: 'Actioned' }
     ])

@@ -120,7 +120,7 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | QGIS setting | QUAC field | Example |
 |---|---|---|
 | Alias | the column's `title` | |
-| Value Map widget | the column's `values` | |
+| Value Map widget | `quac:values` | [value-map](packages/quac/spec/examples/value-map/) |
 | Value Relation widget | `quac:value_relation` | [value-relation](packages/quac/spec/examples/value-relation/) |
 | Range widget | `quac:range` | [range](packages/quac/spec/examples/range/) |
 | Checkbox widget | `quac:checkbox` | [checkbox](packages/quac/spec/examples/checkbox/) |
@@ -129,7 +129,7 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | Color widget | `quac:color` | [color](packages/quac/spec/examples/color/) |
 | Hidden widget | `quac:hidden` | [hidden](packages/quac/spec/examples/hidden/) |
 | UUID Generator widget | `quac:editable` and `quac:default` | |
-| Constraints | `quac:constraints` | [constraints](packages/quac/spec/examples/constraints/) |
+| Constraints | `quac:constraints` | [constraints](packages/quac/spec/examples/constraints/), [constraint-expression](packages/quac/spec/examples/constraint-expression/) |
 | Default value | `quac:default` | [default](packages/quac/spec/examples/default/) |
 | Editable, unticked | `quac:editable` | [column-editable](packages/quac/spec/examples/column-editable/) |
 | Reuse Last Entered Value | `quac:reuse_last_value` | [reuse-last-value](packages/quac/spec/examples/reuse-last-value/) |
@@ -203,7 +203,7 @@ The JavaScript package makes no network request. It builds a catalogue from what
 
 ## Checking a catalogue
 
-The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.2.0/schema.json`. Any draft-07 validator checks a Catalog with its Collections inline, or a single Collection, against it. It checks only `quac:` fields: any other field passes, and a `quac:` field the schema does not define fails. A catalogue says it follows QUAC by listing the schema's address in `stac_extensions`.
+The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.3.0/schema.json`. Any draft-07 validator checks a Catalog with its Collections inline, or a single Collection, against it. It checks only `quac:` fields: any other field passes, and a `quac:` field the schema does not define fails. A catalogue says it follows QUAC by listing the schema's address in `stac_extensions`.
 
 ## What this repository holds
 

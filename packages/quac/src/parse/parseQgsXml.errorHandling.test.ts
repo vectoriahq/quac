@@ -1,10 +1,5 @@
-// @vitest-environment jsdom
-//
-// Kept on real jsdom deliberately: it exercises the browser DOMParser's
-// <parsererror> behaviour on malformed XML, which linkedom (used by the
-// other parseQgsXml tests to avoid jsdom's setup cost) does not reproduce —
-// it silently patches broken markup instead of flagging it.
-import { describe, expect, it } from 'vitest'
+import '../tests/xmlParser.ts'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { parseQgsXml } from './parseQgsXml.ts'
 
@@ -17,5 +12,18 @@ describe('parseQgsXml — error handling', () => {
     expect(() => parseQgsXml('<not-qgis><child/></not-qgis>')).toThrow(
       'Expected <qgis> root element, got <not-qgis>'
     )
+  })
+
+  describe('without XMLSerializer', () => {
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    // Each layer keeps its XML through XMLSerializer, so without one every
+    // layer used to be skipped, and the project read as having none.
+    it('throws instead of reading a project with no layers', () => {
+      vi.stubGlobal('XMLSerializer', undefined)
+      expect(() => parseQgsXml('<qgis><projectlayers/></qgis>')).toThrow(/needs XMLSerializer/)
+    })
   })
 })

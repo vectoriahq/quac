@@ -54,15 +54,15 @@
         },
         {
           "rel": "parent",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "child",
-          "href": "./collections/Graffiti Reports.json",
+          "href": "./catalogs/wa-municipal-graffiti-vandalism-register/collections/Graffiti Reports.json",
           "type": "application/json",
           "title": "Graffiti Reports"
         }
@@ -104,15 +104,15 @@
           "links": [
             {
               "rel": "self",
-              "href": "./collections/Graffiti Reports.json"
+              "href": "./catalogs/wa-municipal-graffiti-vandalism-register/collections/Graffiti Reports.json"
             },
             {
               "rel": "parent",
-              "href": "../catalog.json"
+              "href": "./catalogs/wa-municipal-graffiti-vandalism-register/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../catalog.json"
+              "href": "./catalog.json"
             }
           ],
           "quac:display_field": "location_description",
@@ -123,7 +123,7 @@
           "stac_extensions": [
             "https://stac-extensions.github.io/table/v1.3.0/schema.json",
             "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
-            "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
           ],
           "vector:geometry_types": [
             "Point"
@@ -221,6 +221,6 @@
     }
   ],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
   ]
 }

@@ -1,4 +1,4 @@
-import '../tests/linkedomDomParser.ts'
+import '../tests/xmlParser.ts'
 
 import { describe, expect, it } from 'vitest'
 

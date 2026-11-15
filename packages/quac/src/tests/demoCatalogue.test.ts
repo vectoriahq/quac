@@ -1,4 +1,4 @@
-// @vitest-environment jsdom
+import './xmlParser.ts'
 import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
@@ -23,9 +23,7 @@ import type { StacCatalog, StacCollection, StacLink } from '../model/Stac.ts'
  * relative and each file reads from wherever it is served, such as the site
  * or a branch's raw files.
  *
- * jsdom parses the project because it decodes `&lt;` in an attribute, as a
- * browser does, and linkedom does not. `npx vitest run -u` rewrites the files,
- * to be read as a diff.
+ * `npx vitest run -u` rewrites the files, to be read as a diff.
  */
 
 const DEMO = '../../../../site/demo/'
@@ -47,10 +45,9 @@ function fromCollectionsFolder(href: string): string {
 
 /**
  * Splits the one document into a root Catalog and a file per Collection.
- * Every relative href in the one document resolves against the root, apart
- * from a Collection's `parent` and `root` links, which the generator already
- * writes from the Collection's own file. Each Collection's `self` link is
- * written as its own file.
+ * Every relative href in the one document resolves against the root, so each
+ * is rewritten from the Collection's own file, apart from its `self` link,
+ * which is written as that file.
  */
 function splitDemo(catalogue: StacCatalog): { root: StacCatalog, collections: StacCollection[] } {
   if (catalogue.catalogs?.length) throw new Error('The demo has no groups; splitting one is not written.')
@@ -58,7 +55,6 @@ function splitDemo(catalogue: StacCatalog): { root: StacCatalog, collections: St
   const split = collections.map((collection) => {
     const links: StacLink[] = (collection.links ?? []).map((link) => {
       if (link.rel === 'self') return { ...link, href: `./${collection.id}.json` }
-      if (link.rel === 'parent' || link.rel === 'root') return link
       return { ...link, href: fromCollectionsFolder(link.href) }
     })
     const assets = Object.fromEntries(Object.entries(collection.assets ?? {}).map(([key, asset]) => (

@@ -86,7 +86,7 @@ def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
     in `stac_extensions` where `declare_quac_extension` says: the project is
     the top-level Catalog, a group a nested Catalog and a layer a Collection.
     """
-    collections, catalogs, links = _walk_nodes(project.nodes)
+    collections, catalogs, links = _walk_nodes(project.nodes, './')
     catalog: dict[str, Any] = {
         'type': 'Catalog',
         'stac_version': STAC_VERSION,
@@ -104,17 +104,25 @@ def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
     return declare_quac_extension(catalog)
 
 
-def _walk_nodes(nodes: list[NormalizedNode]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+def _walk_nodes(nodes: list[NormalizedNode], folder: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+    """
+    Every relative href in the catalogue starts from the top-level document,
+    the one document that holds the whole tree. `folder` is where the Catalog
+    holding `nodes` would sit as a file of its own, relative to that document:
+    `./` for the top level and `./catalogs/<id>/` for a group, nested group by
+    group.
+    """
     collections: list[dict[str, Any]] = []
     catalogs: list[dict[str, Any]] = []
     links: list[dict[str, Any]] = []
     for node in nodes:
         if isinstance(node, NormalizedLayer):
-            collection = _build_collection(node)
+            collection = _build_collection(node, folder)
             collections.append(collection)
-            links.append({'rel': 'child', 'href': f'./collections/{collection["id"]}.json', 'type': 'application/json', 'title': collection['title']})
+            links.append({'rel': 'child', 'href': f'{folder}collections/{collection["id"]}.json', 'type': 'application/json', 'title': collection['title']})
             continue
-        sub_collections, sub_catalogs, sub_links = _walk_nodes(node.children)
+        group_folder = f'{folder}catalogs/{node.id}/'
+        sub_collections, sub_catalogs, sub_links = _walk_nodes(node.children, group_folder)
         sub_catalog: dict[str, Any] = {
             'type': 'Catalog',
             'stac_version': STAC_VERSION,
@@ -122,9 +130,9 @@ def _walk_nodes(nodes: list[NormalizedNode]) -> tuple[list[dict[str, Any]], list
             **({'title': node.title} if node.title else {}),
             'description': node.description,
             'links': [
-                {'rel': 'self', 'href': f'./catalogs/{node.id}/catalog.json'},
-                {'rel': 'parent', 'href': '../../catalog.json'},
-                {'rel': 'root', 'href': '../../catalog.json'},
+                {'rel': 'self', 'href': f'{group_folder}catalog.json'},
+                {'rel': 'parent', 'href': f'{folder}catalog.json'},
+                {'rel': 'root', 'href': './catalog.json'},
                 *sub_links,
             ],
         }
@@ -135,11 +143,11 @@ def _walk_nodes(nodes: list[NormalizedNode]) -> tuple[list[dict[str, Any]], list
         if sub_catalogs:
             sub_catalog['catalogs'] = sub_catalogs
         catalogs.append(sub_catalog)
-        links.append({'rel': 'child', 'href': f'./catalogs/{node.id}/catalog.json', 'type': 'application/json', 'title': node.title})
+        links.append({'rel': 'child', 'href': f'{group_folder}catalog.json', 'type': 'application/json', 'title': node.title})
     return collections, catalogs, links
 
 
-def _build_collection(layer: NormalizedLayer) -> dict[str, Any]:
+def _build_collection(layer: NormalizedLayer, folder: str) -> dict[str, Any]:
     stac_extensions = list(layer.extensions)
     if layer.table_columns:
         stac_extensions.append(TABLE_EXTENSION)
@@ -160,9 +168,9 @@ def _build_collection(layer: NormalizedLayer) -> dict[str, Any]:
         collection['summaries'] = {'quac:geometry_type': [layer.geometry_type]}
     collection['assets'] = layer.assets
     collection['links'] = [
-        {'rel': 'self', 'href': f'./collections/{layer.id}.json'},
-        {'rel': 'parent', 'href': '../catalog.json'},
-        {'rel': 'root', 'href': '../catalog.json'},
+        {'rel': 'self', 'href': f'{folder}collections/{layer.id}.json'},
+        {'rel': 'parent', 'href': f'{folder}catalog.json'},
+        {'rel': 'root', 'href': './catalog.json'},
         *layer.links,
     ]
 

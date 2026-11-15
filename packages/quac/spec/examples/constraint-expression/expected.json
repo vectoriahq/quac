@@ -1,0 +1,32 @@
+{
+  "type": "Catalog",
+  "id": "constraint-expression",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "trees_1",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Trees",
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "table:columns": [
+        {
+          "name": "height",
+          "quac:constraints": {
+            "expression": {
+              "expression": "\"height\" < 80 AND \"height\" > 0",
+              "description": "Between 0 and 80 metres",
+              "strength": "warn"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

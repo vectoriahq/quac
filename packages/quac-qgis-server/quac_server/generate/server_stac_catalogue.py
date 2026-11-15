@@ -35,6 +35,7 @@ from ..js_compat import encode_uri_component, search_params_to_string
 from ..model.qgs_project import BoundingBox, LayerEntry, QgsProject
 from ..model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from ..model.stac_projection import PROJECTION_EXTENSION
+from ..model.stac_tree_walk import catalogue_folder
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS, choose_wms_crs
 from ..util.catalogue_file_formats import GEOJSON_MEDIA_TYPE
 from ..util.wfs_versions import WFS_CAPABILITIES_VERSION
@@ -94,7 +95,7 @@ def generate_server_stac_catalogue(
         collections = [_serve_collection(collection, context) for collection in node.get('collections') or [] if collection['id'] in served_ids]
         catalogs = [serve_catalog(child) for child in node.get('catalogs') or [] if (child.get('title') or '') not in restricted]
         served = {key: value for key, value in node.items() if key not in ('collections', 'catalogs', 'stac_extensions')}
-        served['links'] = [*(link for link in node['links'] if link['rel'] != 'child'), *_child_links(collections, catalogs)]
+        served['links'] = [*(link for link in node['links'] if link['rel'] != 'child'), *_child_links(catalogue_folder(node) or './', collections, catalogs)]
         if collections:
             served['collections'] = collections
         if catalogs:
@@ -168,9 +169,10 @@ class _ServeContext:
         self.wms_crs = wms_crs
 
 
-def _child_links(collections: list[dict[str, Any]], catalogs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    links = [_child_link(f'./collections/{encode_uri_component(collection["id"])}.json', collection.get('title')) for collection in collections]
-    links += [_child_link(f'./catalogs/{encode_uri_component(catalog["id"])}/catalog.json', catalog.get('title')) for catalog in catalogs]
+def _child_links(folder: str, collections: list[dict[str, Any]], catalogs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """A served Catalog's child links, from the top-level document as every relative href is: `folder` is the Catalog's own."""
+    links = [_child_link(f'{folder}collections/{encode_uri_component(collection["id"])}.json', collection.get('title')) for collection in collections]
+    links += [_child_link(f'{folder}catalogs/{encode_uri_component(catalog["id"])}/catalog.json', catalog.get('title')) for catalog in catalogs]
     return links
 
 
