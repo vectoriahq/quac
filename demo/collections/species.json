@@ -62,7 +62,7 @@
   "quac:private": true,
   "stac_extensions": [
     "https://stac-extensions.github.io/table/v1.3.0/schema.json",
-    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
   ],
   "quac:qgis_server_wms_name": "Species",
   "table:columns": [
