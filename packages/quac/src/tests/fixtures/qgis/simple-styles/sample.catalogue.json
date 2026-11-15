@@ -99,7 +99,8 @@
           "title": "bicycle-routes-linestring.json",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./sample.qgs#Bicycle_Routes_e1d2fe6c_392d_414c_be98_884f957d20cc/default",
@@ -142,6 +143,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
@@ -211,7 +213,8 @@
           "title": "car-share-point.json",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./sample.qgs#Car_Share_22a3cc46_689a_4b3d_af62_a91b0f3e0073/default",
@@ -254,6 +257,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
@@ -323,7 +327,8 @@
           "title": "whats-on-when-polygon.json",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./sample.qgs#What_s_On_When_e2d6cc77_d805_4b20_98b9_00be61c397d7/default",
@@ -366,6 +371,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [

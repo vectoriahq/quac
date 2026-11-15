@@ -100,7 +100,8 @@
           "title": "graffiti.json",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "Asset Owner": {
           "href": "./graffiti.qgs#WA_Municipal_Graffiti_Vandalism_Register_89291f01_c9ba_4931_b24f_93694710eea9/Asset%20Owner",
@@ -156,6 +157,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
@@ -282,7 +284,8 @@
           "title": "WFS GetFeature: esri:Schools",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./graffiti.qgs#esri_Schools_a9cd903d_8448_44d2_86f7_31d0a416be2e/default",
@@ -334,6 +337,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [

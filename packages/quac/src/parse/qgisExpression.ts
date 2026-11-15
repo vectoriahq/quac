@@ -99,11 +99,33 @@ const QGIS_ONLY_FUNCTIONS: Record<string, [min: number, max: number]> = {
   intersects: [2, 2],
   x: [1, 1],
   y: [1, 1],
-  z: [1, 1]
+  z: [1, 1],
+  transform: [3, 3],
+  layer_property: [2, 2]
 }
 
-/** The functions that take a coordinate of a point, read only with a variable as their point (`EXPRESSION_VARIABLE`). */
+/**
+ * The functions that take a coordinate of a point: of the point a variable
+ * holds (`EXPRESSION_VARIABLE`), or of the record's shape (`SHAPE_COORDINATE`).
+ */
 const POINT_PARTS = ['x', 'y', 'z']
+
+/** The coordinates of the record's own point, written with no brackets. */
+const FEATURE_COORDINATES = ['$x', '$y']
+
+/**
+ * The `fnName` of the GeoStyler `custom` function that stands for a coordinate
+ * of the record's shape. Its arguments are the coordinate, `x`, `y` or `z`; how
+ * it is taken, `feature` for `$x` and `$y` or `shape` for `x()`, `y()` and
+ * `z()` of `$geometry`; and the coordinate systems a `transform()` takes the
+ * shape from and to, each a code such as `EPSG:28355` or `LAYER_CRS`, or both
+ * null where there is no `transform()`. The evaluator works it out from the
+ * shape and the layer's coordinate system before it starts.
+ */
+export const SHAPE_COORDINATE = 'shape_coordinate'
+
+/** Stands for the layer's own coordinate system in a `SHAPE_COORDINATE`, written `@layer_crs` or `layer_property(@layer, 'crs')`. */
+export const LAYER_CRS = '@layer_crs'
 
 /**
  * The `fnName` of the GeoStyler `custom` function that stands for a variable,
@@ -126,6 +148,88 @@ function isVariable(node: ExpressionNode | undefined): boolean {
 /** The variables at or under a node, other than `@parent`. */
 function findVariables(node: ExpressionNode): ExpressionNode[] {
   return [...(isVariable(node) ? [node] : []), ...childNodes(node).flatMap(findVariables)]
+}
+
+type CallNode = ExpressionNode & { kind: 'call' }
+
+/** Whether a node is a coordinate of the record's shape: `$x`, `$y`, or `x()`, `y()` or `z()` of anything but a variable. */
+function isCoordinateCall(node: ExpressionNode): boolean {
+  if (node.kind !== 'call') return false
+  return FEATURE_COORDINATES.includes(node.name) || (POINT_PARTS.includes(node.name) && !isVariable(node.args[0]))
+}
+
+/** The coordinates of the record's shape at or under a node, not looking inside one. */
+function findCoordinateCalls(node: ExpressionNode): CallNode[] {
+  return isCoordinateCall(node) ? [node as CallNode] : childNodes(node).flatMap(findCoordinateCalls)
+}
+
+function isRecordShape(node: ExpressionNode | undefined): boolean {
+  return node?.kind === 'call' && node.name === '$geometry'
+}
+
+/** A coordinate system written as text, as `@layer_crs`, or as `layer_property(@layer, 'crs')`. */
+function isReadableCrs(node: ExpressionNode | undefined): boolean {
+  if (node?.kind === 'text') return node.value.trim() !== ''
+  if (variableName(node) === 'layer_crs') return true
+  if (node?.kind !== 'call' || node.name !== 'layer_property') return false
+  const [layer, property] = node.args
+  return variableName(layer) === 'layer' && property?.kind === 'text' && property.value.toLowerCase() === 'crs'
+}
+
+/** The code a readable coordinate system names, or `LAYER_CRS` for the layer's own. */
+function crsOf(node: ExpressionNode): string {
+  return node.kind === 'text' ? node.value.trim() : LAYER_CRS
+}
+
+/** `$x`, `$y`, or `x()`, `y()` or `z()` of `$geometry` or of `transform($geometry, from, to)`. */
+function isReadableCoordinate(call: CallNode): boolean {
+  if (FEATURE_COORDINATES.includes(call.name)) return true
+  const shape = call.args[0]
+  if (isRecordShape(shape)) return true
+  return shape?.kind === 'call' && shape.name === 'transform' && isRecordShape(shape.args[0]) && isReadableCrs(shape.args[1]) && isReadableCrs(shape.args[2])
+}
+
+/** The `SHAPE_COORDINATE` a readable coordinate becomes. */
+function coordinateFunction(call: CallNode): unknown {
+  if (FEATURE_COORDINATES.includes(call.name)) return { name: 'custom', fnName: SHAPE_COORDINATE, args: [call.name.slice(1), 'feature', null, null] }
+  const shape = call.args[0]!
+  const transformed = shape.kind === 'call' && shape.name === 'transform'
+  return {
+    name: 'custom',
+    fnName: SHAPE_COORDINATE,
+    args: [call.name, 'shape', transformed ? crsOf(shape.args[1]!) : null, transformed ? crsOf(shape.args[2]!) : null]
+  }
+}
+
+/**
+ * A node with each coordinate of the record's shape replaced by NULL, for the
+ * checks that do not look inside one. Nodes holding none are kept as they are,
+ * so a `$area` found in the result is the one in the expression.
+ */
+function withoutCoordinates(node: ExpressionNode): ExpressionNode {
+  if (isCoordinateCall(node)) return { kind: 'null' }
+  const children = childNodes(node)
+  const replaced = children.map(withoutCoordinates)
+  if (replaced.every((child, index) => child === children[index])) return node
+  const next = (() => {
+    let index = 0
+    return () => replaced[index++]!
+  })()
+  switch (node.kind) {
+    case 'call': return { ...node, args: node.args.map(next) }
+    case 'predicate':
+    case 'logic': return { ...node, args: node.args.map(next) } as ExpressionNode
+    case 'arithmetic':
+    case 'compare': return { ...node, left: next(), right: next() } as ExpressionNode
+    case 'negate':
+    case 'not': return { ...node, arg: next() } as ExpressionNode
+    case 'case': return {
+      ...node,
+      whens: node.whens.map(() => ({ when: next(), then: next() })),
+      otherwise: node.otherwise ? next() : null
+    }
+    default: return node
+  }
 }
 
 /** The functions whose second argument is a regular expression, which QGIS compiles with Unicode properties. */
@@ -284,16 +388,31 @@ export function isQgisConditionFilter(filter: unknown): filter is { name: 'custo
  * (`EXPRESSION_VARIABLE`) as a record is created or saved (a default value).
  * `x`, `y` and `z` are read only with a variable as their point, as in
  * `x(@position_coordinate)`. A read of another layer cannot use a variable.
+ *
+ * The coordinates of the record's shape are read only where the caller says
+ * `coordinates`: the caller then works each one out from the shape in the
+ * layer's coordinate system (`SHAPE_COORDINATE`), as a record is created or
+ * saved (a default value). They are `$x` and `$y`, and `x()`, `y()` and `z()`
+ * of `$geometry` or of `transform($geometry, from, to)`, where each
+ * coordinate system is a code written as text, `@layer_crs` or
+ * `layer_property(@layer, 'crs')`. A read of another layer cannot use one.
  */
 export function readQgisExpression(
   expression: string,
-  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean, variables?: boolean } = {}
+  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean, variables?: boolean, coordinates?: boolean } = {}
 ): ExpressionNode | null {
   const tokens = tokenizeExpression(expression)
   if (!tokens || tokens.length === 0) return null
 
-  const parsed = readOr(tokens, 0)
-  if (!parsed || parsed.next !== tokens.length) return null
+  const read = readOr(tokens, 0)
+  if (!read || read.next !== tokens.length) return null
+  const coordinates = findCoordinateCalls(read.node)
+  if (coordinates.length > 0 && (!options.coordinates || !coordinates.every(isReadableCoordinate))) return null
+  if (findCalls(read.node, ...LOOKUPS).some((call) => findCoordinateCalls(call).length > 0)) return null
+  // The rest is checked with each coordinate set aside: its shape, its
+  // coordinate systems and `@layer` are read above.
+  const parsed = { node: withoutCoordinates(read.node) }
+  if (findCalls(parsed.node, ...FEATURE_COORDINATES, 'transform', 'layer_property').length > 0) return null
   if (!options.currentValue && findCalls(parsed.node, 'current_value').length > 0) return null
   if (!options.variables && findVariables(parsed.node).length > 0) return null
   if (!findCalls(parsed.node, ...POINT_PARTS).every((call) => isVariable(call.args[0]))) return null
@@ -315,15 +434,15 @@ export function readQgisExpression(
   if (findCalls(parsed.node, 'make_interval').some((call) => !addedIntervals.has(call))) return null
 
   const geometryCalls = findCalls(parsed.node, ...Object.keys(GEOMETRY_VALUES))
-  if (geometryCalls.length === 0) return parsed.node
+  if (geometryCalls.length === 0) return read.node
   if (!options.geometry) return null
-  if (options.geometry === true) return parsed.node
+  if (options.geometry === true) return read.node
   for (const call of geometryCalls) {
     const factor = options.geometry[GEOMETRY_VALUES[call.name]!]
     if (factor === null) return null
     call.factor = factor
   }
-  return parsed.node
+  return read.node
 }
 
 /** A regular expression written into the expression as text, which `compileQtRegex` translates. */
@@ -602,7 +721,9 @@ function readTerm(tokens: ExpressionToken[], index: number): Read {
     const word = token.value.toLowerCase()
     if (word.startsWith('$')) {
       if (word === '$now') return { node: { kind: 'call', name: 'now', args: [] }, next: index + 1 }
-      return Object.hasOwn(GEOMETRY_VALUES, word) || word === '$geometry' ? { node: { kind: 'call', name: word, args: [] }, next: index + 1 } : null
+      return Object.hasOwn(GEOMETRY_VALUES, word) || word === '$geometry' || FEATURE_COORDINATES.includes(word)
+        ? { node: { kind: 'call', name: word, args: [] }, next: index + 1 }
+        : null
     }
     // `@parent` is read inside an `aggregate` filter, and any other variable
     // where the caller says `variables`. A variable keeps its spelling, since
@@ -921,6 +1042,7 @@ export function expressionToGeoStylerFunction(node: ExpressionNode): unknown {
         ]
       }
     case 'call': {
+      if (isCoordinateCall(node)) return coordinateFunction(node as CallNode)
       const variable = variableName(node)
       if (variable !== null) return { name: 'custom', fnName: EXPRESSION_VARIABLE, args: [variable] }
       const point = variableName(node.args[0])

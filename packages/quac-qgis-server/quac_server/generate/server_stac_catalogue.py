@@ -34,6 +34,7 @@ from typing import Any, Optional
 from ..js_compat import encode_uri_component, search_params_to_string
 from ..model.qgs_project import BoundingBox, LayerEntry, QgsProject
 from ..model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
+from ..model.stac_projection import PROJECTION_EXTENSION
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS, choose_wms_crs
 from ..util.catalogue_file_formats import GEOJSON_MEDIA_TYPE
 from ..util.wfs_versions import WFS_CAPABILITIES_VERSION
@@ -235,7 +236,8 @@ def _serve_collection(source: dict[str, Any], context: _ServeContext) -> dict[st
         collection.pop('assets', None)
         collection['quac:editable'] = False
 
-    extensions = [url for url in source.get('stac_extensions') or [] if url not in (QUAC_SCHEMA_URL, WEB_MAP_LINKS_EXTENSION)]
+    # The served Collection gives the data asset afresh, without `proj:code`.
+    extensions = [url for url in source.get('stac_extensions') or [] if url not in (QUAC_SCHEMA_URL, WEB_MAP_LINKS_EXTENSION, PROJECTION_EXTENSION)]
     extensions.append(WEB_MAP_LINKS_EXTENSION)
     collection['stac_extensions'] = extensions
 

@@ -11,6 +11,7 @@ import { delimitedTextField, QUAC_DELIMITED_TEXT } from '../model/delimitedText.
 import { featureFilterField, QUAC_FEATURE_FILTER } from '../model/featureFilter.ts'
 import { readDataAsset } from '../model/stacAssetRoles.ts'
 import { decodeAssetPath, encodeAssetPath } from '../model/stacHref.ts'
+import { PROJ_CODE } from '../model/stacProjection.ts'
 import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles.ts'
 import { buildWmsLink, WEB_MAP_LINKS_EXTENSION } from '../model/stacWms.ts'
 import { buildWmtsLink } from '../model/stacWmts.ts'
@@ -637,6 +638,16 @@ function buildLayerAssets(
   return { ...dataAssets, ...buildStyleAssets(layer, projectPath, dataAssets) }
 }
 
+/**
+ * The layer's coordinate system as QGIS holds it (`<srs><spatialrefsys><authid>`),
+ * which `$x`, `$y` and the coordinates of `$geometry` are given in, as
+ * `proj:code`. Nothing where the project names none, or names one with no
+ * authority code, such as a user-defined system.
+ */
+function layerCrsField(layer: LayerEntry): Record<string, string> {
+  return layer.crs && /^[A-Za-z]+:\S+$/.test(layer.crs) ? { [PROJ_CODE]: layer.crs } : {}
+}
+
 function buildAssets(layer: LayerEntry, geometryFilter: GeometryFilterShape[] | null): Record<string, StacAsset> {
   const ds = layer.dataSource
   if (ds.kind === 'wms' || ds.kind === 'wmts') return {}
@@ -670,18 +681,20 @@ function buildAssets(layer: LayerEntry, geometryFilter: GeometryFilterShape[] | 
         // file, which holds one layer.
         ...(ds.layerName && isLayerFileOfFormat(ds.filename, 'geopackage') ? { [QUAC_LAYER_NAME]: ds.layerName } : {}),
         ...(ds.delimitedText ? { [QUAC_DELIMITED_TEXT]: delimitedTextField(ds.delimitedText) } : {}),
-        ...(ds.featureFilter ? { [QUAC_FEATURE_FILTER]: featureFilterField(ds.featureFilter) } : {})
+        ...(ds.featureFilter ? { [QUAC_FEATURE_FILTER]: featureFilterField(ds.featureFilter) } : {}),
+        ...layerCrsField(layer)
       }
     }
   }
   if (ds.kind === 'arcgis') {
-    return { data: arcgisQueryAsset({ layerUrl: ds.url, where: ds.where }, layer.name) }
+    return { data: { ...arcgisQueryAsset({ layerUrl: ds.url, where: ds.where }, layer.name), ...layerCrsField(layer) } }
   }
   if (ds.kind === 'wfs') {
     return {
       data: {
         ...wfsGetFeatureAsset(ds.url, ds.typeName, ds.typeName),
-        ...(ds.featureFilter ? { [QUAC_FEATURE_FILTER]: featureFilterField(ds.featureFilter) } : {})
+        ...(ds.featureFilter ? { [QUAC_FEATURE_FILTER]: featureFilterField(ds.featureFilter) } : {}),
+        ...layerCrsField(layer)
       }
     }
   }

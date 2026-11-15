@@ -86,7 +86,8 @@
           "title": "street-trees.geojson",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./street-trees.qgs#street_trees_5b1d0a72_4e33_4c1a_9f6d_2c8b7a1e4d90/default",
@@ -125,6 +126,7 @@
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "vector:geometry_types": [
@@ -180,7 +182,8 @@
           "title": "tree-inspections.geojson",
           "roles": [
             "data"
-          ]
+          ],
+          "proj:code": "EPSG:4326"
         },
         "default": {
           "href": "./street-trees.qgs#tree_inspections_0a4f9c81_7b26_4f55_8ad3_16e0f9b25c47/default",
@@ -232,6 +235,7 @@
       ],
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Inspections",
