@@ -82,7 +82,7 @@ def _apply_to_catalog(node: dict[str, Any], answers: dict[str, LayerAnswer]) -> 
         held_layer = held_layer or _holds_layer(child)
         if _apply_to_catalog(child, answers):
             catalogs.append(child)
-    node['links'] = [link for link in node['links'] if link.get('rel') != 'child'] + _child_links(collections, catalogs)
+    node['links'] = [link for link in node['links'] if link.get('rel') != 'child'] + _child_links(_folder(node), collections, catalogs)
     for key, kept in (('collections', collections), ('catalogs', catalogs)):
         if kept:
             node[key] = kept
@@ -136,11 +136,24 @@ def _collections(catalog: dict[str, Any]):
         yield from _collections(child)
 
 
-def _child_links(collections: list[dict[str, Any]], catalogs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """The links to a Catalog's children, written as the server route writes them."""
+def _folder(node: dict[str, Any]) -> str:
+    """
+    Where a Catalog would sit as a file of its own, relative to the top-level
+    document, as `catalogue_folder` in `quac_server/model/stac_tree_walk.py`
+    reads it from the Catalog's `self` link, and `./` where that names no
+    `catalog.json`.
+    """
+    self_href = next((link.get('href') for link in node.get('links') or [] if link.get('rel') == 'self'), None)
+    if not isinstance(self_href, str) or (self_href != 'catalog.json' and not self_href.endswith('/catalog.json')):
+        return './'
+    return self_href[:len(self_href) - len('catalog.json')]
+
+
+def _child_links(folder: str, collections: list[dict[str, Any]], catalogs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The links to a Catalog's children, written as the server route writes them, from the top-level document."""
     links = []
-    for href, title in [(f'./collections/{_escape(collection["id"])}.json', collection.get('title')) for collection in collections] + \
-            [(f'./catalogs/{_escape(catalog["id"])}/catalog.json', catalog.get('title')) for catalog in catalogs]:
+    for href, title in [(f'{folder}collections/{_escape(collection["id"])}.json', collection.get('title')) for collection in collections] + \
+            [(f'{folder}catalogs/{_escape(catalog["id"])}/catalog.json', catalog.get('title')) for catalog in catalogs]:
         link: dict[str, Any] = {'rel': 'child', 'href': href, 'type': 'application/json'}
         if title is not None:
             link['title'] = title

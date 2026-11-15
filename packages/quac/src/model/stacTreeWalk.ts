@@ -7,8 +7,10 @@ import type { StacCatalog, StacCollection } from './Stac.ts'
  *
  * A Catalog holds its child Collections and child Catalogs in two separate
  * arrays, so the interleaving is read back from the `rel: "child"` links,
- * which the generator writes in source order (`./collections/{id}.json` for a
- * Collection, `./catalogs/{id}/catalog.json` for a group). A child whose link
+ * which the generator writes in source order, from the top-level document:
+ * `{folder}collections/{id}.json` for a Collection and
+ * `{folder}catalogs/{id}/catalog.json` for a group, where `{folder}` is the
+ * Catalog's own, as `catalogueFolder` reads it. A child whose link
  * cannot be matched — an external document with its own link shapes — is
  * appended after the linked ones, so nothing is dropped and external
  * catalogues degrade to "Collections first, then groups" order.
@@ -40,12 +42,13 @@ export function listCatalogueChildren(catalog: StacCatalog): CatalogueChild[] {
   const collections = catalog.collections ?? []
   const catalogs = catalog.catalogs ?? []
 
+  const folder = catalogueFolder(catalog)
   const visited = new Set<object>()
   const out: CatalogueChild[] = []
 
   for (const link of catalog.links ?? []) {
     if (link.rel !== 'child') continue
-    const collectionId = matchIdFromHref(link.href, /\/collections\/(.+)\.json$/)
+    const collectionId = matchChildId(link.href, folder, 'collections/', '.json')
     if (collectionId !== null) {
       const collection = firstUnvisited(collections, collectionId, visited)
       if (collection) {
@@ -54,7 +57,7 @@ export function listCatalogueChildren(catalog: StacCatalog): CatalogueChild[] {
         continue
       }
     }
-    const catalogId = matchIdFromHref(link.href, /\/catalogs\/(.+)\/catalog\.json$/)
+    const catalogId = matchChildId(link.href, folder, 'catalogs/', '/catalog.json')
     if (catalogId !== null) {
       const child = firstUnvisited(catalogs, catalogId, visited)
       if (child) {
@@ -85,8 +88,36 @@ function firstUnvisited<T extends { id: string }>(
   return null
 }
 
-// The generator writes ids into hrefs verbatim, so the match is verbatim too.
-function matchIdFromHref(href: string, pattern: RegExp): string | null {
-  const match = pattern.exec(href)
-  return match ? match[1]! : null
+/**
+ * Where a Catalog would sit as a file of its own, relative to the top-level
+ * document, read from its `self` link: `./` for `./catalog.json`, and
+ * `./catalogs/roads/` for `./catalogs/roads/catalog.json`. Null where the
+ * `self` link is absent or names some other file, such as a catalogue another
+ * application published.
+ */
+export function catalogueFolder(catalog: StacCatalog): string | null {
+  const self = (catalog.links ?? []).find((link) => link.rel === 'self')?.href
+  if (!self || (self !== 'catalog.json' && !self.endsWith('/catalog.json'))) return null
+  return self.slice(0, self.length - 'catalog.json'.length)
+}
+
+/**
+ * The id in a child link written as `{folder}{prefix}{id}{suffix}`. Ids are
+ * written into hrefs verbatim, and an id can hold a `/`, such as a folder
+ * source's path, so the id is what lies between the Catalog's own folder and
+ * the suffix. An href outside that folder, such as another application's, is
+ * matched from its first `/{prefix}` instead.
+ */
+function matchChildId(href: string, folder: string | null, prefix: string, suffix: string): string | null {
+  if (!href.endsWith(suffix)) return null
+  let start: number
+  if (folder !== null && href.startsWith(`${folder}${prefix}`)) {
+    start = folder.length + prefix.length
+  } else {
+    const at = href.indexOf(`/${prefix}`)
+    if (at < 0) return null
+    start = at + 1 + prefix.length
+  }
+  const id = href.slice(start, href.length - suffix.length)
+  return start <= href.length - suffix.length && id ? id : null
 }

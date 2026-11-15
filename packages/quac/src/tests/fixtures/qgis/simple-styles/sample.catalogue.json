@@ -119,11 +119,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "via",
@@ -233,11 +233,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "via",
@@ -347,11 +347,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "via",

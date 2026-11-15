@@ -54,15 +54,15 @@
         },
         {
           "rel": "parent",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "child",
-          "href": "./collections/Graffiti Reports.json",
+          "href": "./catalogs/wa-municipal-graffiti-vandalism-register/collections/Graffiti Reports.json",
           "type": "application/json",
           "title": "Graffiti Reports"
         }
@@ -104,15 +104,15 @@
           "links": [
             {
               "rel": "self",
-              "href": "./collections/Graffiti Reports.json"
+              "href": "./catalogs/wa-municipal-graffiti-vandalism-register/collections/Graffiti Reports.json"
             },
             {
               "rel": "parent",
-              "href": "../catalog.json"
+              "href": "./catalogs/wa-municipal-graffiti-vandalism-register/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../catalog.json"
+              "href": "./catalog.json"
             }
           ],
           "quac:display_field": "location_description",

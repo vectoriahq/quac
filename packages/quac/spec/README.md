@@ -10,6 +10,8 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 **Children are inlined.** A Catalog carries its child Collections in a `collections` array and its child Catalogs in a `catalogs` array, so one document holds the whole tree. It may also carry `rel: "child"` links to where each child would sit as a separate document. A reader takes the inlined children and does not follow the `child` links of a child it already holds.
 
+**Every relative href starts from the top-level document**, the one that holds the tree: it is a URI reference against that document's `self` link. That holds inside an inlined Collection or Catalog too, for its `self`, `parent`, `root` and `child` links, its assets and its other links alike. An inlined child's `self` link names where it would sit as a file of its own, inside its parent Catalog's folder: `collections/<id>.json` for a Collection and `catalogs/<id>/catalog.json` for a group, so a Collection in a group `water` at the top level is `./catalogs/water/collections/<id>.json`. A child written out as a file of its own has its relative hrefs rewritten from that file.
+
 **A catalogue says it follows QUAC** by listing the schema's address, `https://vectoriahq.github.io/quac/v0.2.0/schema.json`, in `stac_extensions`: always on the top-level Catalog, and on each nested Catalog or Collection that carries a `quac:` field of its own, whether on itself, in its summaries or on one of its assets, links or columns. That is how STAC lists an extension on each object that uses its fields, and it lets a reader learn which version of QUAC a document follows.
 
 **An absent field means the source said nothing.** Every QUAC field is optional and written only where the source declares it, so a missing field is never a "no". Where an absent field has a reading, such as "editable" or "full opacity", the field's entry gives it. An application can therefore read one QUAC field and ignore the rest.
@@ -26,7 +28,7 @@ A Collection may hold several `rel: "wms"` links for the same layer, one per sty
 
 A tile template must hold `{z}`, `{x}` and `{y}` to be an `xyz` link. A template addressed by Bing's `{quadkey}` is therefore written as the data asset's href instead. An `xyz` link to vector tiles states `type: "application/vnd.mapbox-vector-tile"`, which stretches the extension: Web Map Links v1.3.0 describes an XYZ link's `type` as the image type the tiles come in (`stac-extensions/web-map-links` README at `v1.3.0`, read 2026-11-05).
 
-An asset or link href that is relative is a URI reference against the document's `self` link, escaped per path segment, so a file named `Building #3.geojson` is `./Building%20%233.geojson`.
+A relative asset or link href is escaped per path segment, so a file named `Building #3.geojson` is `./Building%20%233.geojson`.
 
 A QGIS project's layer gives its data asset the layer's coordinate system as `proj:code`, from the [Projection extension](https://github.com/stac-extensions/projection) v2.0.0, such as `"EPSG:28355"`. It is the coordinate system QGIS holds the layer in (`<srs><spatialrefsys><authid>`), which `$x`, `$y` and `$geometry` are given in. A layer whose coordinate system has no authority code, such as one the user defined, has none. A QGIS Server catalogue gives the data asset afresh, without it.
 

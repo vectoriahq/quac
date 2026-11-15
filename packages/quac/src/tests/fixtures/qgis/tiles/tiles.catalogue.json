@@ -62,11 +62,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "wmts",
@@ -128,11 +128,11 @@
         },
         {
           "rel": "parent",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "xyz",

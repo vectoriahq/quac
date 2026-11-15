@@ -313,7 +313,7 @@ export function withSelfLink(catalogue: StacCatalog, selfHref: string | undefine
  *   layer nodes         → Collections
  */
 export function generateStacFromNormalized(project: NormalizedProject): StacCatalog {
-  const { collections, catalogs, links } = walkNodes(project.nodes, project.providers ?? [])
+  const { collections, catalogs, links } = walkNodes(project.nodes, project.providers ?? [], './')
 
   const catalog: StacCatalog = {
     type: 'Catalog',
@@ -358,23 +358,31 @@ interface WalkResult {
   links: StacLink[]
 }
 
-function walkNodes(nodes: NormalizedNode[], defaultProviders: StacProvider[]): WalkResult {
+/**
+ * Every relative href in the catalogue starts from the top-level document, the
+ * one document that holds the whole tree. `folder` is where the Catalog
+ * holding `nodes` would sit as a file of its own, relative to that document:
+ * `./` for the top level and `./catalogs/<id>/` for a group, nested group by
+ * group.
+ */
+function walkNodes(nodes: NormalizedNode[], defaultProviders: StacProvider[], folder: string): WalkResult {
   const collections: StacCollection[] = []
   const catalogs: StacCatalog[] = []
   const links: StacLink[] = []
 
   for (const node of nodes) {
     if (node.kind === 'layer') {
-      const collection = buildCollection(node, defaultProviders)
+      const collection = buildCollection(node, defaultProviders, folder)
       collections.push(collection)
       links.push({
         rel: 'child',
-        href: `./collections/${collection.id}.json`,
+        href: `${folder}collections/${collection.id}.json`,
         type: 'application/json',
         title: collection.title
       })
     } else {
-      const sub = walkNodes(node.children, defaultProviders)
+      const groupFolder = `${folder}catalogs/${node.id}/`
+      const sub = walkNodes(node.children, defaultProviders, groupFolder)
       const subCatalog: StacCatalog = {
         type: 'Catalog',
         stac_version: STAC_VERSION,
@@ -382,9 +390,9 @@ function walkNodes(nodes: NormalizedNode[], defaultProviders: StacProvider[]): W
         title: node.title || undefined,
         description: node.description,
         links: [
-          { rel: 'self', href: `./catalogs/${node.id}/catalog.json` },
-          { rel: 'parent', href: '../../catalog.json' },
-          { rel: 'root', href: '../../catalog.json' },
+          { rel: 'self', href: `${groupFolder}catalog.json` },
+          { rel: 'parent', href: `${folder}catalog.json` },
+          { rel: 'root', href: './catalog.json' },
           ...sub.links
         ]
       }
@@ -394,7 +402,7 @@ function walkNodes(nodes: NormalizedNode[], defaultProviders: StacProvider[]): W
       catalogs.push(subCatalog)
       links.push({
         rel: 'child',
-        href: `./catalogs/${node.id}/catalog.json`,
+        href: `${groupFolder}catalog.json`,
         type: 'application/json',
         title: node.title
       })
@@ -404,7 +412,7 @@ function walkNodes(nodes: NormalizedNode[], defaultProviders: StacProvider[]): W
   return { collections, catalogs, links }
 }
 
-function buildCollection(layer: NormalizedLayer, defaultProviders: StacProvider[]): StacCollection {
+function buildCollection(layer: NormalizedLayer, defaultProviders: StacProvider[], folder: string): StacCollection {
   const stacExtensions: string[] = [...(layer.extensions ?? [])]
   if (layer.tableColumns.length > 0) {
     stacExtensions.push(TABLE_EXTENSION)
@@ -431,9 +439,9 @@ function buildCollection(layer: NormalizedLayer, defaultProviders: StacProvider[
     summaries: Object.keys(summaries).length > 0 ? summaries : undefined,
     assets: layer.assets,
     links: [
-      { rel: 'self', href: `./collections/${layer.id}.json` },
-      { rel: 'parent', href: '../catalog.json' },
-      { rel: 'root', href: '../catalog.json' },
+      { rel: 'self', href: `${folder}collections/${layer.id}.json` },
+      { rel: 'parent', href: `${folder}catalog.json` },
+      { rel: 'root', href: './catalog.json' },
       ...(layer.links ?? [])
     ]
   }

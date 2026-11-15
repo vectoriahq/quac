@@ -34,21 +34,21 @@
         },
         {
           "rel": "parent",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "root",
-          "href": "../../catalog.json"
+          "href": "./catalog.json"
         },
         {
           "rel": "child",
-          "href": "./collections/Water%3A%20bores.json",
+          "href": "./catalogs/water/collections/Water%3A%20bores.json",
           "type": "application/json",
           "title": "Water: bores"
         },
         {
           "rel": "child",
-          "href": "./catalogs/monitoring/catalog.json",
+          "href": "./catalogs/water/catalogs/monitoring/catalog.json",
           "type": "application/json",
           "title": "Monitoring"
         }
@@ -153,19 +153,19 @@
           "links": [
             {
               "rel": "self",
-              "href": "./catalogs/monitoring/catalog.json"
+              "href": "./catalogs/water/catalogs/monitoring/catalog.json"
             },
             {
               "rel": "parent",
-              "href": "../../catalog.json"
+              "href": "./catalogs/water/catalog.json"
             },
             {
               "rel": "root",
-              "href": "../../catalog.json"
+              "href": "./catalog.json"
             },
             {
               "rel": "child",
-              "href": "./collections/monitoring_sites.json",
+              "href": "./catalogs/water/catalogs/monitoring/collections/monitoring_sites.json",
               "type": "application/json",
               "title": "Sites"
             }
