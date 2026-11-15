@@ -1,0 +1,111 @@
+{
+  "type": "Collection",
+  "stac_version": "1.1.0",
+  "id": "inspections",
+  "title": "Inspections",
+  "description": "Layer \"Inspections\" from the QGIS project.",
+  "license": "other",
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          -180,
+          -90,
+          180,
+          90
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "assets": {
+    "data": {
+      "href": "../inspections.geojson",
+      "type": "application/geo+json",
+      "title": "inspections.geojson",
+      "roles": [
+        "data"
+      ]
+    }
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "./inspections.json"
+    },
+    {
+      "rel": "parent",
+      "href": "../catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "../catalog.json"
+    },
+    {
+      "rel": "via",
+      "href": "../street-trees.qgs",
+      "title": "QGIS project"
+    }
+  ],
+  "quac:display_field": "inspected",
+  "quac:visibility_checked": true,
+  "quac:editable": true,
+  "quac:identifiable": true,
+  "quac:opacity": 1,
+  "quac:related_to": [
+    {
+      "id": "tree_inspections",
+      "name": "Inspections",
+      "parent_collection_id": "trees",
+      "fields": [
+        {
+          "parent": "tree_id",
+          "child": "tree_id"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+  ],
+  "quac:qgis_server_wms_name": "Inspections",
+  "table:columns": [
+    {
+      "name": "inspection_id",
+      "title": "Inspection ID",
+      "quac:editable": false,
+      "quac:default": {
+        "kind": "uuid",
+        "format": "with_braces",
+        "on_update": false
+      }
+    },
+    {
+      "name": "tree_id",
+      "title": "Tree ID"
+    },
+    {
+      "name": "inspected",
+      "title": "Inspected",
+      "quac:default": {
+        "kind": "now",
+        "on_update": false
+      },
+      "quac:constraints": {
+        "not_null": "enforced"
+      }
+    },
+    {
+      "name": "notes",
+      "title": "Notes"
+    }
+  ]
+}

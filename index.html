@@ -71,6 +71,13 @@
     <li><a href="https://github.com/vectoriahq/quac/tree/main/packages/quac-qgis-server">The QGIS Server plugin</a>, which serves a QGIS project's catalogue.</li>
   </ul>
 
+  <h2>Try it</h2>
+  <p>A small made-up project of street trees, their species and their inspections, as a QGIS project and the catalogue this package writes for it. The trees layer has a list of species from another layer, a height range with a rule that warns, a condition with its own symbols, and a field shown only for a dead tree.</p>
+  <ul>
+    <li><a href="demo/catalog.json"><code>demo/catalog.json</code></a>: the catalogue as a STAC client expects it, with one file per Collection linked by <code>rel: "child"</code>.</li>
+    <li><a href="demo/catalogue.json"><code>demo/catalogue.json</code></a>: the same catalogue as one document, with its Collections inline, as the package writes it.</li>
+    <li><a href="demo/street-trees.qgs"><code>demo/street-trees.qgs</code></a>: the QGIS project it comes from, with its data beside it.</li>
+  </ul>
   <h2>The schema</h2>
   <p>A catalogue says it follows QUAC by listing the schema's address in <code>stac_extensions</code>. Each version keeps its address.</p>
   <ul>

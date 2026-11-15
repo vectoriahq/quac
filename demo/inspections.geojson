@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": null,
+      "properties": {
+        "inspection_id": "I-101",
+        "tree_id": "T-001",
+        "inspected": "2025-04-08",
+        "notes": "Healthy canopy"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": null,
+      "properties": {
+        "inspection_id": "I-102",
+        "tree_id": "T-004",
+        "inspected": "2026-04-20",
+        "notes": "Dieback on the north side"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": null,
+      "properties": {
+        "inspection_id": "I-103",
+        "tree_id": "T-005",
+        "inspected": "2026-05-11",
+        "notes": "Trunk split after a storm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": null,
+      "properties": {
+        "inspection_id": "I-104",
+        "tree_id": "T-001",
+        "inspected": "2026-05-12",
+        "notes": null
+      }
+    }
+  ]
+}
