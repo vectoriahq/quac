@@ -72,3 +72,8 @@ export function stacErrors(catalogue: StacCatalog): string[] {
   }
   return walk(JSON.parse(JSON.stringify(catalogue)) as StacCatalog, '')
 }
+
+/** Every place a Collection standing on its own breaks STAC 1.1.0, as `stacErrors` gives them. */
+export function stacCollectionErrors(collection: StacCollection): string[] {
+  return errorsOf(collectionValidator.validate(JSON.parse(JSON.stringify(collection))), `collection ${collection.id} `)
+}

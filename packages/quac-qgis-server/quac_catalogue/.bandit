@@ -1,0 +1,5 @@
+[bandit]
+# B405 and B314 flag the use of xml.etree. The plugin parses the project file
+# that QGIS Server has already loaded, which the server's administrator
+# published, not text from a request, and xml.etree resolves no external entity.
+skips = B405,B314

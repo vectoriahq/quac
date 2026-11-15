@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { generateCollectionForDroppedFile, generateCollectionForLinkedFile } from './fileLayerCollection.ts'
+import { stacCollectionErrors } from '../tests/stacSchemas.ts'
 
 const OPTIONS = {
   collectionId: 'roads.geojson',
@@ -9,6 +10,13 @@ const OPTIONS = {
 }
 
 describe('generateCollectionForDroppedFile', () => {
+  // STAC 1.1.0 requires a Collection's description to be at least one character long.
+  it('writes a Collection STAC 1.1.0 accepts, described by the file it names', () => {
+    const collection = generateCollectionForDroppedFile({ ...OPTIONS, relativePath: 'survey/roads.geojson' })
+    expect(collection.description).toBe('Layer from roads.geojson.')
+    expect(stacCollectionErrors(collection)).toEqual([])
+  })
+
   it('names the file and its media type in a data asset', () => {
     const collection = generateCollectionForDroppedFile(OPTIONS)
 
@@ -66,6 +74,12 @@ describe('generateCollectionForLinkedFile', () => {
     filename: 'roads.geojson',
     loadedAt: '2026-10-21T04:14:00.000Z'
   }
+
+  it('writes a Collection STAC 1.1.0 accepts, described by the file it names', () => {
+    const collection = generateCollectionForLinkedFile(LINKED)
+    expect(collection.description).toBe('Layer from roads.geojson.')
+    expect(stacCollectionErrors(collection)).toEqual([])
+  })
 
   it('names the link as the data asset, read as GeoJSON', () => {
     const collection = generateCollectionForLinkedFile(LINKED)
