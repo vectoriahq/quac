@@ -5,6 +5,7 @@ import {
   resolveOgcCollectionSource
 } from './ogcFeaturesStacCatalogue.ts'
 import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { stacErrors } from '../tests/stacSchemas.ts'
 
 import type { OgcCollection } from '../model/ogcFeatures.ts'
 
@@ -40,6 +41,10 @@ function collectionsOf(...args: Parameters<typeof generateStacCatalogueFromOgcCo
 }
 
 describe('generateStacCatalogueFromOgcCollections', () => {
+  it('writes a catalogue STAC 1.1.0 accepts', () => {
+    expect(stacErrors(generateStacCatalogueFromOgcCollections(COLLECTIONS, collections))).toEqual([])
+  })
+
   it('turns each collection into a Collection carrying its id and title', () => {
     const result = collectionsOf(COLLECTIONS, collections)
 

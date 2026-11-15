@@ -683,16 +683,11 @@ function buildAssets(layer: LayerEntry, geometryFilter: GeometryFilterShape[] | 
       }
     }
   }
-  // Unsupported source: a placeholder asset naming the provider. The data
-  // source itself is not written, because a database connection string can
-  // hold a user name and password.
-  return {
-    data: {
-      href: '',
-      title: `Unsupported source: ${ds.hint ?? 'unknown'}`,
-      roles: ['data']
-    }
-  }
+  // A source the catalogue cannot address, such as a database, has no data
+  // asset: STAC requires an asset's href, and the source's own address is not
+  // written because a database connection string can hold a user name and
+  // password. The project's `source` note names the provider.
+  return {}
 }
 
 /**

@@ -85,7 +85,7 @@ export interface QgsProject {
  *   project does not hold.
  * - `source`: a layer's data source is not one the catalogue can address,
  *   such as a database or a service that needs a login. The layer's
- *   Collection has a data asset with no address.
+ *   Collection has no data asset.
  * - `relation`: a relation names a layer the project does not hold.
  * - `filter`: a Mergin Maps filter is a `Text` filter, or names a layer the
  *   project does not hold or a field its layer does not have.

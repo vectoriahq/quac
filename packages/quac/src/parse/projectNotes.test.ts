@@ -111,6 +111,9 @@ describe('parseQgsXml notes', () => {
     expect(columns.folder!['quac:attachment']).toBeUndefined()
     expect(sites['quac:related_to']).toEqual([expect.objectContaining({ id: 'sites_kinds' })])
     expect(sites['quac:filters']).toEqual([{ field: 'kind', name: 'Kind' }])
+    // STAC requires an asset's href, so the layer whose source has no address has no data asset.
+    const kinds = catalogue.collections?.find((collection) => collection.id === 'kinds') as StacCollection
+    expect(kinds.assets?.data).toBeUndefined()
     expect(JSON.stringify(catalogue)).not.toMatch(/"notes":|"reason":/)
   })
 

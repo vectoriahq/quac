@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 
+import { stacErrors } from './stacSchemas.ts'
 import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromWms, parseGetProjectSettings, parseQgsXml, serverLayerTree } from '../index.ts'
 
 /**
@@ -23,6 +24,9 @@ import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalog
  * And each has the layer tree QGIS Server reads from it, saved as
  * `<name>.server.layers.json`: what the Python reader in
  * `packages/quac-qgis-server/` must return for the same project.
+ *
+ * Every catalogue is also checked against STAC 1.1.0's own schemas
+ * (`stacErrors`).
  */
 const PROJECTS = import.meta.glob(['./fixtures/qgis/**/*.qgs'], {
   query: '?raw',
@@ -57,11 +61,13 @@ describe('saved catalogues of the whole-project fixtures', () => {
   it.each(Object.keys(PROJECTS))('generates the saved catalogue for %s', async (path) => {
     const projectPath = path.slice(path.lastIndexOf('/') + 1)
     const catalogue = generateStacCatalogue(parseQgsXml(PROJECTS[path]!), [], { projectPath })
+    expect(stacErrors(catalogue)).toEqual([])
     await expect(saved(catalogue)).toMatchFileSnapshot(goldenPath(path))
   })
 
   it.each(Object.keys(PROJECTS))('generates the saved server catalogue for %s', async (path) => {
     const catalogue = generateServerStacCatalogue(parseQgsXml(PROJECTS[path]!), { serverAddress: SERVER_ADDRESS })
+    expect(stacErrors(catalogue)).toEqual([])
     await expect(saved(catalogue)).toMatchFileSnapshot(path.replace(/\.qgs$/, '.server.catalogue.json'))
   })
 
@@ -75,6 +81,7 @@ describe('saved catalogues of the whole-project fixtures', () => {
       wfsEndpoint: SERVER_ADDRESS,
       wmsEndpoint: SERVER_ADDRESS
     })
+    expect(stacErrors(catalogue)).toEqual([])
     await expect(saved(catalogue)).toMatchFileSnapshot(goldenPath(path))
   })
 })

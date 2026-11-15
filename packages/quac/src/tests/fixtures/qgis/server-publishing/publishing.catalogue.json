@@ -339,15 +339,7 @@
           "Point"
         ]
       },
-      "assets": {
-        "data": {
-          "href": "",
-          "title": "Unsupported source: postgres",
-          "roles": [
-            "data"
-          ]
-        }
-      },
+      "assets": {},
       "links": [
         {
           "rel": "self",
