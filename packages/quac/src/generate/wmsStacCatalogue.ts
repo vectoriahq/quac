@@ -4,7 +4,6 @@ import {
 } from './normalizedProject.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, wmsEndpoint } from '../model/stacWms.ts'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 import type { NormalizedBbox, NormalizedLayer, NormalizedNode, NormalizedProject } from './normalizedProject.ts'
 import type { StacAsset, StacCatalog, StacLink, TableColumn, TableColumnType } from '../model/Stac.ts'
@@ -224,19 +223,9 @@ function wmsBboxToNormalized(bbox: WmsBoundingBox): NormalizedBbox {
 }
 
 function buildAssets(layer: WmsLayer, wfsSource: ReturnType<WfsSourceResolver>): Record<string, StacAsset> {
-  if (wfsSource?.typeName) return { data: wfsGetFeatureAsset(wfsSource.endpoint, wfsSource.typeName, layer.name) }
-  // Without a resolved type the href is left empty: the live URL is
-  // server-specific and is constructed by the QgisServerAdapter at fetch
-  // time, so the asset entry only documents that the data is available.
-  return {
-    data: {
-      href: '',
-      type: GEOJSON_MEDIA_TYPE,
-      // Text written into the catalogue document, which carries the project's own name.
-      title: `WFS GetFeature: ${layer.name}`,
-      roles: ['data']
-    }
-  }
+  // A layer with no WFS type name has no address to fetch its features from,
+  // and STAC requires an asset's href, so it has no data asset.
+  return wfsSource?.typeName ? { data: wfsGetFeatureAsset(wfsSource.endpoint, wfsSource.typeName, layer.name) } : {}
 }
 
 /**

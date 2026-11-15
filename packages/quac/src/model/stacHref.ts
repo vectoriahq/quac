@@ -53,8 +53,8 @@ export function isRelativeHref(href: string): boolean {
  * — the counterpart of the data asset both the QGIS project and the folder
  * generators write.
  *
- * Returns null for an asset that is not a relative path: a WFS GetFeature URL,
- * the empty href an unsupported source gets, or any absolute address. Those are
+ * Returns null where there is no data asset, or its href is not a relative
+ * path: a WFS GetFeature URL or any other absolute address. Those are
  * not files in the folder, so there is nothing here to look up.
  */
 export function readCollectionDataPath(collection: StacCollection): string | null {

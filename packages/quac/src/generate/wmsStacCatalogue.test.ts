@@ -39,13 +39,14 @@ const capabilities = {
 } as unknown as WfsCapabilities
 
 describe('generateStacCatalogueFromWms — WFS source options', () => {
-  it('emits no quac:wfs_* fields and an empty asset href without options', () => {
+  // STAC requires an asset's href, and a layer with no WFS type has none to give.
+  it('emits no quac:wfs_* fields and no data asset without options', () => {
     const catalog = generateStacCatalogueFromWms(project)
     const collection = collectCatalogueCollections(catalog)
       .find((entry) => entry.title === 'Graffiti Reports')!
     expect(collection['quac:wfs_endpoint']).toBeUndefined()
     expect(collection['quac:wfs_type_name']).toBeUndefined()
-    expect(collection.assets?.data?.href).toBe('')
+    expect(collection.assets?.data).toBeUndefined()
   })
 
   it('declares the WFS source structurally when the endpoint and capabilities are given', () => {

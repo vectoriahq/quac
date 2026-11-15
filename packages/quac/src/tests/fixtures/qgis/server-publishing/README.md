@@ -10,6 +10,6 @@ The layers and their settings, in QGIS's own words (`src/ui/qgsprojectproperties
 | Parcels | `zone_code` is a **Value Relation** to Zones, and a **Relation** joins it to Zones | both written, naming Zones | both dropped, because Zones is not served |
 | Survey notes | Not ticked **Published** under WFS or OAPIF capabilities | a Collection like any other | a WMS link, no data asset, `quac:editable: false` |
 | Zones | Listed under **Exclude layers** in WMS capabilities, and **Published** for WFS | a Collection like any other | left out |
-| Assets | A PostGIS layer whose connection string holds a user name and password | listed as an unsupported source, with no connection string | served through the server, with no connection string |
+| Assets | A PostGIS layer whose connection string holds a user name and password | no data asset, and no connection string | served through the server, with no connection string |
 
 The ids differ by route: the project file's catalogue uses the QGIS layer ids, and the server's the WMS names.
