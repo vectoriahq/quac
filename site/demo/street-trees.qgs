@@ -1,0 +1,230 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Street trees" version="3.44.8-Solothurn">
+  <homePath path=""/>
+  <title>Street trees</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="trees" name="Street trees" source="./trees.geojson" providerKey="ogr" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="inspections" name="Inspections" source="./inspections.geojson" providerKey="ogr" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="species" name="Species" source="./species.geojson" providerKey="ogr" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <relations>
+    <relation id="tree_inspections" name="Inspections" referencedLayer="trees" referencingLayer="inspections" strength="Association">
+      <fieldRef referencedField="tree_id" referencingField="tree_id"/>
+    </relation>
+  </relations>
+  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>151.19700</xmin>
+      <ymin>-33.88400</ymin>
+      <xmax>151.21300</xmax>
+      <ymax>-33.87500</ymax>
+    </extent>
+    <destinationsrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <authid>EPSG:4326</authid>
+      </spatialrefsys>
+    </destinationsrs>
+  </mapcanvas>
+  <projectlayers>
+    <maplayer type="vector" wkbType="Point" geometry="Point" readOnly="0" hasScaleBasedVisibilityFlag="0" minScale="100000000" maxScale="0">
+      <extent>
+        <xmin>151.19856</xmin>
+        <ymin>-33.88272</ymin>
+        <xmax>151.21178</xmax>
+        <ymax>-33.87612</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>151.19856</xmin>
+        <ymin>-33.88272</ymin>
+        <xmax>151.21178</xmax>
+        <ymax>-33.87612</ymax>
+      </wgs84extent>
+      <id>trees</id>
+      <datasource>./trees.geojson</datasource>
+      <layername>Street trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer-v2 type="categorizedSymbol" attr="condition" forceraster="0" symbollevels="0" enableorderby="0" referencescale="-1">
+        <categories>
+          <category value="G" label="Good" render="true" type="string" symbol="0" uuid="{8a1f0c10-0000-4000-9000-000000000001}"/>
+          <category value="F" label="Fair" render="true" type="string" symbol="1" uuid="{8a1f0c10-0000-4000-9000-000000000002}"/>
+          <category value="P" label="Poor" render="true" type="string" symbol="2" uuid="{8a1f0c10-0000-4000-9000-000000000003}"/>
+          <category value="D" label="Dead" render="true" type="string" symbol="3" uuid="{8a1f0c10-0000-4000-9000-000000000004}"/>
+        </categories>
+        <symbols>
+          <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0" is_animated="0" frame_rate="10">
+            <layer class="SimpleMarker" enabled="1" locked="0" pass="0" id="{9b2e0d20-0000-4000-9000-000000000001}">
+              <Option type="Map">
+                <Option type="QString" name="color" value="56,142,60,255,rgb:0.22,0.557,0.235,1"/>
+                <Option type="QString" name="name" value="circle"/>
+                <Option type="QString" name="outline_color" value="255,255,255,255,rgb:1,1,1,1"/>
+                <Option type="QString" name="outline_width" value="0.4"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="size" value="4"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+              </Option>
+            </layer>
+          </symbol>
+          <symbol type="marker" name="1" alpha="1" clip_to_extent="1" force_rhr="0" is_animated="0" frame_rate="10">
+            <layer class="SimpleMarker" enabled="1" locked="0" pass="0" id="{9b2e0d20-0000-4000-9000-000000000002}">
+              <Option type="Map">
+                <Option type="QString" name="color" value="249,168,37,255,rgb:0.976,0.659,0.145,1"/>
+                <Option type="QString" name="name" value="circle"/>
+                <Option type="QString" name="outline_color" value="255,255,255,255,rgb:1,1,1,1"/>
+                <Option type="QString" name="outline_width" value="0.4"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="size" value="4"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+              </Option>
+            </layer>
+          </symbol>
+          <symbol type="marker" name="2" alpha="1" clip_to_extent="1" force_rhr="0" is_animated="0" frame_rate="10">
+            <layer class="SimpleMarker" enabled="1" locked="0" pass="0" id="{9b2e0d20-0000-4000-9000-000000000003}">
+              <Option type="Map">
+                <Option type="QString" name="color" value="211,47,47,255,rgb:0.827,0.184,0.184,1"/>
+                <Option type="QString" name="name" value="circle"/>
+                <Option type="QString" name="outline_color" value="255,255,255,255,rgb:1,1,1,1"/>
+                <Option type="QString" name="outline_width" value="0.4"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="size" value="4"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+              </Option>
+            </layer>
+          </symbol>
+          <symbol type="marker" name="3" alpha="1" clip_to_extent="1" force_rhr="0" is_animated="0" frame_rate="10">
+            <layer class="SimpleMarker" enabled="1" locked="0" pass="0" id="{9b2e0d20-0000-4000-9000-000000000004}">
+              <Option type="Map">
+                <Option type="QString" name="color" value="117,117,117,255,rgb:0.459,0.459,0.459,1"/>
+                <Option type="QString" name="name" value="cross_fill"/>
+                <Option type="QString" name="outline_color" value="255,255,255,255,rgb:1,1,1,1"/>
+                <Option type="QString" name="outline_width" value="0.4"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="size" value="4"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+              </Option>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"><editWidget type="ValueRelation"><config><Option type="Map"><Option type="QString" value="species" name="Layer"/><Option type="QString" value="Species" name="LayerName"/><Option type="QString" value="code" name="Key"/><Option type="QString" value="common_name" name="Value"/><Option type="bool" value="false" name="AllowNull"/><Option type="bool" value="false" name="AllowMulti"/><Option type="bool" value="true" name="OrderByValue"/><Option type="QString" value="" name="FilterExpression"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="height"><editWidget type="Range"><config><Option type="Map"><Option type="int" value="0" name="Min"/><Option type="int" value="40" name="Max"/><Option type="double" value="0.5" name="Step"/><Option type="int" value="1" name="Precision"/><Option type="QString" value=" m" name="Suffix"/><Option type="bool" value="true" name="AllowNull"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="condition"><editWidget type="ValueMap"><config><Option type="Map"><Option type="List" name="map"><Option type="Map"><Option type="QString" name="Good" value="G"/></Option><Option type="Map"><Option type="QString" name="Fair" value="F"/></Option><Option type="Map"><Option type="QString" name="Poor" value="P"/></Option><Option type="Map"><Option type="QString" name="Dead" value="D"/></Option></Option></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="heritage"><editWidget type="CheckBox"><config><Option type="Map"><Option type="QString" value="Y" name="CheckedState"/><Option type="QString" value="N" name="UncheckedState"/><Option type="int" value="0" name="TextDisplayMethod"/><Option type="bool" value="false" name="AllowNullState"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="planted"><editWidget type="DateTime"><config><Option type="Map"><Option type="QString" value="yyyy-MM-dd" name="field_format"/><Option type="bool" value="false" name="field_iso_format"/><Option type="QString" value="d MMM yyyy" name="display_format"/><Option type="bool" value="true" name="allow_null"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="removal_reason"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="tree_id" index="0" name="Tree ID"/>
+        <alias field="species" index="1" name="Species"/>
+        <alias field="height" index="2" name="Height"/>
+        <alias field="condition" index="3" name="Condition"/>
+        <alias field="heritage" index="4" name="Heritage listed"/>
+        <alias field="planted" index="5" name="Planted"/>
+        <alias field="removal_reason" index="6" name="Reason for removal"/>
+      </aliases>
+      <defaults>
+        <default field="planted" expression="now()" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint field="tree_id" constraints="3" notnull_strength="1" unique_strength="1" exp_strength="0"/>
+        <constraint field="species" constraints="1" notnull_strength="1" unique_strength="0" exp_strength="0"/>
+        <constraint field="height" constraints="4" notnull_strength="0" unique_strength="0" exp_strength="2"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="height" exp="&quot;height&quot; &lt; 40" desc="Taller than any tree on this street"/>
+      </constraintExpressions>
+      <editorlayout>tablayout</editorlayout>
+      <attributeEditorForm>
+        <attributeEditorField index="0" name="tree_id" showLabel="1"/>
+        <attributeEditorField index="1" name="species" showLabel="1"/>
+        <attributeEditorField index="2" name="height" showLabel="1"/>
+        <attributeEditorField index="3" name="condition" showLabel="1"/>
+        <attributeEditorField index="4" name="heritage" showLabel="1"/>
+        <attributeEditorField index="5" name="planted" showLabel="1"/>
+        <attributeEditorContainer name="Removal" showLabel="1" groupBox="1" type="GroupBox" columnCount="1" visibilityExpression="&quot;condition&quot; = 'D'" visibilityExpressionEnabled="1">
+          <attributeEditorField index="6" name="removal_reason" showLabel="1"/>
+        </attributeEditorContainer>
+      </attributeEditorForm>
+      <previewExpression>"tree_id"</previewExpression>
+    </maplayer>
+    <maplayer type="vector" wkbType="NoGeometry" readOnly="0" hasScaleBasedVisibilityFlag="0" minScale="100000000" maxScale="0">
+      <id>inspections</id>
+      <datasource>./inspections.geojson</datasource>
+      <layername>Inspections</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="inspection_id"><editWidget type="UuidGenerator"><config><Option/></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="inspected"><editWidget type="DateTime"><config><Option type="Map"><Option type="QString" value="yyyy-MM-dd" name="field_format"/><Option type="bool" value="false" name="field_iso_format"/><Option type="QString" value="d MMM yyyy" name="display_format"/><Option type="bool" value="false" name="allow_null"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="notes"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="inspection_id" index="0" name="Inspection ID"/>
+        <alias field="tree_id" index="1" name="Tree ID"/>
+        <alias field="inspected" index="2" name="Inspected"/>
+        <alias field="notes" index="3" name="Notes"/>
+      </aliases>
+      <defaults>
+        <default field="inspected" expression="now()" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint field="inspected" constraints="1" notnull_strength="1" unique_strength="0" exp_strength="0"/>
+      </constraints>
+      <previewExpression>"inspected"</previewExpression>
+    </maplayer>
+    <maplayer type="vector" wkbType="NoGeometry" readOnly="0" hasScaleBasedVisibilityFlag="0" minScale="100000000" maxScale="0">
+      <id>species</id>
+      <datasource>./species.geojson</datasource>
+      <layername>Species</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>1</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="code"/>
+        <field configurationFlags="NoFlag" name="common_name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="code" index="0" name="Code"/>
+        <alias field="common_name" index="1" name="Common name"/>
+      </aliases>
+      <previewExpression>"common_name"</previewExpression>
+    </maplayer>
+  </projectlayers>
+</qgis>

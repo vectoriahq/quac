@@ -1,0 +1,181 @@
+{
+  "type": "Collection",
+  "stac_version": "1.1.0",
+  "id": "trees",
+  "title": "Street trees",
+  "description": "Layer \"Street trees\" from the QGIS project.",
+  "license": "other",
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          151.19856,
+          -33.88272,
+          151.21178,
+          -33.87612
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "summaries": {
+    "quac:geometry_type": [
+      "Point"
+    ]
+  },
+  "assets": {
+    "data": {
+      "href": "../trees.geojson",
+      "type": "application/geo+json",
+      "title": "trees.geojson",
+      "roles": [
+        "data"
+      ]
+    },
+    "default": {
+      "href": "../street-trees.qgs#trees/default",
+      "type": "application/x-qgis-qml+xml",
+      "title": "default",
+      "roles": [
+        "style",
+        "default"
+      ],
+      "quac:categorised_field": "condition"
+    }
+  },
+  "links": [
+    {
+      "rel": "self",
+      "href": "./trees.json"
+    },
+    {
+      "rel": "parent",
+      "href": "../catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "../catalog.json"
+    },
+    {
+      "rel": "via",
+      "href": "../street-trees.qgs",
+      "title": "QGIS project"
+    }
+  ],
+  "quac:display_field": "tree_id",
+  "quac:visibility_checked": true,
+  "quac:editable": true,
+  "quac:identifiable": true,
+  "quac:opacity": 1,
+  "quac:form_order": [
+    "tree_id",
+    "species",
+    "height",
+    "condition",
+    "heritage",
+    "planted",
+    "removal_reason"
+  ],
+  "stac_extensions": [
+    "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+    "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+  ],
+  "vector:geometry_types": [
+    "Point"
+  ],
+  "quac:qgis_server_wms_name": "Street trees",
+  "table:columns": [
+    {
+      "name": "tree_id",
+      "title": "Tree ID",
+      "quac:constraints": {
+        "not_null": "enforced",
+        "unique": "enforced"
+      }
+    },
+    {
+      "name": "species",
+      "title": "Species",
+      "quac:value_relation": {
+        "collection": "species",
+        "key": "code",
+        "value": "common_name",
+        "order_by": "value"
+      },
+      "quac:constraints": {
+        "not_null": "enforced"
+      }
+    },
+    {
+      "name": "height",
+      "title": "Height",
+      "quac:constraints": {
+        "expression": {
+          "expression": "\"height\" < 40",
+          "description": "Taller than any tree on this street",
+          "strength": "warn"
+        }
+      },
+      "quac:range": {
+        "min": 0,
+        "max": 40,
+        "step": 0.5,
+        "precision": 1,
+        "suffix": " m"
+      }
+    },
+    {
+      "name": "condition",
+      "title": "Condition",
+      "values": [
+        {
+          "value": "G",
+          "label": "Good"
+        },
+        {
+          "value": "F",
+          "label": "Fair"
+        },
+        {
+          "value": "P",
+          "label": "Poor"
+        },
+        {
+          "value": "D",
+          "label": "Dead"
+        }
+      ]
+    },
+    {
+      "name": "heritage",
+      "title": "Heritage listed",
+      "quac:checkbox": {
+        "checked": "Y",
+        "unchecked": "N"
+      }
+    },
+    {
+      "name": "planted",
+      "title": "Planted",
+      "quac:default": {
+        "kind": "now",
+        "on_update": false
+      }
+    },
+    {
+      "name": "removal_reason",
+      "title": "Reason for removal",
+      "quac:visible_when": [
+        "\"condition\" = 'D'"
+      ]
+    }
+  ]
+}
