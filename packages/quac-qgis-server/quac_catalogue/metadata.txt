@@ -1,8 +1,25 @@
 [general]
 name=QUAC Catalogue
-description=Serves a QGIS project's map layer settings as a QUAC catalogue, from QGIS Server.
-about=Answers SERVICE=QUAC&REQUEST=GetCatalogue with the layers, groups and fields the project publishes, as one STAC document. Reads the project's stored text and applies its own QGIS Server publishing settings, as GetProjectSettings does. Without an access-control plugin it serves one shared copy per project; with one, it builds each answer afresh.
-version=0.1.2
+description=Enables QGIS Server to serve a project's map as a STAC catalogue, with its map layer settings added through QUAC, a profile of STAC.
+about=Adds a QUAC service to QGIS Server. A request such as SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project> answers with the project's map as one STAC catalogue in JSON: its groups, layers and fields, each layer linked to the WMS and WFS services QGIS Server publishes for it.
+
+    STAC (SpatioTemporal Asset Catalog) says what data exists, where it is and how to read it. QUAC (Quite Useful Additions for Catalogs) adds the map layer settings a STAC catalogue has no field for, so a web or mobile app can show and edit each layer as the project sets it up, without reading the project file.
+
+    What the catalogue holds:
+    - Map: groups, and groups that show one layer at a time
+    - Layers: title, abstract, licence, extent and time range; geometry type; which layers start switched on; read-only layers and locked edits (adding, changing, moving, deleting); whether features can be identified; the field that names each feature; scale range and opacity
+    - Fields: names, aliases and types
+    - Services: each layer's WMS and WFS addresses and names, its WMS styles, and the coordinate systems WMS offers it in
+
+    Form and field settings, such as choice lists, ranges and default values, are not included in this version.
+
+    How it follows QGIS Server:
+    - It applies the project's QGIS Server settings, as GetProjectSettings does, so layers and fields the server does not publish stay out.
+    - With an access-control plugin installed, each person gets only the layers and fields they may read, and the edits they may not make are locked.
+    - Without one, it keeps one shared copy per project until the project changes.
+
+    Runs on QGIS Server 3.40 or later, QGIS 4 included, with Python's standard library only. The QUAC spec, its JSON Schema and a JavaScript package that writes and reads catalogues are at https://github.com/vectoriahq/quac.
+version=0.1.3
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 author=Vectoria
