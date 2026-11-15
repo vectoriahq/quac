@@ -96,7 +96,36 @@ const QGIS_ONLY_FUNCTIONS: Record<string, [min: number, max: number]> = {
   overlay_intersects: [1, 5],
   aggregate: [3, 6],
   geometry: [1, 1],
-  intersects: [2, 2]
+  intersects: [2, 2],
+  x: [1, 1],
+  y: [1, 1],
+  z: [1, 1]
+}
+
+/** The functions that take a coordinate of a point, read only with a variable as their point (`EXPRESSION_VARIABLE`). */
+const POINT_PARTS = ['x', 'y', 'z']
+
+/**
+ * The `fnName` of the GeoStyler `custom` function that stands for a variable,
+ * such as `@cloud_useremail`. Its first argument is the variable's name with
+ * no `@`; a second, `x`, `y` or `z`, is the coordinate of the point the
+ * variable holds, read from `x(@position_coordinate)` and the like. The
+ * evaluator is handed the values before it starts.
+ */
+export const EXPRESSION_VARIABLE = 'expression_variable'
+
+/** The name of the variable a node is, with no `@`, or null for any other node and for `@parent`. */
+function variableName(node: ExpressionNode | undefined): string | null {
+  return node?.kind === 'call' && node.name.startsWith('@') && node.name !== '@parent' ? node.name.slice(1) : null
+}
+
+function isVariable(node: ExpressionNode | undefined): boolean {
+  return variableName(node) !== null
+}
+
+/** The variables at or under a node, other than `@parent`. */
+function findVariables(node: ExpressionNode): ExpressionNode[] {
+  return [...(isVariable(node) ? [node] : []), ...childNodes(node).flatMap(findVariables)]
 }
 
 /** The functions whose second argument is a regular expression, which QGIS compiles with Unicode properties. */
@@ -249,10 +278,16 @@ export function isQgisConditionFilter(filter: unknown): filter is { name: 'custo
  * `now()`, or `$now`, is read only as the date of `format_date` or of a
  * function that takes a part of a date, such as `year`: anywhere else it would
  * be compared or added as a date, which the evaluator does not do.
+ *
+ * A variable other than `@parent`, such as `@cloud_useremail`, is read only
+ * where the caller says `variables`: the caller then supplies each one's value
+ * (`EXPRESSION_VARIABLE`) as a record is created or saved (a default value).
+ * `x`, `y` and `z` are read only with a variable as their point, as in
+ * `x(@position_coordinate)`. A read of another layer cannot use a variable.
  */
 export function readQgisExpression(
   expression: string,
-  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean } = {}
+  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean, variables?: boolean } = {}
 ): ExpressionNode | null {
   const tokens = tokenizeExpression(expression)
   if (!tokens || tokens.length === 0) return null
@@ -260,6 +295,8 @@ export function readQgisExpression(
   const parsed = readOr(tokens, 0)
   if (!parsed || parsed.next !== tokens.length) return null
   if (!options.currentValue && findCalls(parsed.node, 'current_value').length > 0) return null
+  if (!options.variables && findVariables(parsed.node).length > 0) return null
+  if (!findCalls(parsed.node, ...POINT_PARTS).every((call) => isVariable(call.args[0]))) return null
   const aggregateCalls = findCalls(parsed.node, ...AGGREGATES)
   if (aggregateCalls.length > 0 && !options.aggregates) return null
   if (aggregateCalls.some((call) => findCalls(call.args[0]!, ...AGGREGATES, ...Object.keys(GEOMETRY_VALUES)).length > 0)) return null
@@ -567,8 +604,11 @@ function readTerm(tokens: ExpressionToken[], index: number): Read {
       if (word === '$now') return { node: { kind: 'call', name: 'now', args: [] }, next: index + 1 }
       return Object.hasOwn(GEOMETRY_VALUES, word) || word === '$geometry' ? { node: { kind: 'call', name: word, args: [] }, next: index + 1 } : null
     }
-    // A variable: `@parent` alone is read, inside an `aggregate` filter.
-    if (word.startsWith('@')) return word === '@parent' ? { node: { kind: 'call', name: word, args: [] }, next: index + 1 } : null
+    // `@parent` is read inside an `aggregate` filter, and any other variable
+    // where the caller says `variables`. A variable keeps its spelling, since
+    // QGIS looks one up by its exact name.
+    if (word === '@parent') return { node: { kind: 'call', name: word, args: [] }, next: index + 1 }
+    if (word.startsWith('@')) return { node: { kind: 'call', name: token.value, args: [] }, next: index + 1 }
     if (word === 'true' || word === 'false') return { node: { kind: 'boolean', value: word === 'true' }, next: index + 1 }
     if (word === 'null') return { node: { kind: 'null' }, next: index + 1 }
     if (word === 'case') return readCase(tokens, index + 1)
@@ -723,9 +763,10 @@ function lookupArguments(call: ExpressionNode & { kind: 'call' }): Record<string
   return Object.fromEntries(names.map((name, position) => [name, call.args[position] ?? { kind: 'null' }]))
 }
 
-/** An expression over the target's own fields: no read of another layer, form or shape. */
+/** An expression over the target's own fields: no read of another layer, form, shape or variable. */
 function readsTargetFieldsOnly(node: ExpressionNode): boolean {
   return findCalls(node, ...LOOKUPS, ...PARENT_GEOMETRY_CALLS, 'array_first', 'array_get', 'current_value', ...AGGREGATES, ...Object.keys(GEOMETRY_VALUES)).length === 0
+    && findVariables(node).length === 0
 }
 
 function isParentIntersectsFilter(node: ExpressionNode): boolean {
@@ -880,6 +921,10 @@ export function expressionToGeoStylerFunction(node: ExpressionNode): unknown {
         ]
       }
     case 'call': {
+      const variable = variableName(node)
+      if (variable !== null) return { name: 'custom', fnName: EXPRESSION_VARIABLE, args: [variable] }
+      const point = variableName(node.args[0])
+      if (POINT_PARTS.includes(node.name) && point !== null) return { name: 'custom', fnName: EXPRESSION_VARIABLE, args: [point, node.name] }
       const args = node.args.map(expressionToGeoStylerFunction)
       if (node.name === 'concat') return { name: 'strConcat', args }
       if (node.name === '||') return { name: 'custom', fnName: '||', args }
