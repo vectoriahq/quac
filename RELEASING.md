@@ -28,4 +28,4 @@ The workflow checks the tag against the version and runs the plugin's tests befo
 
 ## The schema and the site
 
-The [Publish the schema and front page](.github/workflows/schema-pages.yml) workflow runs when a change to the schema, the site or the mark reaches `main`. It copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, and writes the site's front page from [`site/`](site/), listing every version. GitHub Pages serves that branch at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/).
+The [Publish the schema and front page](.github/workflows/schema-pages.yml) workflow runs when a change to the schema, the site or the mark reaches `main`. It copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, writes the site's front page from [`site/`](site/), listing every version, and publishes the demo catalogue in [`site/demo/`](site/demo/) at `demo/`. GitHub Pages serves that branch at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/).

@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": null,
+      "properties": {
+        "code": "LOPCON",
+        "common_name": "Brush box"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": null,
+      "properties": {
+        "code": "JACMIM",
+        "common_name": "Jacaranda"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": null,
+      "properties": {
+        "code": "FICMIC",
+        "common_name": "Hill's fig"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": null,
+      "properties": {
+        "code": "EUCSID",
+        "common_name": "Red ironbark"
+      }
+    }
+  ]
+}
