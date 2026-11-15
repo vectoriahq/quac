@@ -16,6 +16,7 @@ import { buildWmsLink, WEB_MAP_LINKS_EXTENSION } from '../model/stacWms.ts'
 import { buildWmtsLink } from '../model/stacWmts.ts'
 import { buildXyzLink } from '../model/stacXyz.ts'
 import { findGeometrySiblings, readSiblingShapes, siblingCollectionId } from '../parse/geometrySiblings.ts'
+import { findValueRelationLookup, isFilterInProject, isRelationInProject } from '../parse/projectNotes.ts'
 import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject.ts'
@@ -247,8 +248,9 @@ function collectFiltersByCollectionId(
   collectionIdOf: (layerId: string) => string
 ): Map<string, CollectionFilter[]> {
   const byCollectionId = new Map<string, CollectionFilter[]>()
-  for (const { layerId, field, name } of filters) {
-    if (!layersById.get(layerId)?.fieldNames.includes(field)) continue
+  for (const filter of filters) {
+    if (!isFilterInProject(filter, layersById)) continue
+    const { layerId, field, name } = filter
     const collectionId = collectionIdOf(layerId)
     byCollectionId.set(collectionId, [...(byCollectionId.get(collectionId) ?? []), { field, name }])
   }
@@ -272,7 +274,7 @@ function collectRelationsByChildLayerId(
   const byChildLayerId = new Map<string, CollectionRelation[]>()
 
   for (const relation of relations) {
-    if (!layersById.has(relation.parentLayerId) || !layersById.has(relation.childLayerId)) continue
+    if (!isRelationInProject(relation, layersById)) continue
     const childCollectionId = collectionIdOf(relation.childLayerId)
     const forChild = byChildLayerId.get(childCollectionId) ?? []
     forChild.push({
@@ -289,10 +291,8 @@ function collectRelationsByChildLayerId(
 
 /**
  * Each layer's Value Relation widgets as `quac:value_relation` writes
- * them, keyed by layer id and then field name. The lookup is found by layer id
- * and then by layer name, as QGIS finds it
- * (`QgsVectorLayerRef::resolveByIdOrNameOnly`, `src/core/qgsvectorlayerref.cpp`,
- * `qgis/QGIS@master`); its Collection id is its layer id. A widget naming a
+ * them, keyed by layer id and then field name. The lookup is found as
+ * `findValueRelationLookup` finds it; its Collection id is its layer id. A widget naming a
  * layer the project does not hold writes nothing, since it would point at a
  * Collection this catalogue has no entry for.
  */
@@ -306,7 +306,7 @@ function collectValueRelationsByLayerId(
   for (const layer of layers) {
     const relations: Record<string, TableColumnValueRelation> = {}
     for (const [field, widget] of Object.entries(layer.fieldValueRelations)) {
-      const lookup = layersById.get(widget.layerId) ?? layers.find((candidate) => candidate.name === widget.layerName)
+      const lookup = findValueRelationLookup(widget, layers, layersById)
       if (lookup) relations[field] = valueRelationToJson(collectionIdOf(lookup.id), widget)
     }
     if (Object.keys(relations).length > 0) byLayerId.set(layer.id, relations)
