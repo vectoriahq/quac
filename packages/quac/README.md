@@ -25,6 +25,8 @@ const project = parseQgsXml(await readFile('project.qgs', 'utf8'))
 const catalogue = generateStacCatalogue(project)
 ```
 
+`project.notes` lists the project's settings that the catalogue does not carry, such as a widget it does not read or an expression it cannot read. Each note gives the layer, the field where there is one, a reason code and the setting's own text where it helps; the `ProjectNoteReason` type lists the codes and what each means. The notes are not written into the catalogue.
+
 The JSON Schema that checks a catalogue's `quac:` fields is exported as `@vectoriahq/quac/schema`.
 
 ## Documentation

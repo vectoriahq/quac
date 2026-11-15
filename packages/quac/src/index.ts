@@ -39,7 +39,9 @@ export type {
   LayerGroup,
   LayerTreeLeaf,
   QgsRelation,
-  QgsRelationFieldPair
+  QgsRelationFieldPair,
+  ProjectNote,
+  ProjectNoteReason
 } from './model/QgsProject.ts'
 
 export type {

@@ -8,10 +8,11 @@ import { parseMerginFilters } from './parseMergin.ts'
 import { parseProjectVariables } from './parseProjectVariables.ts'
 import { parseInitialActiveLayerId, parseWfsTransactionLayers } from './parseQfieldSync.ts'
 import { parseProjectRelations } from './parseRelations.ts'
+import { crossLayerNotes } from './projectNotes.ts'
 import { parseWmsCrsList, parseWmsPublishing } from './parseWmsPublishing.ts'
 import { devLog } from '../util/devLog.ts'
 
-import type { ProjectMetadata, QgsProject } from '../model/QgsProject.ts'
+import type { PresetFilter, ProjectMetadata, ProjectNote, QgsProject } from '../model/QgsProject.ts'
 
 /**
  * Top-level orchestrator: reads a .qgs XML string and returns a typed
@@ -46,9 +47,13 @@ export function parseQgsXml(xmlText: string): QgsProject {
   const projectCrs = readProjectCrs(qgisRoot)
 
   const mapExtent = parseMapExtent(qgisRoot, projectCrs)
-  const rawLayers = parseProjectLayers(qgisRoot)
+  const notes: ProjectNote[] = []
+  const rawLayers = parseProjectLayers(qgisRoot, notes)
   const layerTree = parseLegendTree(qgisRoot)
   const relations = parseProjectRelations(qgisRoot)
+  const textFilters: PresetFilter[] = []
+  const merginFilters = parseMerginFilters(qgisRoot, textFilters)
+  notes.push(...crossLayerNotes(rawLayers, relations, merginFilters, textFilters))
 
   // Visibility flows from the layer tree (where checked state is stored), not
   // from the maplayer itself. Walk the tree once, build a layerId →
@@ -64,7 +69,8 @@ export function parseQgsXml(xmlText: string): QgsProject {
     title,
     projectCrs,
     layerCount: layers.length,
-    relationCount: relations.length
+    relationCount: relations.length,
+    noteCount: notes.length
   })
 
   return {
@@ -83,7 +89,8 @@ export function parseQgsXml(xmlText: string): QgsProject {
     wfsTransactionLayers: parseWfsTransactionLayers(qgisRoot),
     wmsPublishing: parseWmsPublishing(qgisRoot),
     wmsCrsList: parseWmsCrsList(qgisRoot),
-    merginFilters: parseMerginFilters(qgisRoot),
+    merginFilters,
+    notes,
     rawXml: xmlText
   }
 }
