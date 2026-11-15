@@ -71,7 +71,9 @@ export function generateStacCatalogue(
   // the layers' style assets address into — a path, not an href, so the
   // generator is the one place that escapes it. A caller that doesn't know
   // where the project file sits leaves it off, and the style assets fall back
-  // to a bare fragment — see `buildStyleAssets`.
+  // to a bare fragment — see `buildStyleAssets` — which only a reader already
+  // holding the project can follow. A catalogue to be published or saved apart
+  // from the project needs both `selfHref` and `projectPath`.
   //
   // `projectFileName` is the project file's name for each layer's `via` link
   // alone, where the caller knows it but leaves `projectPath` off, as the drop
