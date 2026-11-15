@@ -1,5 +1,5 @@
 """
-The QUAC catalogue plugin's QGIS Server checks, run by `.github/workflows/qgis-server.yml` after
+The QUAC Catalogue plugin's QGIS Server checks, run by `.github/workflows/qgis-server.yml` after
 `check_qgis_server.py prepare` and the reading route's checks, against the same
 server. Python's standard library only.
 
@@ -430,7 +430,7 @@ def server_qgis_version(base: str) -> str:
 
 
 def markdown_report(results: dict, failures: list[str]) -> str:
-    lines = [f'## QUAC catalogue plugin on QGIS {results.get("qgisVersion")}', '', '### Fixtures', '',
+    lines = [f'## QUAC Catalogue plugin on QGIS {results.get("qgisVersion")}', '', '### Fixtures', '',
              '| Project | Answer | Collections | Typed columns | Matches the Python | Leaks |', '|---|---|---|---|---|---|']
     for entry in results['projects'] + results['routes']:
         leaks = '; '.join(entry.get('leaks') or []) or ('none' if entry['status'] == 200 else entry.get('error', ''))
