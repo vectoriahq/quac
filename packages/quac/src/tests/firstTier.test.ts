@@ -4,6 +4,7 @@ import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
 import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromArcgisLayers, generateStacCatalogueFromWfsCapabilities, parseQgsXml } from '../index.ts'
+import { stacErrors } from './stacSchemas.ts'
 import schemaJson from '../schema/quac.schema.json?raw'
 
 import type { ArcgisLayerSet } from '../model/arcgis.ts'
@@ -109,6 +110,7 @@ describe('the first-tier examples', () => {
     const catalogue = JSON.parse(JSON.stringify(generate(manifest, input!))) as StacCatalog
     const result = validator.validate(catalogue)
     expect(result.valid ? [] : result.errors.map((error) => `${error.instanceLocation}: ${error.error}`)).toEqual([])
+    expect(stacErrors(catalogue)).toEqual([])
 
     const shown = essentials(catalogue)
     for (const field of manifest.fields) expect(JSON.stringify(shown), `the example shows ${field}`).toContain(`"${field}"`)
@@ -127,6 +129,7 @@ describe('the server route on the first tier', () => {
       if (manifest.source !== 'qgis-project' && manifest.source !== 'qgis-server') continue
       const input = FILES[`${folderOf(path)}/${manifest.input}`]!
       const catalogue = generateServerStacCatalogue(parseQgsXml(input), { serverAddress: manifest.endpoint ?? SERVER_ADDRESS })
+      expect(stacErrors(catalogue), folderOf(path)).toEqual([])
       served[folderOf(path).split('/').pop()!] = essentials(JSON.parse(JSON.stringify(catalogue)) as StacCatalog)
     }
     expect(Object.keys(served).length).toBeGreaterThan(0)

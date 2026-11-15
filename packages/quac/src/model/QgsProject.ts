@@ -63,8 +63,53 @@ export interface QgsProject {
    * (`parseMerginFilters`); absent or empty where it sets none.
    */
   merginFilters?: PresetFilter[]
+  /**
+   * The project's settings that `generateStacCatalogue` does not carry into the
+   * catalogue (`ProjectNote`); absent or empty where it carries them all. The
+   * notes are not written into the catalogue.
+   */
+  notes?: ProjectNote[]
   /** Original full QGS XML, retained so future parsers can re-mine without re-loading. */
   rawXml: string | null
+}
+
+/**
+ * Why a project's setting is not in its catalogue:
+ *
+ * - `widget`: a field's edit widget is not read, by its type, or is read but
+ *   holds nothing the catalogue can carry: an Attachment that picks a folder or
+ *   several files, or a Value Relation lacking its lookup layer, key or value.
+ * - `default`: a field's default value expression is not read.
+ * - `constraint`: a field's constraint expression is not read.
+ * - `value-relation`: a field's Value Relation names a lookup layer the
+ *   project does not hold.
+ * - `source`: a layer's data source is not one the catalogue can address,
+ *   such as a database or a service that needs a login. The layer's
+ *   Collection has no data asset.
+ * - `relation`: a relation names a layer the project does not hold.
+ * - `filter`: a Mergin Maps filter is a `Text` filter, or names a layer the
+ *   project does not hold or a field its layer does not have.
+ * - `layer`: a layer could not be read at all, and has no Collection.
+ */
+export type ProjectNoteReason = 'widget' | 'default' | 'constraint' | 'value-relation' | 'source' | 'relation' | 'filter' | 'layer'
+
+/** One setting of a project that its catalogue does not carry. */
+export interface ProjectNote {
+  /** The id of the layer the setting belongs to: a relation's child layer, a filter's layer. */
+  layerId: string
+  /** That layer's name; empty where the project holds no layer with the id. */
+  layerName: string
+  /** The field the setting belongs to; null for a setting of the layer. */
+  field: string | null
+  reason: ProjectNoteReason
+  /**
+   * The setting's own text, where it says what was not carried: the widget's
+   * type, the expression, the lookup layer's name, the source's provider, the
+   * relation's name or the filter's type. Null otherwise. A data source's
+   * address is never given, because a database connection can hold a user name
+   * and password.
+   */
+  text: string | null
 }
 
 /**

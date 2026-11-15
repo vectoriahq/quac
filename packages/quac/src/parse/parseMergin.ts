@@ -20,10 +20,10 @@ const READ_FILTER_TYPES = new Set(['Number', 'Date', 'Checkbox', 'Single select'
  * `app/filter/filtercontroller.cpp`, `MerginMaps/mobile@779434d`), as this
  * does. `sql_expression`, a template for the data source's own SQL, is not
  * read beyond that: the filter row filters the field itself. A `Text` filter
- * is left out. Empty where the project sets none, or the list does not read
- * as JSON.
+ * is left out, and added to `textFilters`. Empty where the project sets none,
+ * or the list does not read as JSON.
  */
-export function parseMerginFilters(qgisRoot: Element): PresetFilter[] {
+export function parseMerginFilters(qgisRoot: Element, textFilters: PresetFilter[] = []): PresetFilter[] {
   const block = readPropertyBlock(qgisRoot, 'Mergin')
   const filtering = block ? propertyChild(block, 'Filtering') : null
   if (!filtering || !isTrueValue(propertyText(filtering, 'Enabled'))) return []
@@ -46,7 +46,9 @@ export function parseMerginFilters(qgisRoot: Element): PresetFilter[] {
     const layerId = text(filter, 'layer_id')
     const field = text(filter, 'field_name')
     const type = text(filter, 'filter_type')
-    if (!layerId || !field || !text(filter, 'sql_expression') || !type || !READ_FILTER_TYPES.has(type)) return []
-    return [{ layerId, field, name: text(filter, 'filter_name')?.trim() ?? null }]
+    if (!layerId || !field || !text(filter, 'sql_expression') || !type) return []
+    const preset = { layerId, field, name: text(filter, 'filter_name')?.trim() ?? null }
+    if (type === 'Text') textFilters.push(preset)
+    return READ_FILTER_TYPES.has(type) ? [preset] : []
   })
 }

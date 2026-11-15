@@ -38,6 +38,22 @@ class PluginZipTest(unittest.TestCase):
         for name in ('metadata.txt', '__init__.py', 'LICENSE', 'quac_server/__init__.py'):
             self.assertIn(f'quac_catalogue/{name}', self.names)
 
+    def test_metadata_states_qgis_4_support_by_its_maximum_version_alone(self) -> None:
+        # The QGIS plugin repository reads QGIS 4 support from qgisMaximumVersion and flags supportsQt6 as deprecated.
+        metadata = {key.lower(): value for key, value in read_metadata().items()}
+        self.assertNotIn('supportsqt6', metadata)
+        self.assertGreaterEqual(float(metadata['qgismaximumversion']), 4.99)
+
+    def test_holds_the_bandit_settings_beside_metadata(self) -> None:
+        # The QGIS plugin repository reads `.bandit` only at the plugin's top level.
+        self.assertIn('quac_catalogue/.bandit', self.names)
+
+    def test_the_service_reports_the_version_in_metadata(self) -> None:
+        service = (Path(__file__).resolve().parent.parent / 'quac_catalogue' / 'service.py').read_text(encoding='utf-8')
+        reported = re.search(r"def version\(self\) -> str:\s*return '([^']+)'", service)
+        self.assertIsNotNone(reported)
+        self.assertEqual(reported.group(1), read_metadata()['version'])
+
     def test_holds_no_compiled_python(self) -> None:
         self.assertEqual([name for name in self.names if re.search(r'__pycache__|\.pyc$', name)], [])
 

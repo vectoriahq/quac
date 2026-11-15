@@ -100,16 +100,7 @@
               "Point"
             ]
           },
-          "assets": {
-            "data": {
-              "href": "",
-              "type": "application/geo+json",
-              "title": "WFS GetFeature: Graffiti Reports",
-              "roles": [
-                "data"
-              ]
-            }
-          },
+          "assets": {},
           "links": [
             {
               "rel": "self",

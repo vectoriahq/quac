@@ -24,6 +24,8 @@ import type {
   LayerEntry,
   LayerResourceMetadata,
   LayerScaleRange,
+  ProjectNote,
+  ProjectNoteReason,
   ServerHiddenFields
 } from '../model/QgsProject.ts'
 
@@ -47,8 +49,11 @@ import type {
  *
  * On any per-layer failure the layer is skipped (logged via devLog) so a
  * single bad layer doesn't take down the whole project.
+ *
+ * Each setting a layer holds that its Collection will not carry is added to
+ * `notes` (`ProjectNote`), as is each layer skipped.
  */
-export function parseProjectLayers(qgisRoot: Element): LayerEntry[] {
+export function parseProjectLayers(qgisRoot: Element, notes: ProjectNote[] = []): LayerEntry[] {
   const projectLayers = qgisRoot.querySelector('projectlayers')
   if (!projectLayers) return []
 
@@ -56,9 +61,16 @@ export function parseProjectLayers(qgisRoot: Element): LayerEntry[] {
   for (const node of Array.from(projectLayers.children)) {
     if (node.tagName !== 'maplayer') continue
     try {
-      const layer = parseMapLayer(node)
+      const layer = parseMapLayer(node, notes)
       if (layer) layers.push(layer)
     } catch (err) {
+      notes.push({
+        layerId: node.querySelector('id')?.textContent?.trim() ?? '',
+        layerName: node.querySelector('layername')?.textContent?.trim() ?? '',
+        field: null,
+        reason: 'layer',
+        text: null
+      })
       devLog('qgs/parseLayers', 'failed to parse a maplayer; skipping', {
         error: String(err),
         id: node.querySelector('id')?.textContent ?? '<unknown>'
@@ -68,10 +80,12 @@ export function parseProjectLayers(qgisRoot: Element): LayerEntry[] {
   return layers
 }
 
-function parseMapLayer(maplayer: Element): LayerEntry | null {
+function parseMapLayer(maplayer: Element, notes: ProjectNote[]): LayerEntry | null {
   const id = maplayer.querySelector('id')?.textContent?.trim()
   const name = maplayer.querySelector('layername')?.textContent?.trim() ?? ''
   if (!id) return null
+  const layerNotes: ProjectNote[] = []
+  const note: NoteSink = (reason, field, text) => layerNotes.push({ layerId: id, layerName: name, field, reason, text })
 
   const type = maplayer.getAttribute('type') ?? ''
   const geometryType = maplayer.getAttribute('geometry') || null
@@ -88,8 +102,13 @@ function parseMapLayer(maplayer: Element): LayerEntry | null {
   const fieldNames = parseFieldNames(maplayer)
   const fieldAliases = parseFieldAliases(maplayer)
   const { styles, activeIndex } = parseLayerStyles(maplayer)
+  const fieldValueRelations = parseFieldValueRelations(maplayer)
+  const fieldAttachments = parseFieldAttachments(maplayer)
 
-  return {
+  if (dataSource.kind === 'unsupported') note('source', null, dataSource.hint)
+  noteUnreadWidgets(maplayer, { fieldValueRelations, fieldAttachments }, note)
+
+  const layer: LayerEntry = {
     id,
     name,
     type,
@@ -118,9 +137,9 @@ function parseMapLayer(maplayer: Element): LayerEntry | null {
     fieldValueMaps: parseFieldValueMaps(maplayer),
     isPrivate: parsePrivate(maplayer),
     legendImage: parseLegendImage(maplayer),
-    fieldValueRelations: parseFieldValueRelations(maplayer),
-    fieldAttachments: parseFieldAttachments(maplayer),
-    fieldEditRules: parseFieldEditRules(maplayer),
+    fieldValueRelations,
+    fieldAttachments,
+    fieldEditRules: parseFieldEditRules(maplayer, note),
     icon: parseLayerIcon(maplayer),
     fieldIcons: parseFieldIcons(maplayer),
     fieldControls: parseFieldControls(maplayer),
@@ -128,6 +147,40 @@ function parseMapLayer(maplayer: Element): LayerEntry | null {
     scaleRange: parseScaleRange(maplayer),
     locks: parseQfieldSyncLocks(maplayer),
     rawXml: new XMLSerializer().serializeToString(maplayer)
+  }
+  // Added once the layer is read whole, so a layer that fails part way leaves one `layer` note.
+  notes.push(...layerNotes)
+  return layer
+}
+
+/** Adds a note about the layer being read: the reason, the field (null for the layer's own setting) and the setting's text. */
+type NoteSink = (reason: ProjectNoteReason, field: string | null, text: string | null) => void
+
+/**
+ * The edit widgets whose settings a Collection carries, by the type QGIS saves
+ * in `<editWidget type>`. `TextEdit` is QGIS's plain text box, which needs
+ * nothing carried. An empty type is a field with no widget set.
+ */
+const READ_WIDGET_TYPES = new Set(['', 'TextEdit', 'ValueMap', 'ValueRelation', 'ExternalResource', 'Hidden', 'Color', 'CheckBox', 'Range', 'DateTime', 'UuidGenerator'])
+
+/**
+ * Notes each field's widget the Collection does not carry: one of a type not
+ * in `READ_WIDGET_TYPES`, and a Value Relation or Attachment widget its reader
+ * above passed over.
+ */
+function noteUnreadWidgets(
+  maplayer: Element,
+  read: { fieldValueRelations: Record<string, FieldValueRelation>, fieldAttachments: Record<string, FieldAttachment> },
+  note: NoteSink
+): void {
+  const seen = new Set<string>()
+  for (const [name, editWidget] of layerEditWidgets(maplayer)) {
+    if (seen.has(name) || !editWidget) continue
+    seen.add(name)
+    const type = editWidget.getAttribute('type') ?? ''
+    const passedOver = (type === 'ValueRelation' && !read.fieldValueRelations[name]) ||
+      (type === 'ExternalResource' && !read.fieldAttachments[name])
+    if (!READ_WIDGET_TYPES.has(type) || passedOver) note('widget', name, type)
   }
 }
 
@@ -486,7 +539,7 @@ const NOW_EXPRESSIONS = new Set(['now()', '$now', 'to_date(now())', 'to_datetime
  * `<editable>` block does not list is editable. A field with none of these
  * settings is absent from the returned map.
  */
-function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
+function parseFieldEditRules(maplayer: Element, note: NoteSink): Record<string, FieldEditRule> {
   const result: Record<string, FieldEditRule> = {}
   const ruleFor = (name: string): FieldEditRule => {
     result[name] ??= { readOnly: false, defaultValue: null, notNull: null, unique: null, hidden: false, reuseLastValue: false, duplicatePolicy: null }
@@ -504,7 +557,8 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
     const onUpdate = node.getAttribute('applyOnUpdate') === '1'
     const defaultValue = parseDefaultExpression(expression, onUpdate)
     if (defaultValue) ruleFor(name).defaultValue = defaultValue
-    else if (readQgisExpression(expression, { geometry: true, aggregates: true, lookups: true })) ruleFor(name).defaultExpression = { expression: expression.trim(), onUpdate }
+    else if (readQgisExpression(expression, { geometry: true, aggregates: true, lookups: true, variables: true })) ruleFor(name).defaultExpression = { expression: expression.trim(), onUpdate }
+    else note('default', name, expression.trim())
   }
 
   // The UUID Generator widget disables its line edit and fills a null field
@@ -565,13 +619,13 @@ function parseFieldEditRules(maplayer: Element): Record<string, FieldEditRule> {
       if (unique) ruleFor(name).unique = unique
     }
     const written = constraintExpressions.get(name)
-    if (constraints & 4 && written && readQgisExpression(written.expression, { geometry: true })) {
-      const strength = constraintStrength(node.getAttribute('exp_strength'))
-      if (strength) {
+    const strength = constraintStrength(node.getAttribute('exp_strength'))
+    if (constraints & 4 && written && strength) {
+      if (readQgisExpression(written.expression, { geometry: true })) {
         const expression: FieldConstraintExpression = { expression: written.expression, strength }
         if (written.description) expression.description = written.description
         ruleFor(name).constraintExpression = expression
-      }
+      } else note('constraint', name, written.expression)
     }
   }
 

@@ -4,7 +4,6 @@ import {
 } from './normalizedProject.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, wmsEndpoint } from '../model/stacWms.ts'
-import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 import type { NormalizedBbox, NormalizedLayer, NormalizedNode, NormalizedProject } from './normalizedProject.ts'
 import type { StacAsset, StacCatalog, StacLink, TableColumn, TableColumnType } from '../model/Stac.ts'
@@ -114,10 +113,10 @@ function walkWmsNodes(nodes: WmsLayerTreeNode[], context: WmsWalkContext): Norma
 
   for (const node of nodes) {
     if (node.kind === 'layer') {
-      const wmsLink = context.wmsEndpoint && !context.wfsPublished.has(node.name)
-        ? buildQgisServerWmsLink(context.wmsEndpoint, node)
+      const wmsLinks = context.wmsEndpoint && !context.wfsPublished.has(node.name)
+        ? buildQgisServerWmsLinks(context.wmsEndpoint, node)
         : null
-      out.push(wmsLink ? wmsOnlyLayerToNormalized(node, wmsLink) : wmsLayerToNormalized(node, context.resolveWfsSource(node)))
+      out.push(wmsLinks ? wmsOnlyLayerToNormalized(node, wmsLinks) : wmsLayerToNormalized(node, context.resolveWfsSource(node)))
     } else {
       const subId = slugify(node.title || node.name || 'group') || 'group'
       out.push({
@@ -162,28 +161,39 @@ function wmsLayerToNormalized(
 }
 
 /**
- * A GetMap link for a layer QGIS Server publishes only over WMS. The style is
- * left empty, which asks the server for the layer's default style. No version
- * is stated, so an application reading the catalogue asks the server for one
+ * The GetMap links for a layer QGIS Server publishes only over WMS. The first
+ * leaves the style empty, which draws the layer's current style
+ * (`QgsRenderer::setLayerStyle`, `src/server/services/wms/qgswmsrenderer.cpp`,
+ * `qgis/QGIS@master`, read 2026-11-15). Where the layer has more than one
+ * named style, one link follows for each, titled with the style's title.
+ * GetProjectSettings lists the styles in name order and does not say which is
+ * current (`QgsMapLayerStyleManager::styles`, `src/core/qgsmaplayerstylemanager.cpp`,
+ * and `appendLayerStyles`, `src/server/services/wms/qgswmsgetcapabilities.cpp`,
+ * same revision), so the current one is also among them. No version is
+ * stated, so an application reading the catalogue asks the server for one
  * when the layer is first shown.
  */
-function buildQgisServerWmsLink(endpoint: string, layer: WmsLayer): StacLink {
-  return {
+function buildQgisServerWmsLinks(endpoint: string, layer: WmsLayer): StacLink[] {
+  const link = (style: string): StacLink => ({
     rel: 'wms',
     href: endpoint,
     type: 'image/png',
     'wms:layers': [layer.name],
-    'wms:styles': [''],
+    'wms:styles': [style],
     'wms:transparent': true,
     'quac:wms_crs': chooseWmsCrs(layer.crsList)
-  }
+  })
+  const named = layer.styles.length > 1
+    ? layer.styles.map((style) => ({ ...link(style.name), title: style.title || style.name }))
+    : []
+  return [link(''), ...named]
 }
 
 /**
  * A layer QGIS Server publishes only over WMS: an image layer, so it has no data
  * asset, fields or editing, as a QGIS project's WMS layer has none.
  */
-function wmsOnlyLayerToNormalized(layer: WmsLayer, wmsLink: StacLink): NormalizedLayer {
+function wmsOnlyLayerToNormalized(layer: WmsLayer, wmsLinks: StacLink[]): NormalizedLayer {
   return {
     kind: 'layer',
     id: layer.name,
@@ -202,7 +212,7 @@ function wmsOnlyLayerToNormalized(layer: WmsLayer, wmsLink: StacLink): Normalize
     scaleRange: layer.scaleRange,
     opacity: layer.opacity,
     vendorFields: {},
-    links: [wmsLink],
+    links: wmsLinks,
     extensions: [WEB_MAP_LINKS_EXTENSION]
   }
 }
@@ -224,19 +234,9 @@ function wmsBboxToNormalized(bbox: WmsBoundingBox): NormalizedBbox {
 }
 
 function buildAssets(layer: WmsLayer, wfsSource: ReturnType<WfsSourceResolver>): Record<string, StacAsset> {
-  if (wfsSource?.typeName) return { data: wfsGetFeatureAsset(wfsSource.endpoint, wfsSource.typeName, layer.name) }
-  // Without a resolved type the href is left empty: the live URL is
-  // server-specific and is constructed by the QgisServerAdapter at fetch
-  // time, so the asset entry only documents that the data is available.
-  return {
-    data: {
-      href: '',
-      type: GEOJSON_MEDIA_TYPE,
-      // Text written into the catalogue document, which carries the project's own name.
-      title: `WFS GetFeature: ${layer.name}`,
-      roles: ['data']
-    }
-  }
+  // A layer with no WFS type name has no address to fetch its features from,
+  // and STAC requires an asset's href, so it has no data asset.
+  return wfsSource?.typeName ? { data: wfsGetFeatureAsset(wfsSource.endpoint, wfsSource.typeName, layer.name) } : {}
 }
 
 /**

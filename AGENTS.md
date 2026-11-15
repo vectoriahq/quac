@@ -5,7 +5,7 @@ QUAC is a STAC profile and its two implementations: `packages/quac/` (the JavaSc
 ## Writing in this repository
 
 - **Describe the change, not the conversation.** Code comments, notes, commit messages and pull request bodies say what the code does and what the spec says. They don't name private individuals, quote discussions, or point at documents outside this repository.
-- **No links to agent sessions** in commits or pull requests.
+- **No links to agent sessions** in commits or pull requests. The GitHub tool that opens a pull request adds one to its description's footer, so read the description back once it is open and remove the link.
 - **No real data.** Test projects and examples use made-up data and `example.test` addresses, never a real person's name, a real organisation's data or a path from someone's computer.
 
 ## Checks

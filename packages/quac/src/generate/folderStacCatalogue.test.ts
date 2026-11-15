@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { generateStacCatalogueFromFolder } from './folderStacCatalogue.ts'
 import { collectCollectionStyles } from '../model/stacStyles.ts'
+import { stacErrors } from '../tests/stacSchemas.ts'
 
 import type { FolderCatalogueFile } from './folderStacCatalogue.ts'
 
@@ -20,6 +21,11 @@ function file(overrides: Partial<FolderCatalogueFile> = {}): FolderCatalogueFile
 const OPTIONS = { folderName: 'Coastal Survey 2026' }
 
 describe('generateStacCatalogueFromFolder', () => {
+  it('writes a catalogue STAC 1.1.0 accepts', () => {
+    const files = [file({ size: 1024 }), file({ relPath: 'survey/sites.gpkg', name: 'sites.gpkg', layerName: 'sites', mediaType: 'application/geopackage+sqlite3', styleRelPath: 'survey/sites.qml' })]
+    expect(stacErrors(generateStacCatalogueFromFolder(files, OPTIONS))).toEqual([])
+  })
+
   it('makes one Collection per file, identified by its path in the folder', () => {
     const catalogue = generateStacCatalogueFromFolder(
       [file(), file({ relPath: 'sites.geojson', name: 'sites.geojson', layerName: 'sites' })],

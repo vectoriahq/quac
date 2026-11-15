@@ -22,6 +22,8 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 A layer's data is **the asset carrying the `data` role**, whatever its key. A Collection may also offer rendering links: `rel: "wms"`, `rel: "wmts"`, `rel: "xyz"` and `rel: "pmtiles"`. A Collection can offer more than one of these, and the reading application chooses which to use: features from the data asset where it wants to select or edit them, or images or tiles from a link where it only draws the layer.
 
+A Collection may hold several `rel: "wms"` links for the same layer, one per style it can be drawn in, each naming its style in `wms:styles` and titled with the style's title. The first leaves the style empty, which asks the server for the layer's current style; a reader that draws one style takes the first. A QGIS Server layer published only over WMS has them where it has more than one named style.
+
 A tile template must hold `{z}`, `{x}` and `{y}` to be an `xyz` link. A template addressed by Bing's `{quadkey}` is therefore written as the data asset's href instead. An `xyz` link to vector tiles states `type: "application/vnd.mapbox-vector-tile"`, which stretches the extension: Web Map Links v1.3.0 describes an XYZ link's `type` as the image type the tiles come in (`stac-extensions/web-map-links` README at `v1.3.0`, read 2026-11-05).
 
 An asset or link href that is relative is a URI reference against the document's `self` link, escaped per path segment, so a file named `Building #3.geojson` is `./Building%20%233.geojson`.
@@ -395,9 +397,11 @@ A value the field is filled with: `{ kind, value?, format?, expression?, on_upda
 | `now` | the moment of the create or save: a date for a date field, a UTC date and time for a field holding times | none |
 | `uuid` | a new random identifier | `format`: `with_braces` (`{6f1e…}`), `without_braces` (`6f1e…`, with its hyphens) or `id128` (32 hex digits); omitted or unrecognised reads as `with_braces` |
 | `fixed` | `value`: a string, a number, a boolean or `null` | `value`, without which the default is left out |
-| `expression` | the value of `expression`, a QGIS expression over the record's other values | `expression`, without which the default is left out |
+| `expression` | the value of `expression`, a QGIS expression over the record's other values and any expression variables, such as `@cloud_useremail` | `expression`, without which the default is left out |
 
 `on_update` set means every save that adds or changes the feature fills the field again, over whatever it held; unset, only a blank field of a new feature is filled, as its form opens.
+
+A variable is worked out by the reader as the record is created or saved, as the field app that sets it would: QField and Mergin Maps set `@position_` variables from the device's position and name the signed-in person in `@cloud_useremail` and `@mm_user_email`. A variable the reader has no value for is NULL, as QGIS gives NULL for a variable it does not know. `x()`, `y()` and `z()` are read only with a variable as their point, as in `x(@position_coordinate)`.
 
 From a field's default value expression and **Apply default value on update** (`<defaults><default expression applyOnUpdate>`). `now()`, `$now`, `to_date(now())` and `to_datetime(now())` become `now`. `uuid()` and `$uuid` become `uuid`, with `uuid()`'s `format` argument by position or by name, and a `version` other than 4 left out (`fcnUuid`, `src/core/expression/qgsexpressionfunction.cpp`). A lone literal becomes `fixed`, read as QGIS's lexer reads it (`src/core/qgsexpressionlexer.ll`): a single-quoted string with `''` or a backslash escaping a quote, a number, and `TRUE`, `FALSE` or `NULL` in any case. Another expression the producer can read becomes `expression`, as the project wrote it; one it cannot read is left out. The overwrite on update is QGIS's own rule (`QgsVectorLayer::updateDefaultValues`, `src/core/vector/qgsvectorlayer.cpp`). A **UUID Generator** widget (`<editWidget type="UuidGenerator">`) gives a `uuid` default with braces, applied on creation only, unless a default expression on the field fills it first (`QgsUuidWidgetWrapper`, `src/gui/editorwidgets/qgsuuidwidgetwrapper.cpp`).
 

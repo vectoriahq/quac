@@ -39,7 +39,9 @@ export type {
   LayerGroup,
   LayerTreeLeaf,
   QgsRelation,
-  QgsRelationFieldPair
+  QgsRelationFieldPair,
+  ProjectNote,
+  ProjectNoteReason
 } from './model/QgsProject.ts'
 
 export type {
@@ -229,7 +231,7 @@ export type { StacWmtsSource } from './model/stacWmts.ts'
 export { VECTOR_TILE_MEDIA_TYPE, buildXyzLink, readCollectionXyzLink, readCollectionXyzTemplate } from './model/stacXyz.ts'
 export type { ActiveWfsLayer, WfsCapabilities, WfsDescribeFeatureTypeSchema, WfsFeatureTypeOperationsSupport, WfsFeatureTypeSummary, WfsFieldKind, WfsFieldSchema, WfsOperationName, WfsTransactionOperation, WfsTransactionResult, WfsValidationError, WfsWgs84BoundingBox } from './model/wfs.ts'
 export { parseProjectMeasurement } from './parse/parseMeasurement.ts'
-export { GEOMETRY_VALUES, LAYER_LOOKUP, QGIS_CONDITION, expressionToGeoStylerFunction, expressionToTemplate, isQgisConditionFilter, qgisConditionToFilter, readCurrentValueFields, readLayerLookups, readQgisExpression } from './parse/qgisExpression.ts'
+export { EXPRESSION_VARIABLE, GEOMETRY_VALUES, LAYER_LOOKUP, QGIS_CONDITION, expressionToGeoStylerFunction, expressionToTemplate, isQgisConditionFilter, qgisConditionToFilter, readCurrentValueFields, readLayerLookups, readQgisExpression } from './parse/qgisExpression.ts'
 export type { ExpressionNode, LayerLookup } from './parse/qgisExpression.ts'
 export { formatQtDateTime, qtDatePart, readQtDateTime, splitQtDatePattern } from './parse/qtDateFormat.ts'
 export { compileQtRegex, replaceQtRegex } from './parse/qtRegex.ts'

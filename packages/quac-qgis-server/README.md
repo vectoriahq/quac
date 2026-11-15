@@ -1,6 +1,6 @@
 # QUAC for QGIS Server
 
-The QUAC catalogue plugin for QGIS Server, and the Python it is built on.
+The QUAC Catalogue plugin for QGIS Server, and the Python it is built on.
 
 ## The plugin
 
@@ -22,7 +22,7 @@ The QUAC catalogue plugin for QGIS Server, and the Python it is built on.
 
 ## The Python
 
-`quac_server` takes a QGIS project's stored text (a `.qgs`, a `.qgz`, or the zip QGIS keeps in a database) and the server's address, and returns the catalogue QGIS Server serves for it: the same catalogue as the JavaScript's `generateServerStacCatalogue` (`packages/quac/src/generate/serverStacCatalogue.ts`), holding only the fields the plugin declares. `quac_server/declared_fields.json` is that list, the plugin's first release, by the place each field sits. It also returns the layer tree QGIS Server publishes, as the JavaScript's `serverLayerTree` does.
+`quac_server` takes a QGIS project's stored text (a `.qgs`, a `.qgz`, or the zip QGIS keeps in a database) and the server's address, and returns the catalogue QGIS Server serves for it: the same catalogue as the JavaScript's `generateServerStacCatalogue` (`packages/quac/src/generate/serverStacCatalogue.ts`), holding only the fields the plugin declares. `quac_server/declared_fields.json` is that list, the plugin's first release, by the place each field sits. It also returns the layer tree QGIS Server publishes, as the JavaScript's `serverLayerTree` does. It does not return the notes the JavaScript's `parseQgsXml` gives on the settings a catalogue does not carry: the served catalogue carries no field's form settings yet, so every one of them is left out.
 
 It uses Python's standard library only, so it runs in QGIS Server's own Python and anywhere else. Each module under `quac_server/parse/`, `generate/`, `model/` and `util/` mirrors the JavaScript module of the same name in `packages/quac/src/`, with the function names in Python's form (`parseWmsPublishing` is `parse_wms_publishing`). Two modules have no counterpart: `parse/xml_text.py` gives the answers the browser's DOM gives the JavaScript, and `js_compat.py` gives JavaScript's own answers for numbers and text. A port builds on them to keep the JavaScript's quirks. A layer's id and name, for example, come from the first `<id>` and `<layername>` anywhere inside its `<maplayer>`, as `querySelector` finds them, and a list property's values keep their spaces.
 

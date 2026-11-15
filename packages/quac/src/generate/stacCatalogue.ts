@@ -16,6 +16,7 @@ import { buildWmsLink, WEB_MAP_LINKS_EXTENSION } from '../model/stacWms.ts'
 import { buildWmtsLink } from '../model/stacWmts.ts'
 import { buildXyzLink } from '../model/stacXyz.ts'
 import { findGeometrySiblings, readSiblingShapes, siblingCollectionId } from '../parse/geometrySiblings.ts'
+import { findValueRelationLookup, isFilterInProject, isRelationInProject } from '../parse/projectNotes.ts'
 import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject.ts'
@@ -70,7 +71,9 @@ export function generateStacCatalogue(
   // the layers' style assets address into — a path, not an href, so the
   // generator is the one place that escapes it. A caller that doesn't know
   // where the project file sits leaves it off, and the style assets fall back
-  // to a bare fragment — see `buildStyleAssets`.
+  // to a bare fragment — see `buildStyleAssets` — which only a reader already
+  // holding the project can follow. A catalogue to be published or saved apart
+  // from the project needs both `selfHref` and `projectPath`.
   //
   // `projectFileName` is the project file's name for each layer's `via` link
   // alone, where the caller knows it but leaves `projectPath` off, as the drop
@@ -247,8 +250,9 @@ function collectFiltersByCollectionId(
   collectionIdOf: (layerId: string) => string
 ): Map<string, CollectionFilter[]> {
   const byCollectionId = new Map<string, CollectionFilter[]>()
-  for (const { layerId, field, name } of filters) {
-    if (!layersById.get(layerId)?.fieldNames.includes(field)) continue
+  for (const filter of filters) {
+    if (!isFilterInProject(filter, layersById)) continue
+    const { layerId, field, name } = filter
     const collectionId = collectionIdOf(layerId)
     byCollectionId.set(collectionId, [...(byCollectionId.get(collectionId) ?? []), { field, name }])
   }
@@ -272,7 +276,7 @@ function collectRelationsByChildLayerId(
   const byChildLayerId = new Map<string, CollectionRelation[]>()
 
   for (const relation of relations) {
-    if (!layersById.has(relation.parentLayerId) || !layersById.has(relation.childLayerId)) continue
+    if (!isRelationInProject(relation, layersById)) continue
     const childCollectionId = collectionIdOf(relation.childLayerId)
     const forChild = byChildLayerId.get(childCollectionId) ?? []
     forChild.push({
@@ -289,10 +293,8 @@ function collectRelationsByChildLayerId(
 
 /**
  * Each layer's Value Relation widgets as `quac:value_relation` writes
- * them, keyed by layer id and then field name. The lookup is found by layer id
- * and then by layer name, as QGIS finds it
- * (`QgsVectorLayerRef::resolveByIdOrNameOnly`, `src/core/qgsvectorlayerref.cpp`,
- * `qgis/QGIS@master`); its Collection id is its layer id. A widget naming a
+ * them, keyed by layer id and then field name. The lookup is found as
+ * `findValueRelationLookup` finds it; its Collection id is its layer id. A widget naming a
  * layer the project does not hold writes nothing, since it would point at a
  * Collection this catalogue has no entry for.
  */
@@ -306,7 +308,7 @@ function collectValueRelationsByLayerId(
   for (const layer of layers) {
     const relations: Record<string, TableColumnValueRelation> = {}
     for (const [field, widget] of Object.entries(layer.fieldValueRelations)) {
-      const lookup = layersById.get(widget.layerId) ?? layers.find((candidate) => candidate.name === widget.layerName)
+      const lookup = findValueRelationLookup(widget, layers, layersById)
       if (lookup) relations[field] = valueRelationToJson(collectionIdOf(lookup.id), widget)
     }
     if (Object.keys(relations).length > 0) byLayerId.set(layer.id, relations)
@@ -683,16 +685,11 @@ function buildAssets(layer: LayerEntry, geometryFilter: GeometryFilterShape[] | 
       }
     }
   }
-  // Unsupported source: a placeholder asset naming the provider. The data
-  // source itself is not written, because a database connection string can
-  // hold a user name and password.
-  return {
-    data: {
-      href: '',
-      title: `Unsupported source: ${ds.hint ?? 'unknown'}`,
-      roles: ['data']
-    }
-  }
+  // A source the catalogue cannot address, such as a database, has no data
+  // asset: STAC requires an asset's href, and the source's own address is not
+  // written because a database connection string can hold a user name and
+  // password. The project's `source` note names the provider.
+  return {}
 }
 
 /**
