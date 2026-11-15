@@ -120,7 +120,7 @@ function fileToNormalized(file: FolderCatalogueFile): NormalizedLayer {
     kind: 'layer',
     id: file.relPath,
     title: file.layerName,
-    description: `Layer from ${file.name}.`,
+    description: fileLayerDescription(file.name),
     // Both read from the file at load time, not from the listing.
     bbox: null,
     geometryType: null,
@@ -132,4 +132,13 @@ function fileToNormalized(file: FolderCatalogueFile): NormalizedLayer {
     visibilityChecked: null,
     editable: null
   }
+}
+
+/**
+ * The description of a Collection made from one data file, which says nothing
+ * of itself: `Layer from roads.geojson.`. The folder's files and a single
+ * dropped or linked file share it.
+ */
+export function fileLayerDescription(fileName: string): string {
+  return `Layer from ${fileName}.`
 }

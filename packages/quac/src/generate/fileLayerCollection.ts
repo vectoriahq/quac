@@ -1,3 +1,4 @@
+import { fileLayerDescription } from './folderStacCatalogue.ts'
 import { generateStacFromNormalized, slugify } from './normalizedProject.ts'
 import { QUAC_LAYER_NAME } from './stacCatalogue.ts'
 import { encodeAssetPath } from '../model/stacHref.ts'
@@ -37,7 +38,8 @@ export interface LinkedFileCollectionOptions {
  * Generates the Collection for one dropped file: a `data` asset naming the file
  * and its media type, `created` set to the drop time, and the world extent, which
  * a Collection with no declared box takes. The file is not opened, so nothing
- * here describes its contents, and it declares no title of its own.
+ * here describes its contents: it declares no title of its own, and its
+ * description is `fileLayerDescription`'s, which says only the file's name.
  *
  * Pure function — no side effects, no I/O.
  */
@@ -87,7 +89,7 @@ function buildFileCollection(file: {
       kind: 'layer',
       id: file.collectionId,
       title: file.name,
-      description: '',
+      description: fileLayerDescription(file.name),
       bbox: null,
       geometryType: null,
       tableColumns: [],
