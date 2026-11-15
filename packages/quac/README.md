@@ -10,16 +10,47 @@ The package writes QUAC catalogues from QGIS projects and other sources, and rea
 npm install @vectoriahq/quac
 ```
 
-## Example
+## Read a Collection
 
-Build a catalogue from a QGIS project file. The parsers use the standard `DOMParser`, which a browser provides; in Node, supply one, such as [linkedom](https://www.npmjs.com/package/linkedom)'s.
+Each `readCollection…` function takes one Collection and returns one kind of setting, keyed by field name where it is a field's. It needs nothing else from the catalogue, so an application can read a Collection as it opens it. This reads the trees layer of [the demo catalogue](https://vectoriahq.github.io/quac/demo/catalog.json):
+
+```js
+import {
+  readCollectionFieldAliases,
+  readCollectionFieldEditRules,
+  readCollectionFieldValues,
+  readCollectionFormLayout
+} from '@vectoriahq/quac'
+
+const response = await fetch('https://vectoriahq.github.io/quac/demo/collections/trees.json')
+const trees = await response.json()
+
+readCollectionFieldAliases(trees).height
+// 'Height'
+readCollectionFieldEditRules(trees).height
+// { range: { min: 0, max: 40, step: 0.5, precision: 1, suffix: ' m' },
+//   constraintExpression: { expression: '"height" < 40', description: 'Taller than any tree on this street', strength: 'warn' },
+//   readOnly: false, notNull: null, … }
+readCollectionFieldValues(trees).condition
+// [{ value: 'G', label: 'Good' }, { value: 'F', label: 'Fair' }, …]
+readCollectionFormLayout(trees).fields.at(-1)
+// { name: 'removal_reason', visibleWhen: ['"condition" = \'D\''] }
+```
+
+A Value Relation names the Collection its choices come from (`readCollectionFieldValueRelations`), and a child layer names its parent (`readCollectionRelatedTo`). Reading those choices or records means reading that Collection's data too.
+
+## Build a catalogue
+
+Build a catalogue from a QGIS project file. The parsers use the standard `DOMParser` and `XMLSerializer`, which a browser provides. In Node, supply both, such as [jsdom](https://www.npmjs.com/package/jsdom)'s:
 
 ```js
 import { readFile } from 'node:fs/promises'
-import { DOMParser } from 'linkedom'
+import { JSDOM } from 'jsdom'
 import { parseQgsXml, generateStacCatalogue } from '@vectoriahq/quac'
 
-globalThis.DOMParser = DOMParser
+const { window } = new JSDOM()
+globalThis.DOMParser = window.DOMParser
+globalThis.XMLSerializer = window.XMLSerializer
 
 const project = parseQgsXml(await readFile('project.qgs', 'utf8'))
 const catalogue = generateStacCatalogue(project)

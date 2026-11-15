@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": 1,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.19856,
+          -33.87612
+        ]
+      },
+      "properties": {
+        "tree_id": "T-001",
+        "species": "LOPCON",
+        "height": 14.5,
+        "condition": "G",
+        "heritage": "N",
+        "planted": "2011-06-14",
+        "removal_reason": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 2,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.20131,
+          -33.87744
+        ]
+      },
+      "properties": {
+        "tree_id": "T-002",
+        "species": "JACMIM",
+        "height": 9.0,
+        "condition": "F",
+        "heritage": "N",
+        "planted": "2004-09-02",
+        "removal_reason": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 3,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.20402,
+          -33.87861
+        ]
+      },
+      "properties": {
+        "tree_id": "T-003",
+        "species": "FICMIC",
+        "height": 22.0,
+        "condition": "G",
+        "heritage": "Y",
+        "planted": "1998-03-21",
+        "removal_reason": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 4,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.20688,
+          -33.87997
+        ]
+      },
+      "properties": {
+        "tree_id": "T-004",
+        "species": "LOPCON",
+        "height": 11.5,
+        "condition": "P",
+        "heritage": "N",
+        "planted": "2013-07-30",
+        "removal_reason": null
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 5,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.20954,
+          -33.8811
+        ]
+      },
+      "properties": {
+        "tree_id": "T-005",
+        "species": "EUCSID",
+        "height": 6.5,
+        "condition": "D",
+        "heritage": "N",
+        "planted": "2016-05-09",
+        "removal_reason": "Storm damage"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": 6,
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.21178,
+          -33.88272
+        ]
+      },
+      "properties": {
+        "tree_id": "T-006",
+        "species": "JACMIM",
+        "height": 8.0,
+        "condition": "G",
+        "heritage": "N",
+        "planted": "2019-08-17",
+        "removal_reason": null
+      }
+    }
+  ]
+}

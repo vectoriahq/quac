@@ -1,11 +1,12 @@
 name: Publish the schema and front page
 
 # Copies the QUAC schema to the gh-pages branch, at the path its $id names
-# under https://vectoriahq.github.io/quac/, such as v0.1.0/schema.json, and
+# under https://vectoriahq.github.io/quac/, such as v0.1.0/schema.json,
 # writes the site's front page from site/, listing every schema version on
-# the branch. GitHub Pages serves that branch. Each version is a folder of its
-# own, and a folder already on the branch stays there, so every schema a
-# catalogue may list keeps its address.
+# the branch, and replaces the branch's demo/ folder with site/demo/.
+# GitHub Pages serves that branch. Each schema version is a folder of its
+# own, and a version folder already on the branch stays there, so every
+# schema a catalogue may list keeps its address.
 
 on:
   push:
@@ -57,10 +58,12 @@ jobs:
           mkdir -p "$(dirname "$target")"
           cp "$RUNNER_TEMP/schema.json" "$target"
           python3 -I "$RUNNER_TEMP/source/site/build_site.py" .
-          git add .nojekyll "$target" index.html quac-mark.svg
+          rm -rf demo
+          cp -R "$RUNNER_TEMP/source/site/demo" demo
+          git add -A .nojekyll "$target" index.html quac-mark.svg demo
           if git diff --cached --quiet; then
-            echo "gh-pages already holds this schema at $target and this front page."
+            echo "gh-pages already holds this schema at $target, this front page and this demo."
           else
-            git commit -m "Publish $target and the front page"
+            git commit -m "Publish $target, the front page and the demo"
             git push origin gh-pages
           fi

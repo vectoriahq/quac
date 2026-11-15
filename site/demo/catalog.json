@@ -1,0 +1,64 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "street-trees",
+  "title": "Street trees",
+  "description": "STAC catalogue generated from QGIS project \"Street trees\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/trees.json",
+      "type": "application/json",
+      "title": "Street trees"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/inspections.json",
+      "type": "application/json",
+      "title": "Inspections"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/species.json",
+      "type": "application/json",
+      "title": "Species"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          151.19856,
+          -33.88272,
+          151.21178,
+          -33.87612
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "quac:initial_view": [
+    151.197,
+    -33.884,
+    151.213,
+    -33.875
+  ],
+  "stac_extensions": [
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+  ]
+}

@@ -1,0 +1,436 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "street-trees",
+  "title": "Street trees",
+  "description": "STAC catalogue generated from QGIS project \"Street trees\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/trees.json",
+      "type": "application/json",
+      "title": "Street trees"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/inspections.json",
+      "type": "application/json",
+      "title": "Inspections"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/species.json",
+      "type": "application/json",
+      "title": "Species"
+    }
+  ],
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          151.19856,
+          -33.88272,
+          151.21178,
+          -33.87612
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  },
+  "quac:initial_view": [
+    151.197,
+    -33.884,
+    151.213,
+    -33.875
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "trees",
+      "title": "Street trees",
+      "description": "Layer \"Street trees\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              151.19856,
+              -33.88272,
+              151.21178,
+              -33.87612
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./trees.geojson",
+          "type": "application/geo+json",
+          "title": "trees.geojson",
+          "roles": [
+            "data"
+          ]
+        },
+        "default": {
+          "href": "./street-trees.qgs#trees/default",
+          "type": "application/x-qgis-qml+xml",
+          "title": "default",
+          "roles": [
+            "style",
+            "default"
+          ],
+          "quac:categorised_field": "condition"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/trees.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./street-trees.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "tree_id",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:form_order": [
+        "tree_id",
+        "species",
+        "height",
+        "condition",
+        "heritage",
+        "planted",
+        "removal_reason"
+      ],
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Street trees",
+      "table:columns": [
+        {
+          "name": "tree_id",
+          "title": "Tree ID",
+          "quac:constraints": {
+            "not_null": "enforced",
+            "unique": "enforced"
+          }
+        },
+        {
+          "name": "species",
+          "title": "Species",
+          "quac:value_relation": {
+            "collection": "species",
+            "key": "code",
+            "value": "common_name",
+            "order_by": "value"
+          },
+          "quac:constraints": {
+            "not_null": "enforced"
+          }
+        },
+        {
+          "name": "height",
+          "title": "Height",
+          "quac:constraints": {
+            "expression": {
+              "expression": "\"height\" < 40",
+              "description": "Taller than any tree on this street",
+              "strength": "warn"
+            }
+          },
+          "quac:range": {
+            "min": 0,
+            "max": 40,
+            "step": 0.5,
+            "precision": 1,
+            "suffix": " m"
+          }
+        },
+        {
+          "name": "condition",
+          "title": "Condition",
+          "values": [
+            {
+              "value": "G",
+              "label": "Good"
+            },
+            {
+              "value": "F",
+              "label": "Fair"
+            },
+            {
+              "value": "P",
+              "label": "Poor"
+            },
+            {
+              "value": "D",
+              "label": "Dead"
+            }
+          ]
+        },
+        {
+          "name": "heritage",
+          "title": "Heritage listed",
+          "quac:checkbox": {
+            "checked": "Y",
+            "unchecked": "N"
+          }
+        },
+        {
+          "name": "planted",
+          "title": "Planted",
+          "quac:default": {
+            "kind": "now",
+            "on_update": false
+          }
+        },
+        {
+          "name": "removal_reason",
+          "title": "Reason for removal",
+          "quac:visible_when": [
+            "\"condition\" = 'D'"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "inspections",
+      "title": "Inspections",
+      "description": "Layer \"Inspections\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./inspections.geojson",
+          "type": "application/geo+json",
+          "title": "inspections.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/inspections.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./street-trees.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "inspected",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:related_to": [
+        {
+          "id": "tree_inspections",
+          "name": "Inspections",
+          "parent_collection_id": "trees",
+          "fields": [
+            {
+              "parent": "tree_id",
+              "child": "tree_id"
+            }
+          ]
+        }
+      ],
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Inspections",
+      "table:columns": [
+        {
+          "name": "inspection_id",
+          "title": "Inspection ID",
+          "quac:editable": false,
+          "quac:default": {
+            "kind": "uuid",
+            "format": "with_braces",
+            "on_update": false
+          }
+        },
+        {
+          "name": "tree_id",
+          "title": "Tree ID"
+        },
+        {
+          "name": "inspected",
+          "title": "Inspected",
+          "quac:default": {
+            "kind": "now",
+            "on_update": false
+          },
+          "quac:constraints": {
+            "not_null": "enforced"
+          }
+        },
+        {
+          "name": "notes",
+          "title": "Notes"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "species",
+      "title": "Species",
+      "description": "Layer \"Species\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./species.geojson",
+          "type": "application/geo+json",
+          "title": "species.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/species.json"
+        },
+        {
+          "rel": "parent",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "../catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./street-trees.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:display_field": "common_name",
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:private": true,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Species",
+      "table:columns": [
+        {
+          "name": "code",
+          "title": "Code"
+        },
+        {
+          "name": "common_name",
+          "title": "Common name"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+  ]
+}
