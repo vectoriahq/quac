@@ -22,6 +22,8 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 A layer's data is **the asset carrying the `data` role**, whatever its key. A Collection may also offer rendering links: `rel: "wms"`, `rel: "wmts"`, `rel: "xyz"` and `rel: "pmtiles"`. A Collection can offer more than one of these, and the reading application chooses which to use: features from the data asset where it wants to select or edit them, or images or tiles from a link where it only draws the layer.
 
+A Collection may hold several `rel: "wms"` links for the same layer, one per style it can be drawn in, each naming its style in `wms:styles` and titled with the style's title. The first leaves the style empty, which asks the server for the layer's current style; a reader that draws one style takes the first. A QGIS Server layer published only over WMS has them where it has more than one named style.
+
 A tile template must hold `{z}`, `{x}` and `{y}` to be an `xyz` link. A template addressed by Bing's `{quadkey}` is therefore written as the data asset's href instead. An `xyz` link to vector tiles states `type: "application/vnd.mapbox-vector-tile"`, which stretches the extension: Web Map Links v1.3.0 describes an XYZ link's `type` as the image type the tiles come in (`stac-extensions/web-map-links` README at `v1.3.0`, read 2026-11-05).
 
 An asset or link href that is relative is a URI reference against the document's `self` link, escaped per path segment, so a file named `Building #3.geojson` is `./Building%20%233.geojson`.

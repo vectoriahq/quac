@@ -9,7 +9,7 @@ import { parseGetProjectSettings } from '../parse/parseGetProjectSettings.ts'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti-get-project-settings.xml?raw'
 
 import type { WfsCapabilities } from '../model/wfs.ts'
-import type { WmsLayerGroup } from '../model/WmsProject.ts'
+import type { WmsLayerGroup, WmsLayerTreeNode } from '../model/WmsProject.ts'
 
 const project = parseGetProjectSettings(fixtureXml)
 
@@ -98,6 +98,38 @@ describe('generateStacCatalogueFromWms — layers published only over WMS', () =
       transparent: true,
       dimensions: {}
     })
+  })
+
+  // GetProjectSettings lists a layer's styles in name order and does not say
+  // which is current, so the blank-style link, which draws the current one,
+  // stays first, where a reader taking one link takes it.
+  it('adds a link for each named style after the one that draws the current style', () => {
+    const catalog = generateStacCatalogueFromWms(
+      { ...project, wfsLayerNames: [] },
+      { wfsEndpoint: WFS_ENDPOINT, wfsCapabilities: capabilities, wmsEndpoint: WMS_ENDPOINT }
+    )
+    const collection = collectCatalogueCollections(catalog)
+      .find((entry) => entry.title === 'Graffiti Reports')!
+    const wmsLinks = collection.links.filter((link) => link.rel === 'wms')
+    expect(wmsLinks.map((link) => [link['wms:styles'], link.title])).toEqual([
+      [[''], undefined],
+      [['Asset Owner'], 'Asset Owner'],
+      [['Priority'], 'Priority']
+    ])
+    expect(readCollectionWms(collection)?.styles).toEqual([''])
+  })
+
+  it('writes only the current style\'s link for a layer with one style', () => {
+    const oneStyle = (nodes: WmsLayerTreeNode[]): WmsLayerTreeNode[] => nodes.map((node) => node.kind === 'layer'
+      ? { ...node, styles: node.styles.slice(0, 1) }
+      : { ...node, children: oneStyle(node.children) })
+    const catalog = generateStacCatalogueFromWms(
+      { ...project, wfsLayerNames: [], layerTree: oneStyle(project.layerTree) },
+      { wmsEndpoint: WMS_ENDPOINT }
+    )
+    const collection = collectCatalogueCollections(catalog)
+      .find((entry) => entry.title === 'Graffiti Reports')!
+    expect(collection.links.filter((link) => link.rel === 'wms').map((link) => link['wms:styles'])).toEqual([['']])
   })
 
   it('keeps a layer published for WFS as a feature layer', () => {
