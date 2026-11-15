@@ -75,6 +75,8 @@
         },
         {
           "name": "status",
+          "title": "Condition",
+          "quac:values": [{ "value": "Healthy", "label": "Healthy" }, { "value": "Stressed", "label": "Stressed" }, { "value": "", "label": "Not recorded" }],
           "quac:default": { "kind": "fixed", "value": "Healthy", "on_update": false },
           "quac:duplicate_policy": "default"
         },

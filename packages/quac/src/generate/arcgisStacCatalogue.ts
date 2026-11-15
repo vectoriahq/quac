@@ -214,7 +214,7 @@ function fieldToColumn(field: ArcgisField): TableColumn {
   const column: TableColumn = { name: field.name }
   if (field.alias) column.title = field.alias
   if (field.type && Object.hasOwn(ESRI_COLUMN_TYPES, field.type)) column.type = ESRI_COLUMN_TYPES[field.type]
-  if (field.codedValues) column.values = field.codedValues.map(({ code, name }) => ({ value: code, label: name }))
+  if (field.codedValues) column['quac:values'] = field.codedValues.map(({ code, name }) => ({ value: code, label: name }))
   // A range on a date field is in epoch milliseconds, which is no number a form could limit.
   if (field.range && (column.type === 'int' || column.type === 'long' || column.type === 'double')) {
     column['quac:range'] = { min: field.range.min, max: field.range.max }

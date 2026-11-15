@@ -149,7 +149,7 @@
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
         "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "vector:geometry_types": [
         "Point"
@@ -198,7 +198,7 @@
         {
           "name": "condition",
           "title": "Condition",
-          "values": [
+          "quac:values": [
             {
               "value": "G",
               "label": "Good"
@@ -318,7 +318,7 @@
       ],
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Inspections",
       "table:columns": [
@@ -417,7 +417,7 @@
       "quac:private": true,
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
       ],
       "quac:qgis_server_wms_name": "Species",
       "table:columns": [
@@ -433,6 +433,6 @@
     }
   ],
   "stac_extensions": [
-    "https://vectoriahq.github.io/quac/v0.2.0/schema.json"
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
   ]
 }

@@ -630,17 +630,18 @@ export function readCollectionFieldTypes(collection: StacCollection): Record<str
 }
 
 /**
- * Each column's `values` picklist, keyed by field name. A value is returned as
+ * Each column's `quac:values` picklist, keyed by field name. A value is returned as
  * stored, string or number. An entry with no label, or with a value of any
  * other kind, is dropped, and a column left with no entries is absent.
  */
 export function readCollectionFieldValues(collection: StacCollection): Record<string, TableColumnValue[]> {
   const picklists: Record<string, TableColumnValue[]> = {}
   for (const [name, column] of declaredColumns(collection)) {
-    if (!Array.isArray(column.values)) continue
+    const declared = column['quac:values']
+    if (!Array.isArray(declared)) continue
 
     const entries: TableColumnValue[] = []
-    for (const entry of column.values) {
+    for (const entry of declared) {
       if (!entry || typeof entry !== 'object') continue
       const { value, label, icon } = entry as Record<string, unknown>
       const isValue = typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))

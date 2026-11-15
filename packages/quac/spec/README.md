@@ -2,7 +2,7 @@
 
 QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 for describing the layers of a map: where each layer's data comes from, how its fields are filled in and checked, how it is drawn, and how its layers relate. This page is for a developer reading a QUAC catalogue. For each field it says what the field means, when it is present, which kinds of source write it, how settled it is, and gives an example.
 
-QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.2.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
+QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/schema/quac.schema.json`](../src/schema/quac.schema.json), a JSON Schema (draft-07) whose `$id` is `https://vectoriahq.github.io/quac/v0.3.0/schema.json`. [`../src/schema/examples/every-field.json`](../src/schema/examples/every-field.json) is a catalogue that carries every field once; the examples on this page are taken from it unless an entry says otherwise. [`examples/`](examples/README.md) holds, field by field, a source holding the one setting that writes the field and the catalogue it gives.
 
 ## The document
 
@@ -12,11 +12,13 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 **Every relative href starts from the top-level document**, the one that holds the tree: it is a URI reference against that document's `self` link. That holds inside an inlined Collection or Catalog too, for its `self`, `parent`, `root` and `child` links, its assets and its other links alike. An inlined child's `self` link names where it would sit as a file of its own, inside its parent Catalog's folder: `collections/<id>.json` for a Collection and `catalogs/<id>/catalog.json` for a group, so a Collection in a group `water` at the top level is `./catalogs/water/collections/<id>.json`. A child written out as a file of its own has its relative hrefs rewritten from that file.
 
-**A catalogue says it follows QUAC** by listing the schema's address, `https://vectoriahq.github.io/quac/v0.2.0/schema.json`, in `stac_extensions`: always on the top-level Catalog, and on each nested Catalog or Collection that carries a `quac:` field of its own, whether on itself, in its summaries or on one of its assets, links or columns. That is how STAC lists an extension on each object that uses its fields, and it lets a reader learn which version of QUAC a document follows.
+**A catalogue says it follows QUAC** by listing the schema's address, `https://vectoriahq.github.io/quac/v0.3.0/schema.json`, in `stac_extensions`: always on the top-level Catalog, and on each nested Catalog or Collection that carries a `quac:` field of its own, whether on itself, in its summaries or on one of its assets, links or columns. That is how STAC lists an extension on each object that uses its fields, and it lets a reader learn which version of QUAC a document follows.
 
 **An absent field means the source said nothing.** Every QUAC field is optional and written only where the source declares it, so a missing field is never a "no". Where an absent field has a reading, such as "editable" or "full opacity", the field's entry gives it. An application can therefore read one QUAC field and ignore the rest.
 
 **QUAC uses STAC's own fields and extensions where one fits**, and adds a field only where none does. A layer's fields are `table:columns` from the [Table extension](https://github.com/stac-extensions/table); its GeoJSON geometry types are `vector:geometry_types` from the [Vector extension](https://github.com/stac-extensions/vector); its WMS, WMTS, XYZ and PMTiles addresses are links from the [Web Map Links extension](https://github.com/stac-extensions/web-map-links) v1.3.0; a data file's size is `file:size` from the [File extension](https://github.com/stac-extensions/file).
+
+**A column's `title` is the field's alias**: the Alias in a QGIS layer's Attributes Form, the alias QGIS Server gives an attribute, or an ArcGIS field's alias. It is the `title` of [STAC common metadata](https://github.com/radiantearth/stac-spec/blob/v1.1.0/commons/common-metadata.md#basics), which the Table extension v1.3.0 lets a column carry beside its own `name`, `description` and `type` (`stac-extensions/table` README at `v1.3.0`, Column Object, read 2026-11-15). A field the source gives no alias has no `title`. The values a field takes are `quac:values`, since neither the Table extension nor common metadata describes them.
 
 **Every field QUAC adds has the `quac:` prefix.** A field from a STAC extension keeps that extension's prefix, and QUAC adds no field without one. This follows STAC's suggestion of a prefix for each vendor's fields ([Prefixes](https://github.com/radiantearth/stac-spec/blob/v1.1.0/extensions/README.md#prefixes), STAC 1.1.0). A field holding a detail that only one kind of source has starts with that kind's name, such as `quac:wfs_endpoint` or `quac:arcgis_layer_url`.
 
@@ -500,6 +502,14 @@ Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"h
 How the edit form draws the field's list of choices: `buttons` or `dropdown`. From a layer variable named `quac_control_` followed by the field's name, held in the same lists as `quac:icon`'s, compared without regard to case or surrounding spaces; any other value writes nothing. QGIS's own form has no such setting: a Value Map is always a combo box (`src/ui/editorwidgets/qgsvaluemapconfigdlgbase.ui`, read 2026-10-26).
 
 Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"buttons"`.
+
+### `quac:values`
+
+The values the field takes, in the source's order: a list of `{ value, label }`, where `value` is what the field stores, a string or a number, and `label` the text a form shows for it. A `value` of `""` is QGIS's blank choice, which QGIS saves as the code `{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}` (`QgsValueMapFieldFormatter::NULL_VALUE`, `src/core/fieldformatter/qgsvaluemapfieldformatter.cpp`).
+
+From a QGIS **Value Map** widget (`<editWidget type="ValueMap">`): each entry's description as `label` and its value as `value`, read from either form QGIS saves the map in, a list of one-entry maps or, in older projects, one map (`QgsValueMapFieldFormatter::representValue`, same file, read 2026-10-23). An entry with no description is left out. From an ArcGIS coded-value domain: each code as `value` and its name as `label`.
+
+Written by: QGIS project, ArcGIS. Stable. Example: `[{"value": "Healthy", "label": "Healthy"}, {"value": "Stressed", "label": "Stressed"}, {"value": "", "label": "Not recorded"}]`.
 
 ### `quac:value_relation`
 

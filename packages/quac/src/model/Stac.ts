@@ -151,7 +151,7 @@ export interface TableColumn {
   data_type?: TableColumnDataType
   description?: string
   /** The values the source restricts the field to: a QGIS ValueMap widget or an ArcGIS coded-value domain. */
-  values?: TableColumnValue[]
+  'quac:values'?: TableColumnValue[]
   /** Declares that the column holds a file's path rather than a value of its own. */
   'quac:attachment'?: TableColumnAttachment
   /** Declares that the column's choices are the records of another Collection of the same catalogue. */

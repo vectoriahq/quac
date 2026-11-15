@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://vectoriahq.github.io/quac/v0.2.0/schema.json",
+  "$id": "https://vectoriahq.github.io/quac/v0.3.0/schema.json",
   "title": "QUAC: Quite Useful Additions for Catalogs",
   "description": "The fields of QUAC (Quite Useful Additions for Catalogs): the fields a STAC catalogue carries under the quac: prefix to say how a layer is drawn, edited and set up, as a source such as a QGIS project declares it. Validates a Catalog with its inlined collections and catalogs, or a single Collection. Only quac: fields are checked: any other field passes, and a quac: field this schema does not define fails. A field is written only when the source declares it, so an absent field means the source said nothing.",
   "type": "object",
@@ -577,6 +577,33 @@
             "buttons",
             "dropdown"
           ]
+        },
+        "quac:values": {
+          "description": "The values the field takes, each with the label a form shows for it, in the source's order. Written from a QGIS Value Map widget or an ArcGIS coded-value domain.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "value",
+              "label"
+            ],
+            "properties": {
+              "value": {
+                "description": "The value the field stores. An empty string is QGIS's blank choice.",
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              "label": {
+                "description": "The label shown for the value.",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": false
+          }
         },
         "quac:value_relation": {
           "$ref": "#/definitions/value_relation"

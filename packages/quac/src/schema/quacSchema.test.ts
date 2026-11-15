@@ -114,7 +114,9 @@ describe('quac.schema.json', () => {
     ],
     ['a relation with no join fields', { type: 'Collection', 'quac:related_to': [{ id: 'r', parent_collection_id: 'p', fields: [] }] }],
     ['an attachment with no relative storage', { type: 'Collection', 'table:columns': [{ name: 'a', 'quac:attachment': { viewer: 'image' } }] }],
-    ['a constraint of an unknown strength', { type: 'Collection', 'table:columns': [{ name: 'a', 'quac:constraints': { not_null: 'always' } }] }]
+    ['a constraint of an unknown strength', { type: 'Collection', 'table:columns': [{ name: 'a', 'quac:constraints': { not_null: 'always' } }] }],
+    ['an empty list of values', { type: 'Collection', 'table:columns': [{ name: 'a', 'quac:values': [] }] }],
+    ['a value with no label', { type: 'Collection', 'table:columns': [{ name: 'a', 'quac:values': [{ value: 'x' }] }] }]
   ])('rejects %s', (_case, document) => {
     expect(errorsOf(document)).not.toEqual([])
   })
