@@ -21,9 +21,14 @@ import { parseQgsXml, generateStacCatalogue } from '@vectoriahq/quac'
 
 globalThis.DOMParser = DOMParser
 
-const project = parseQgsXml(await readFile('project.qgs', 'utf8'))
-const catalogue = generateStacCatalogue(project)
+const project = parseQgsXml(await readFile('survey/project.qgs', 'utf8'))
+const catalogue = generateStacCatalogue(project, [], {
+  selfHref: 'https://data.example.test/survey/',
+  projectPath: 'project.qgs'
+})
 ```
+
+`selfHref` is the address of the folder the project is published in, and `projectPath` is the project file's path inside that folder. A layer's data files and styles are addressed relative to them, so a catalogue to be published or saved apart from the project needs both. Without `projectPath`, each style's address names no file, and only an application already holding the project can read it; without `selfHref`, the catalogue's relative addresses have no folder to start from.
 
 `project.notes` lists the project's settings that the catalogue does not carry, such as a widget it does not read or an expression it cannot read. Each note gives the layer, the field where there is one, a reason code and the setting's own text where it helps; the `ProjectNoteReason` type lists the codes and what each means. The notes are not written into the catalogue.
 
