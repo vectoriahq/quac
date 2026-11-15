@@ -19,6 +19,10 @@ import type { StacCatalog, StacCollection, StacLink } from '../model/Stac.ts'
  *   into one file per Collection, linked with `rel: "child"`, for a STAC client
  *   that follows links rather than reading inline Collections.
  *
+ * The demo passes `projectPath` but no `selfHref`, so every address in it is
+ * relative and each file reads from wherever it is served, such as the site
+ * or a branch's raw files.
+ *
  * jsdom parses the project because it decodes `&lt;` in an attribute, as a
  * browser does, and linkedom does not. `npx vitest run -u` rewrites the files,
  * to be read as a diff.
