@@ -35,6 +35,10 @@ It uses Python's standard library only, so it runs in QGIS Server's own Python a
 
 Where a Python function does what its JavaScript counterpart does in a different way, `port-exemptions.json` says so under `departures`, with the reason. A change to the JavaScript under `parse/` or `generate/` that moves a saved catalogue needs the same change here. Adding a field to the first release means its Python, its entry in `declared_fields.json`, and its first-tier example.
 
+## The demo
+
+[`demo/value-labels/`](demo/value-labels/) shows what `quac:values` gives a web map that reads a layer over WFS: QGIS Server's WFS gives a Value Map field's stored values and its GetFeatureInfo their labels, and the catalogue lets the WFS client show the labels too. The QGIS Server workflow runs it.
+
 ## Running it
 
 ```bash

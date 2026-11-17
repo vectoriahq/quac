@@ -1,0 +1,10 @@
+{
+  "type": "FeatureCollection",
+  "name": "equipment",
+  "features": [
+    { "type": "Feature", "properties": { "asset_id": "PG-001", "equipment": "SW", "condition": 1, "installed": 2016 }, "geometry": { "type": "Point", "coordinates": [151.19851, -33.87604] } },
+    { "type": "Feature", "properties": { "asset_id": "PG-002", "equipment": "SL", "condition": 2, "installed": 2012 }, "geometry": { "type": "Point", "coordinates": [151.19873, -33.87611] } },
+    { "type": "Feature", "properties": { "asset_id": "PG-003", "equipment": "CF", "condition": 4, "installed": 2008 }, "geometry": { "type": "Point", "coordinates": [151.19862, -33.87627] } },
+    { "type": "Feature", "properties": { "asset_id": "PG-004", "equipment": "SR", "condition": null, "installed": 2024 }, "geometry": { "type": "Point", "coordinates": [151.19840, -33.87619] } }
+  ]
+}

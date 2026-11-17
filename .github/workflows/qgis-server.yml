@@ -5,7 +5,8 @@ name: QGIS Server
 # GetProjectSettings, WFS GetCapabilities and DescribeFeatureType, for a .qgs,
 # a .qgz and a project kept in PostgreSQL, and check_catalogue.py checks the
 # plugin's answers, its leak rules, its cache, its refusals and each test
-# person's catalogue. The reports are the run's summary.
+# person's catalogue. The value labels demo then compares WFS, GetFeatureInfo
+# and the catalogue's quac:values. The reports are the run's summary.
 
 on:
   push:
@@ -118,6 +119,16 @@ jobs:
         if: success() || failure()
         run: |
           python3 packages/quac-qgis-server/tests/server/check_catalogue.py check "$WORK" http://localhost:8080 "$POSTGRES_SERVICE_PROJECT_URI" "$POSTGRES_PROJECT_URI"
+
+      - name: Show the value labels demo
+        if: success() || failure()
+        run: |
+          {
+            echo "## Value labels demo"
+            echo
+            python3 packages/quac-qgis-server/demo/value-labels/show_value_labels.py http://localhost:8080 /io/data/demo/value-labels/playgrounds.qgs
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
 
       - name: QGIS Server's log
         if: always()
