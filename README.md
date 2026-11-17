@@ -209,7 +209,7 @@ The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/sc
 
 - **The spec**, the field reference and its per-field examples: [`packages/quac/spec/`](packages/quac/spec/).
 - **The JavaScript package**, `@vectoriahq/quac`, which writes QUAC catalogues from QGIS projects and other sources and reads them back: [`packages/quac/`](packages/quac/).
-- **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server at `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/).
+- **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server at `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/). It is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
 - **The site's front page and the demo catalogue**, published at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/): [`site/`](site/).
 
 ## Implementations
@@ -228,7 +228,7 @@ QUAC began inside Groundwork, Vectoria's web app for capturing and editing spati
 
 ## Status
 
-QUAC is pre-1.0. Version 0.2.0 of the JavaScript package is on npm as [`@vectoriahq/quac`](https://www.npmjs.com/package/@vectoriahq/quac). The QGIS Server plugin is not yet released.
+QUAC is pre-1.0. The JavaScript package is on npm as [`@vectoriahq/quac`](https://www.npmjs.com/package/@vectoriahq/quac), and the QGIS Server plugin is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
 
 ## Licence
 
