@@ -1,6 +1,6 @@
 # QUAC for QGIS Server
 
-The QUAC Catalogue plugin for QGIS Server, and the Python it is built on.
+The QUAC Catalogue plugin for QGIS Server, and the Python it is built on. The plugin is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
 
 ## The plugin
 
