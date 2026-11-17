@@ -2,9 +2,9 @@
 
 It reads a layer's id, names, geometry, WGS84 extent, source kind, display
 field, identifiable and read-only flags, opacity, scale range, field names and
-aliases, abstract, licence and temporal extent, QFieldSync locks, and the
-fields it hides from QGIS Server. Styles, forms, widgets and the rest are not
-read; `port-exemptions.json` lists them.
+aliases, Value Map lists, abstract, licence and temporal extent, QFieldSync
+locks, and the fields it hides from QGIS Server. Styles, forms, other widgets
+and the rest are not read; `port-exemptions.json` lists them.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Optional
 from xml.etree.ElementTree import Element
 
 from ..js_compat import is_finite, js_number, js_trim, whole
-from ..model.qgs_project import BoundingBox, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
+from ..model.qgs_project import BoundingBox, FieldValueMapEntry, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
 from .parse_data_source import parse_data_source
 from .parse_qfield_sync import parse_qfield_sync_locks
 from .xml_text import children_of_kind, direct_child, direct_child_text, first_descendant, text_content
@@ -63,6 +63,7 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         editable=maplayer.get('readOnly') != '1',
         field_names=_parse_field_names(maplayer),
         field_aliases=_parse_field_aliases(maplayer),
+        field_value_maps=_parse_field_value_maps(maplayer),
         resource_metadata=_parse_layer_resource_metadata(maplayer),
         scale_range=_parse_scale_range(maplayer),
         locks=parse_qfield_sync_locks(maplayer),
@@ -163,6 +164,60 @@ def _parse_field_aliases(maplayer: Element) -> dict[str, str]:
         if field and name:
             out[field] = name
     return out
+
+
+# `QgsValueMapFieldFormatter::NULL_VALUE`: the stored value of a value map's blank entry.
+_VALUE_MAP_NULL_CODE = '{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}'
+
+
+def _parse_field_value_maps(maplayer: Element) -> dict[str, list[FieldValueMapEntry]]:
+    """
+    Each field's Value Map widget as its list, keyed by field name, from the
+    layer's own `<fieldConfiguration><field><editWidget type="ValueMap">`. The
+    list is the widget's `map`: in the form QGIS saves now, a `List` of
+    one-entry `Map`s, and in older projects one flat `Map`. Each entry's `name`
+    is the label and its `value` the stored value, QGIS's blank code read as
+    `''`. An entry with no label is left out, and so is a field whose widget
+    leaves no entry. Where `<field>`s share a name, the first that gives a
+    list decides it.
+    """
+    result: dict[str, list[FieldValueMapEntry]] = {}
+    field_config = direct_child(maplayer, 'fieldConfiguration')
+    if field_config is None:
+        return result
+    for node in field_config:
+        name = node.get('name') if node.tag == 'field' else None
+        if not name or name in result:
+            continue
+        edit_widget = direct_child(node, 'editWidget')
+        if edit_widget is None or edit_widget.get('type') != 'ValueMap':
+            continue
+        entries = [
+            FieldValueMapEntry(value='' if value == _VALUE_MAP_NULL_CODE else value, label=label)
+            for label, value in ((entry.get('name'), entry.get('value')) for entry in _value_map_options(edit_widget))
+            if label and value is not None
+        ]
+        if entries:
+            result[name] = entries
+    return result
+
+
+def _value_map_options(edit_widget: Element) -> list[Element]:
+    """The `<Option>` entries of a Value Map widget's `map`, the `List` form found first and the flat `Map` form otherwise."""
+    maps = [
+        option
+        for config in edit_widget if config.tag == 'config'
+        for option in config if option.tag == 'Option' and option.get('type') == 'Map'
+    ]
+    for wrapper in maps:
+        for map_list in wrapper:
+            if map_list.tag == 'Option' and map_list.get('type') == 'List' and map_list.get('name') == 'map':
+                return [entry for item in map_list if item.tag == 'Option' and item.get('type') == 'Map' for entry in item if entry.tag == 'Option']
+    for wrapper in maps:
+        for flat_map in wrapper:
+            if flat_map.tag == 'Option' and flat_map.get('type') == 'Map' and flat_map.get('name') == 'map':
+                return [entry for entry in flat_map if entry.tag == 'Option']
+    return []
 
 
 _SINGLE_FIELD = re.compile(r'^"([^"]+)"$')

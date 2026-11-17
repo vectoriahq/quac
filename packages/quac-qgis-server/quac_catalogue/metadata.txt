@@ -8,10 +8,10 @@ about=Adds a QUAC service to QGIS Server. A request such as SERVICE=QUAC&REQUEST
     What the catalogue holds:
     - Map: groups, and groups that show one layer at a time
     - Layers: title, abstract, licence, extent and time range; geometry type; which layers start switched on; read-only layers and locked edits (adding, changing, moving, deleting); whether features can be identified; the field that names each feature; scale range and opacity
-    - Fields: names, aliases and types
+    - Fields: names, aliases and types, and the choices a Value Map offers, each as the value stored and the label shown for it
     - Services: each layer's WMS and WFS addresses and names, its WMS styles, and the coordinate systems WMS offers it in
 
-    Form and field settings, such as choice lists, ranges and default values, are not included in this version.
+    Other form and field settings, such as Value Relation lists, ranges and default values, are not included in this version.
 
     How it follows QGIS Server:
     - It applies the project's QGIS Server settings, as GetProjectSettings does, so layers and fields the server does not publish stay out.
@@ -19,7 +19,7 @@ about=Adds a QUAC service to QGIS Server. A request such as SERVICE=QUAC&REQUEST
     - Without one, it keeps one shared copy per project until the project changes.
 
     Runs on QGIS Server 3.40 or later, QGIS 4 included, with Python's standard library only. The QUAC spec, its JSON Schema and a JavaScript package that writes and reads catalogues are at https://github.com/vectoriahq/quac.
-version=0.1.3
+version=0.2.0
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 author=Vectoria

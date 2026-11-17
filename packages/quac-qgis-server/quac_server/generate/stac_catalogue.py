@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from ..model.qgs_project import BoundingBox, EditLock, LayerEntry, LayerGroup, QgsProject, WfsTransactionLayers, WmsPublishing
+from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, LayerEntry, LayerGroup, QgsProject, WfsTransactionLayers, WmsPublishing
 from ..parse.geometry_siblings import find_geometry_siblings
 from .normalized_project import (
     NormalizedGroup,
@@ -174,7 +174,7 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> Norma
         geometry_type=layer.geometry_type,
         wkb_types=[layer.wkb_type] if layer.wkb_type else [],
         qgis_server_names=qgis_server_names_of(layer, context.wms_publishing, context.wfs_transaction_layers),
-        table_columns=_derive_table_columns(layer.field_names, layer.field_aliases),
+        table_columns=_derive_table_columns(layer.field_names, layer.field_aliases, layer.field_value_maps),
         license=metadata.license,
         temporal_interval=metadata.temporal_interval,
         display_field=layer.display_field,
@@ -225,11 +225,16 @@ def _combine_locks(first: dict[str, EditLock], second: dict[str, EditLock]) -> d
     return locks
 
 
-def _derive_table_columns(field_names: list[str], field_aliases: dict[str, str]) -> list[dict[str, Any]]:
+def _derive_table_columns(
+    field_names: list[str],
+    field_aliases: dict[str, str],
+    field_value_maps: dict[str, list[FieldValueMapEntry]],
+) -> list[dict[str, Any]]:
     """
     `table:columns` from the fields QGIS declares in `<fieldConfiguration>`,
-    then any field only an alias names, each with its alias as `title`. With no
-    data to read, no `type` is written.
+    then any field only an alias names, each with its alias as `title` and its
+    Value Map's list as `quac:values`. With no data to read, no `type` is
+    written.
     """
     ordered = list(dict.fromkeys([*field_names, *field_aliases]))
     columns: list[dict[str, Any]] = []
@@ -238,5 +243,8 @@ def _derive_table_columns(field_names: list[str], field_aliases: dict[str, str])
         alias = field_aliases.get(name)
         if alias:
             column['title'] = alias
+        values = field_value_maps.get(name)
+        if values:
+            column['quac:values'] = [{'value': entry.value, 'label': entry.label} for entry in values]
         columns.append(column)
     return columns

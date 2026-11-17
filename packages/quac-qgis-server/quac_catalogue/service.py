@@ -38,7 +38,7 @@ class CatalogueService(QgsService):
         return 'QUAC'
 
     def version(self) -> str:
-        return '0.1.3'
+        return '0.2.0'
 
     def executeRequest(self, request: Any, response: Any, project: Any) -> None:  # noqa: N802 - the name QGIS Server calls
         if (request.parameter('REQUEST') or '').lower() != 'getcatalogue':
