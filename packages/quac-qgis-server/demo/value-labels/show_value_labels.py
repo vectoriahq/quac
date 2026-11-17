@@ -1,15 +1,17 @@
 """
-Shows, for each field with a Value Map, what a web map gets from QGIS Server
-for the same features:
+Shows, for each field with a Value Map or a Value Relation, what a web map
+gets from QGIS Server for the same features:
 
 - **WFS GetFeature**, where QGIS Server gives the value the field stores;
 - **WMS GetFeatureInfo**, where it gives that value's label;
 - **WFS GetFeature read with the QUAC catalogue**, where the column's
-  `quac:values` turns each stored value back into its label.
+  `quac:values` turns each stored value back into its label, or its
+  `quac:value_relation` names the lookup layer, read over WFS, that does.
 
 The fields come from GetProjectSettings, which names each field's widget
-(`editType="ValueMap"`) but not its list. It also shows each layer's display
-field as GetProjectSettings gives it and as the catalogue gives it.
+(`editType="ValueMap"` or `"ValueRelation"`) but not its list or lookup. It
+also shows each layer's display field as GetProjectSettings gives it and as
+the catalogue gives it.
 
 `python3 show_value_labels.py <server> <MAP>` asks the QGIS Server at
 `<server>/ows/` for the project `<MAP>`, prints Markdown, and exits with 1
@@ -27,6 +29,9 @@ import urllib.request
 from typing import Any, Optional
 from xml.etree import ElementTree
 
+CODED_WIDGETS = ('ValueMap', 'ValueRelation')
+NO_LIST = '— (no list)'
+
 
 def ask(server: str, project: str, **params: str) -> bytes:
     query = urllib.parse.urlencode({'MAP': project, **params})
@@ -39,7 +44,7 @@ def local(element: ElementTree.Element) -> str:
 
 
 def as_text(value: Any) -> str:
-    """A stored value as the text a Value Map compares it with: a blank for null, and a whole number without a decimal point."""
+    """A stored value as the text QGIS compares it with: a blank for null, and a whole number without a decimal point."""
     if value is None:
         return ''
     if isinstance(value, float) and value.is_integer():
@@ -47,30 +52,27 @@ def as_text(value: Any) -> str:
     return str(value)
 
 
-def label_of(value: Any, values: Optional[list[dict[str, Any]]]) -> str:
-    """The label `quac:values` gives a stored value, the value in brackets where the list has none, as QGIS shows it, or a dash with no list."""
-    if not values:
-        return '— (no list)'
+def label_of(value: Any, labels: Optional[dict[str, str]]) -> str:
+    """The label for a stored value, the value in brackets where the labels hold none, as QGIS shows it, or a dash with no labels."""
+    if labels is None:
+        return NO_LIST
     text = as_text(value)
-    for entry in values:
-        if as_text(entry['value']) == text:
-            return entry['label']
-    return f'({text})'
+    return labels.get(text, f'({text})')
 
 
-def value_map_layers(server: str, project: str) -> dict[str, dict[str, Any]]:
-    """Each WMS layer with a Value Map field, from GetProjectSettings: its display field and its Value Map fields' names and aliases."""
+def coded_layers(server: str, project: str) -> dict[str, dict[str, Any]]:
+    """Each WMS layer with a Value Map or Value Relation field, from GetProjectSettings: its display field and those fields' names and aliases."""
     root = ElementTree.fromstring(ask(server, project, SERVICE='WMS', REQUEST='GetProjectSettings'))
     layers: dict[str, dict[str, Any]] = {}
     for layer in root.iter():
         if local(layer) != 'Layer':
             continue
         name = next((child.text for child in layer if local(child) == 'Name'), None)
-        attributes = [child for child in layer if local(child) == 'Attributes']
         coded = {
             attribute.get('name', ''): attribute.get('alias') or attribute.get('name', '')
-            for block in attributes for attribute in block
-            if local(attribute) == 'Attribute' and attribute.get('editType') == 'ValueMap'
+            for block in layer if local(block) == 'Attributes'
+            for attribute in block
+            if local(attribute) == 'Attribute' and attribute.get('editType') in CODED_WIDGETS
         }
         if name and coded:
             layers[name] = {'display_field': layer.get('displayField'), 'coded': coded}
@@ -105,14 +107,32 @@ def feature_info(server: str, project: str, wms_name: str, key_field: str, bbox:
     }
 
 
+def labels_for(column: dict[str, Any], by_id: dict[str, dict[str, Any]], server: str, project: str) -> Optional[dict[str, str]]:
+    """
+    A column's labels by stored value: from `quac:values`, or from the lookup
+    layer `quac:value_relation` names, read over WFS. None where the
+    catalogue gives neither, or the lookup is not published for WFS.
+    """
+    values = column.get('quac:values')
+    if values:
+        return {as_text(entry['value']): entry['label'] for entry in values}
+    relation = column.get('quac:value_relation')
+    lookup = by_id.get(relation['collection']) if relation else None
+    type_name = lookup.get('quac:qgis_server_wfs_type_name') if lookup else None
+    if not relation or not type_name:
+        return None
+    records = wfs_features(server, project, type_name).values()
+    return {as_text(record.get(relation['key'])): as_text(record.get(relation['value'])) for record in records}
+
+
 def main(server: str, project: str) -> int:
     catalogue = json.loads(ask(server, project, SERVICE='QUAC', REQUEST='GetCatalogue'))
-    by_wms_name = {collection.get('quac:qgis_server_wms_name'): collection for collection in collections_of(catalogue)}
-    rows = ['| Feature | Field | WFS GetFeature | WMS GetFeatureInfo | WFS with `quac:values` |', '|---|---|---|---|---|']
+    by_id = {collection['id']: collection for collection in collections_of(catalogue)}
+    rows = ['| Feature | Field | WFS GetFeature | WMS GetFeatureInfo | WFS with the catalogue |', '|---|---|---|---|---|']
     notes: list[str] = []
     differences = 0
-    for wms_name, settings in value_map_layers(server, project).items():
-        collection = by_wms_name.get(wms_name)
+    for wms_name, settings in coded_layers(server, project).items():
+        collection = by_id.get(wms_name)
         type_name = collection.get('quac:qgis_server_wfs_type_name') if collection else None
         if not collection or not type_name:
             notes.append(f'- {wms_name}: not published for WFS, so not compared.')
@@ -123,13 +143,14 @@ def main(server: str, project: str) -> int:
             f'- {wms_name}: GetProjectSettings gives the display field as `{settings["display_field"]}`; '
             f'the catalogue\'s `quac:display_field` is `{collection.get("quac:display_field")}`, the name WFS uses.'
         )
+        labels = {name: labels_for(columns.get(name, {}), by_id, server, project) for name in settings['coded']}
         from_wfs = wfs_features(server, project, type_name)
         from_wms = feature_info(server, project, wms_name, key_field, collection['extent']['spatial']['bbox'][0])
         for feature_id, properties in sorted(from_wfs.items()):
             for name, alias in settings['coded'].items():
                 stored = properties.get(name)
                 shown = from_wms.get(feature_id, {}).get(alias, '—')
-                read = label_of(stored, columns.get(name, {}).get('quac:values'))
+                read = label_of(stored, labels[name])
                 if read != shown:
                     differences += 1
                 rows.append(f'| {properties.get(key_field, feature_id)} | {alias} | `{json.dumps(stored)}` | {shown} | {read} |')

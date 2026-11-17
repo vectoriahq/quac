@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "name": "suppliers",
+  "features": [
+    { "type": "Feature", "properties": { "code": "ACM", "name": "Acme Play" }, "geometry": null },
+    { "type": "Feature", "properties": { "code": "EXO", "name": "Example Outdoor Co" }, "geometry": null }
+  ]
+}
