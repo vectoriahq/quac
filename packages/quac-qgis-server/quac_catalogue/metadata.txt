@@ -8,10 +8,10 @@ about=Adds a QUAC service to QGIS Server. A request such as SERVICE=QUAC&REQUEST
     What the catalogue holds:
     - Map: groups, and groups that show one layer at a time
     - Layers: title, abstract, licence, extent and time range; geometry type; which layers start switched on; read-only layers and locked edits (adding, changing, moving, deleting); whether features can be identified; the field that names each feature; scale range and opacity
-    - Fields: names, aliases and types, and the choices a Value Map offers, each as the value stored and the label shown for it
+    - Fields: names, aliases and types; the choices a Value Map offers, each as the value stored and the label shown for it; and the layer a Value Relation takes its choices from, with the fields stored and shown
     - Services: each layer's WMS and WFS addresses and names, its WMS styles, and the coordinate systems WMS offers it in
 
-    Other form and field settings, such as Value Relation lists, ranges and default values, are not included in this version.
+    Other form and field settings, such as ranges, constraints and default values, are not included in this version.
 
     How it follows QGIS Server:
     - It applies the project's QGIS Server settings, as GetProjectSettings does, so layers and fields the server does not publish stay out.

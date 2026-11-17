@@ -10,8 +10,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, LayerEntry, LayerGroup, QgsProject, WfsTransactionLayers, WmsPublishing
-from ..parse.geometry_siblings import find_geometry_siblings
+from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, QgsProject, WfsTransactionLayers, WmsPublishing
+from ..parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
 from .normalized_project import (
     NormalizedGroup,
     NormalizedLayer,
@@ -43,6 +43,7 @@ class _LayerContext:
         self.layer_wgs84_extents = layer_wgs84_extents
         self.wfs_transaction_layers = project.wfs_transaction_layers
         self.wms_publishing = project.wms_publishing
+        self.value_relations_by_layer_id = _collect_value_relations_by_layer_id(project.layers, siblings_by_id)
 
 
 def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[str, BoundingBox]) -> NormalizedProject:
@@ -174,7 +175,12 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> Norma
         geometry_type=layer.geometry_type,
         wkb_types=[layer.wkb_type] if layer.wkb_type else [],
         qgis_server_names=qgis_server_names_of(layer, context.wms_publishing, context.wfs_transaction_layers),
-        table_columns=_derive_table_columns(layer.field_names, layer.field_aliases, layer.field_value_maps),
+        table_columns=_derive_table_columns(
+            layer.field_names,
+            layer.field_aliases,
+            layer.field_value_maps,
+            context.value_relations_by_layer_id.get(layer.id, {}),
+        ),
         license=metadata.license,
         temporal_interval=metadata.temporal_interval,
         display_field=layer.display_field,
@@ -225,16 +231,71 @@ def _combine_locks(first: dict[str, EditLock], second: dict[str, EditLock]) -> d
     return locks
 
 
+def _collect_value_relations_by_layer_id(
+    layers: list[LayerEntry],
+    siblings_by_id: dict[str, list[LayerEntry]],
+) -> dict[str, dict[str, dict[str, Any]]]:
+    """
+    Each layer's Value Relation widgets as `quac:value_relation` writes them,
+    keyed by layer id and then field name, naming the lookup by its
+    Collection's id. A widget whose lookup is in no layer of the project writes
+    nothing.
+    """
+    layers_by_id = {layer.id: layer for layer in layers}
+    by_layer_id: dict[str, dict[str, dict[str, Any]]] = {}
+    for layer in layers:
+        relations: dict[str, dict[str, Any]] = {}
+        for field, widget in layer.field_value_relations.items():
+            lookup = _find_value_relation_lookup(widget, layers, layers_by_id)
+            if lookup is not None:
+                relations[field] = _value_relation_to_json(sibling_collection_id(siblings_by_id, lookup.id), widget)
+        if relations:
+            by_layer_id[layer.id] = relations
+    return by_layer_id
+
+
+def _find_value_relation_lookup(widget: FieldValueRelation, layers: list[LayerEntry], layers_by_id: dict[str, LayerEntry]) -> Optional[LayerEntry]:
+    """
+    The layer a Value Relation widget reads its choices from: the layer whose
+    id the widget names, and where none has it the first layer with the name
+    it names, as QGIS finds it (`QgsVectorLayerRef::resolveByIdOrNameOnly`).
+    Mirrors `findValueRelationLookup` in `packages/quac/src/parse/projectNotes.ts`.
+    """
+    found = layers_by_id.get(widget.layer_id)
+    if found is not None:
+        return found
+    return next((candidate for candidate in layers if candidate.name == widget.layer_name), None)
+
+
+def _value_relation_to_json(collection_id: str, widget: FieldValueRelation) -> dict[str, Any]:
+    """A Value Relation widget as `quac:value_relation` stores it: a member at its default is left off."""
+    relation: dict[str, Any] = {'collection': collection_id, 'key': widget.key_field, 'value': widget.value_field}
+    if widget.filter_expression:
+        relation['filter'] = widget.filter_expression
+    if widget.allow_null:
+        relation['allow_null'] = True
+    if widget.allow_multi:
+        relation['allow_multi'] = True
+    if widget.order_by != 'key':
+        relation['order_by'] = widget.order_by
+    if widget.order_by == 'field' and widget.order_field:
+        relation['order_field'] = widget.order_field
+    if widget.descending:
+        relation['descending'] = True
+    return relation
+
+
 def _derive_table_columns(
     field_names: list[str],
     field_aliases: dict[str, str],
     field_value_maps: dict[str, list[FieldValueMapEntry]],
+    field_value_relations: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """
     `table:columns` from the fields QGIS declares in `<fieldConfiguration>`,
-    then any field only an alias names, each with its alias as `title` and its
-    Value Map's list as `quac:values`. With no data to read, no `type` is
-    written.
+    then any field only an alias names, each with its alias as `title`, its
+    Value Map's list as `quac:values` and its Value Relation as
+    `quac:value_relation`. With no data to read, no `type` is written.
     """
     ordered = list(dict.fromkeys([*field_names, *field_aliases]))
     columns: list[dict[str, Any]] = []
@@ -246,5 +307,8 @@ def _derive_table_columns(
         values = field_value_maps.get(name)
         if values:
             column['quac:values'] = [{'value': entry.value, 'label': entry.label} for entry in values]
+        value_relation = field_value_relations.get(name)
+        if value_relation:
+            column['quac:value_relation'] = value_relation
         columns.append(column)
     return columns

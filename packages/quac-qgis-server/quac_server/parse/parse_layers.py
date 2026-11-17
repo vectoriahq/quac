@@ -2,7 +2,7 @@
 
 It reads a layer's id, names, geometry, WGS84 extent, source kind, display
 field, identifiable and read-only flags, opacity, scale range, field names and
-aliases, Value Map lists, abstract, licence and temporal extent, QFieldSync
+aliases, Value Map lists and Value Relations, abstract, licence and temporal extent, QFieldSync
 locks, and the fields it hides from QGIS Server. Styles, forms, other widgets
 and the rest are not read; `port-exemptions.json` lists them.
 """
@@ -14,7 +14,7 @@ from typing import Optional
 from xml.etree.ElementTree import Element
 
 from ..js_compat import is_finite, js_number, js_trim, whole
-from ..model.qgs_project import BoundingBox, FieldValueMapEntry, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
+from ..model.qgs_project import BoundingBox, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
 from .parse_data_source import parse_data_source
 from .parse_qfield_sync import parse_qfield_sync_locks
 from .xml_text import children_of_kind, direct_child, direct_child_text, first_descendant, text_content
@@ -64,6 +64,7 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         field_names=_parse_field_names(maplayer),
         field_aliases=_parse_field_aliases(maplayer),
         field_value_maps=_parse_field_value_maps(maplayer),
+        field_value_relations=_parse_field_value_relations(maplayer),
         resource_metadata=_parse_layer_resource_metadata(maplayer),
         scale_range=_parse_scale_range(maplayer),
         locks=parse_qfield_sync_locks(maplayer),
@@ -218,6 +219,77 @@ def _value_map_options(edit_widget: Element) -> list[Element]:
             if flat_map.tag == 'Option' and flat_map.get('type') == 'Map' and flat_map.get('name') == 'map':
                 return [entry for entry in flat_map if entry.tag == 'Option']
     return []
+
+
+def _parse_field_value_relations(maplayer: Element) -> dict[str, FieldValueRelation]:
+    """
+    Each field's Value Relation widget, keyed by field name, from the layer's
+    own `<fieldConfiguration><field><editWidget type="ValueRelation">`, whose
+    config is a flat map of `<Option name value>`. The lookup is named by
+    `Layer`, its id, and `LayerName`; a widget naming neither, or with no
+    `Key` or no `Value`, is left out. The order is `OrderByValue` first, then
+    `OrderByField` where it names a field, and the key otherwise. Where
+    `<field>`s share a name, the first that gives a widget decides it.
+    """
+    result: dict[str, FieldValueRelation] = {}
+    field_config = direct_child(maplayer, 'fieldConfiguration')
+    if field_config is None:
+        return result
+    for node in field_config:
+        name = node.get('name') if node.tag == 'field' else None
+        if not name or name in result:
+            continue
+        edit_widget = direct_child(node, 'editWidget')
+        if edit_widget is None or edit_widget.get('type') != 'ValueRelation':
+            continue
+        options = _read_option_map(edit_widget)
+        layer_id = _read_trimmed_option(options, 'Layer') or ''
+        layer_name = _read_trimmed_option(options, 'LayerName') or ''
+        key_field = _read_trimmed_option(options, 'Key')
+        value_field = _read_trimmed_option(options, 'Value')
+        if (not layer_id and not layer_name) or not key_field or not value_field:
+            continue
+        by_value = _read_flag(options, 'OrderByValue')
+        order_field = _read_trimmed_option(options, 'OrderByFieldName') if _read_flag(options, 'OrderByField') else None
+        result[name] = FieldValueRelation(
+            layer_id=layer_id,
+            layer_name=layer_name,
+            key_field=key_field,
+            value_field=value_field,
+            filter_expression=_read_trimmed_option(options, 'FilterExpression') or '',
+            allow_null=_read_flag(options, 'AllowNull'),
+            allow_multi=_read_flag(options, 'AllowMulti'),
+            order_by='value' if by_value else 'field' if order_field else 'key',
+            order_field=None if by_value else order_field,
+            descending=_read_flag(options, 'OrderByDescending'),
+        )
+    return result
+
+
+def _read_option_map(edit_widget: Element) -> dict[str, str]:
+    """A flat widget config as key and value: the members of the widget's `<Option type="Map">` that have a name and a `value`, a later one of a name winning."""
+    options: dict[str, str] = {}
+    for config in edit_widget:
+        if config.tag != 'config':
+            continue
+        for wrapper in config:
+            if wrapper.tag != 'Option' or wrapper.get('type') != 'Map':
+                continue
+            for option in wrapper:
+                key = option.get('name') if option.tag == 'Option' else None
+                value = option.get('value')
+                if key and value is not None:
+                    options[key] = value
+    return options
+
+
+def _read_trimmed_option(options: dict[str, str], key: str) -> Optional[str]:
+    value = js_trim(options.get(key) or '')
+    return value or None
+
+
+def _read_flag(options: dict[str, str], key: str) -> bool:
+    return options.get(key) in ('true', '1')
 
 
 _SINGLE_FIELD = re.compile(r'^"([^"]+)"$')

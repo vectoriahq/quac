@@ -17,6 +17,9 @@ applies them to a finished catalogue:
 - An edit they may not make is locked in `quac:locks`: adding, changing (both
   attributes and geometry, as QGIS answers one permission for both) and
   deleting. Where all three are refused, `quac:editable` is `false`.
+- A column's `quac:value_relation` is dropped where they may not read its
+  lookup layer, may not see the lookup's key, shown or order field, or its
+  filter names a field they may not see, of either layer.
 
 A served layer with no answer is left out, so a layer QGIS was not asked about
 is never shown. QGIS answers nothing finer: which fields a person may see but
@@ -57,7 +60,9 @@ class LayerAnswer:
 def apply_access(catalogue: dict[str, Any], answers: dict[str, LayerAnswer]) -> dict[str, Any]:
     """The catalogue as the person the answers are for may see it, by each Collection's id, the layer's WMS name."""
     served = copy.deepcopy(catalogue)
+    hidden_by_id = {collection['id']: _hidden_fields(collection, answers.get(collection['id'])) for collection in _collections(served)}
     _apply_to_catalog(served, answers)
+    _serve_value_relations(served, answers, hidden_by_id)
     boxes = [collection['extent']['spatial']['bbox'][0] for collection in _collections(served)]
     boxes = [box for box in boxes if box != _WHOLE_WORLD]
     if 'extent' in served:
@@ -93,6 +98,39 @@ def _apply_to_catalog(node: dict[str, Any], answers: dict[str, LayerAnswer]) -> 
 
 def _holds_layer(node: dict[str, Any]) -> bool:
     return bool(node.get('collections')) or any(_holds_layer(child) for child in node.get('catalogs', []))
+
+
+def _hidden_fields(collection: dict[str, Any], answer: Optional[LayerAnswer]) -> set[str]:
+    """The fields of a Collection, its columns and its display field, that the answer does not let the person see."""
+    if answer is None or answer.fields is None:
+        return set()
+    named = {column['name'] for column in collection.get('table:columns', [])}
+    if 'quac:display_field' in collection:
+        named.add(collection['quac:display_field'])
+    return named - answer.fields
+
+
+def _serve_value_relations(catalog: dict[str, Any], answers: dict[str, LayerAnswer], hidden_by_id: dict[str, set[str]]) -> None:
+    """Drops each Value Relation whose lookup the person may not read, or that uses a field of either layer they may not see."""
+    kept = {collection['id'] for collection in _collections(catalog)}
+    for collection in _collections(catalog):
+        own_hidden = hidden_by_id.get(collection['id'], set())
+        for column in collection.get('table:columns', []):
+            relation = column.get('quac:value_relation')
+            if not isinstance(relation, dict):
+                continue
+            lookup = relation.get('collection')
+            lookup_answer = answers.get(lookup) if isinstance(lookup, str) else None
+            lookup_hidden = hidden_by_id.get(lookup, set()) if isinstance(lookup, str) else set()
+            named = [field for field in (relation.get('key'), relation.get('value'), relation.get('order_field')) if field is not None]
+            unseen = lookup_answer is not None and lookup_answer.fields is not None and any(field not in lookup_answer.fields for field in named)
+            if (
+                lookup not in kept
+                or unseen
+                or _mentions_any(relation.get('filter'), lookup_hidden)
+                or _mentions_any(relation.get('filter'), own_hidden)
+            ):
+                del column['quac:value_relation']
 
 
 def _apply_to_collection(collection: dict[str, Any], answer: LayerAnswer) -> dict[str, Any]:

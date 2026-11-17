@@ -51,6 +51,27 @@ class FieldValueMapEntry:
 
 
 @dataclass
+class FieldValueRelation:
+    """
+    A field's Value Relation widget, as far as `quac:value_relation` reads it:
+    the lookup layer it names, by id and by name, the fields stored and shown,
+    and how the list is filtered and ordered.
+    """
+
+    layer_id: str
+    layer_name: str
+    key_field: str
+    value_field: str
+    filter_expression: str
+    allow_null: bool
+    allow_multi: bool
+    # What orders the list: `key`, `value`, or `field`, the lookup field in `order_field`.
+    order_by: str
+    order_field: Optional[str]
+    descending: bool
+
+
+@dataclass
 class DataSource:
     """
     Where a layer's data comes from, as far as the server route reads it: its
@@ -83,6 +104,7 @@ class LayerEntry:
     field_names: list[str] = field(default_factory=list)
     field_aliases: dict[str, str] = field(default_factory=dict)
     field_value_maps: dict[str, list[FieldValueMapEntry]] = field(default_factory=dict)
+    field_value_relations: dict[str, FieldValueRelation] = field(default_factory=dict)
     resource_metadata: LayerResourceMetadata = field(default_factory=LayerResourceMetadata)
     scale_range: Optional[LayerScaleRange] = None
     locks: dict[str, EditLock] = field(default_factory=dict)
