@@ -15,6 +15,7 @@ The QUAC Catalogue plugin for QGIS Server, and the Python it is built on. The pl
   - A layer they may not read is left out, and so is a group left with no layer they may read.
   - A field they may not see is left out.
   - Each edit they may not make is locked in `quac:locks`.
+  - A Value Relation whose lookup layer they may not read, or that uses a field of either layer they may not see, is left out.
 
   QGIS answers nothing finer than that per layer. So which fields a person sees but may not change, changing details but not moving shapes, and which features they may edit are not in the catalogue. The access plugin refuses such a save.
 
@@ -22,7 +23,7 @@ The QUAC Catalogue plugin for QGIS Server, and the Python it is built on. The pl
 
 ## The Python
 
-`quac_server` takes a QGIS project's stored text (a `.qgs`, a `.qgz`, or the zip QGIS keeps in a database) and the server's address, and returns the catalogue QGIS Server serves for it: the same catalogue as the JavaScript's `generateServerStacCatalogue` (`packages/quac/src/generate/serverStacCatalogue.ts`), holding only the fields the plugin declares. `quac_server/declared_fields.json` is that list, the plugin's first release, by the place each field sits. It also returns the layer tree QGIS Server publishes, as the JavaScript's `serverLayerTree` does. It does not return the notes the JavaScript's `parseQgsXml` gives on the settings a catalogue does not carry: the served catalogue carries no field's form settings yet, so every one of them is left out.
+`quac_server` takes a QGIS project's stored text (a `.qgs`, a `.qgz`, or the zip QGIS keeps in a database) and the server's address, and returns the catalogue QGIS Server serves for it: the same catalogue as the JavaScript's `generateServerStacCatalogue` (`packages/quac/src/generate/serverStacCatalogue.ts`), holding only the fields the plugin declares. `quac_server/declared_fields.json` is that list, the plugin's first release, by the place each field sits. It also returns the layer tree QGIS Server publishes, as the JavaScript's `serverLayerTree` does. It does not return the notes the JavaScript's `parseQgsXml` gives on the settings a catalogue does not carry: of a field's form settings, the served catalogue carries only a Value Map's list, as `quac:values`, and a Value Relation, as `quac:value_relation`, so the notes would not describe what it leaves out.
 
 It uses Python's standard library only, so it runs in QGIS Server's own Python and anywhere else. Each module under `quac_server/parse/`, `generate/`, `model/` and `util/` mirrors the JavaScript module of the same name in `packages/quac/src/`, with the function names in Python's form (`parseWmsPublishing` is `parse_wms_publishing`). Two modules have no counterpart: `parse/xml_text.py` gives the answers the browser's DOM gives the JavaScript, and `js_compat.py` gives JavaScript's own answers for numbers and text. A port builds on them to keep the JavaScript's quirks. A layer's id and name, for example, come from the first `<id>` and `<layername>` anywhere inside its `<maplayer>`, as `querySelector` finds them, and a list property's values keep their spaces.
 
@@ -34,6 +35,10 @@ It uses Python's standard library only, so it runs in QGIS Server's own Python a
 - `tests/test_fixtures.py` compares the layer tree with each fixture's `<name>.server.layers.json`.
 
 Where a Python function does what its JavaScript counterpart does in a different way, `port-exemptions.json` says so under `departures`, with the reason. A change to the JavaScript under `parse/` or `generate/` that moves a saved catalogue needs the same change here. Adding a field to the first release means its Python, its entry in `declared_fields.json`, and its first-tier example.
+
+## The demo
+
+[`demo/value-labels/`](demo/value-labels/) shows what `quac:values` and `quac:value_relation` give a web map that reads a layer over WFS: QGIS Server's WFS gives a Value Map or Value Relation field's stored values and its GetFeatureInfo their labels, and the catalogue lets the WFS client show the labels too. The QGIS Server workflow runs it.
 
 ## Running it
 

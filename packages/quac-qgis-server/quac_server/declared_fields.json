@@ -4,5 +4,5 @@
   "summaries": ["quac:geometry_type"],
   "link": ["rel", "href", "type", "title", "wms:layers", "wms:styles", "wms:transparent", "quac:wms_crs"],
   "asset": ["href", "type", "title", "roles"],
-  "column": ["name", "title", "type", "data_type"]
+  "column": ["name", "title", "type", "data_type", "quac:values", "quac:value_relation"]
 }

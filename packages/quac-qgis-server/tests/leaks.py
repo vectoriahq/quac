@@ -8,8 +8,9 @@ the project keeps off the web:
 
 - a layer the project leaves out of WMS, or a group it leaves out, by id or name;
 - a WFS address for a layer the project does not publish for WFS;
-- a field the project hides from WMS or WFS, as a column, the display field or
-  in a lock's expression;
+- a field the project hides from WMS or WFS, as a column, the display field,
+  in a lock's expression, or in a Value Relation, whose lookup must also be a
+  served layer;
 - a connection detail or password from a layer's data source;
 - a file-system path, or the name of a layer's data file.
 
@@ -110,6 +111,20 @@ def leak_failures(catalogue: dict[str, Any], project_text: str, server_address: 
             failures.append(f'the hidden field {collection["quac:display_field"]!r} is the display field of {name!r}')
         for text in _strings(collection.get('quac:locks', {})):
             failures += [f'a lock of {name!r} names the hidden field {field!r}' for field in hidden if _mentions(text, field)]
+        served_ids = {served['id'] for served in _collections(catalogue)}
+        for column, relation in _value_relations(collection):
+            lookup = relation.get('collection')
+            if lookup not in served_ids:
+                failures.append(f'the Value Relation of {name!r}.{column!r} names {lookup!r}, which is not a served layer')
+            lookup_hidden = hidden_by_name.get(lookup, set())
+            failures += [
+                f'the Value Relation of {name!r}.{column!r} names the hidden field {field!r} of {lookup!r}'
+                for field in (relation.get('key'), relation.get('value'), relation.get('order_field')) if field in lookup_hidden
+            ]
+            failures += [
+                f'the Value Relation filter of {name!r}.{column!r} names the hidden field {field!r}'
+                for field in lookup_hidden | hidden if isinstance(relation.get('filter'), str) and _mentions(relation['filter'], field)
+            ]
 
     outside_address = [text.replace(server_address, '') for text in _strings(catalogue, skip_internal_links=True)]
     secrets = {next(group for group in match.groups() if group is not None) for layer in project.layers for match in _PASSWORD_IN_SOURCE.finditer(layer.data_source.raw)}
@@ -144,11 +159,28 @@ def _access_failures(catalogue: dict[str, Any], access: dict[str, Any], every_st
             display = collection.get('quac:display_field')
             if display is not None and display not in answer.fields:
                 failures.append(f'the field {display!r}, which the person may not see, is the display field of {collection["id"]!r}')
+        for column, relation in _value_relations(collection):
+            lookup_answer = access.get(relation.get('collection'))
+            if lookup_answer is None or not lookup_answer.read:
+                failures.append(f'the Value Relation of {collection["id"]!r}.{column!r} names {relation.get("collection")!r}, which the person may not read')
+            elif lookup_answer.fields is not None:
+                failures += [
+                    f'the Value Relation of {collection["id"]!r}.{column!r} names {field!r}, which the person may not see'
+                    for field in (relation.get('key'), relation.get('value'), relation.get('order_field')) if field is not None and field not in lookup_answer.fields
+                ]
         locks = collection.get('quac:locks') or {}
         for edit, allowed in (('add', answer.insert), ('attributes', answer.update), ('geometry', answer.update), ('delete', answer.delete)):
             if not allowed and locks.get(edit) is not True:
                 failures.append(f'{collection["id"]!r} leaves {edit} unlocked, which the person may not do')
     return failures
+
+
+def _value_relations(collection: dict[str, Any]) -> Iterator[tuple[str, dict[str, Any]]]:
+    """Each column's `quac:value_relation`, with the column's name."""
+    for column in collection.get('table:columns', []):
+        relation = column.get('quac:value_relation')
+        if isinstance(relation, dict):
+            yield column['name'], relation
 
 
 def _all_links(value: Any) -> Iterator[dict[str, Any]]:

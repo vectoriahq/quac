@@ -1,0 +1,92 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Playgrounds" version="3.44.8-Solothurn">
+  <homePath path=""/>
+  <title>Playgrounds</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" source="./equipment.geojson" expanded="1" name="Playground equipment" providerKey="ogr" id="playground_equipment_5c2e8d41_7a93_4b6f_8e20_9d1f3a6b7c58"/>
+    <layer-tree-layer checked="Qt::Checked" source="./suppliers.geojson" expanded="1" name="Suppliers" providerKey="ogr" id="suppliers_8b41f2c7_3e65_4d0a_9c17_6a2f5e8d1b93"/>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>playground_equipment_5c2e8d41_7a93_4b6f_8e20_9d1f3a6b7c58</id>
+      <datasource>./equipment.geojson</datasource>
+      <layername>Playground equipment</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <renderer-v2 type="singleSymbol" forceraster="0" symbollevels="0" enableorderby="0" referencescale="-1">
+        <symbols>
+          <symbol type="marker" name="0" alpha="1" clip_to_extent="1" force_rhr="0" is_animated="0" frame_rate="10">
+            <layer class="SimpleMarker" enabled="1" locked="0" pass="0" id="{3c7d1e40-0000-4000-9000-000000000001}">
+              <Option type="Map">
+                <Option type="QString" name="color" value="25,118,210,255,rgb:0.098,0.463,0.824,1"/>
+                <Option type="QString" name="name" value="circle"/>
+                <Option type="QString" name="outline_color" value="255,255,255,255,rgb:1,1,1,1"/>
+                <Option type="QString" name="outline_width" value="0.4"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="size" value="4"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+              </Option>
+            </layer>
+          </symbol>
+        </symbols>
+      </renderer-v2>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="asset_id"/>
+        <field configurationFlags="NoFlag" name="equipment"><editWidget type="ValueMap"><config><Option type="Map"><Option type="List" name="map"><Option type="Map"><Option type="QString" name="Swing" value="SW"/></Option><Option type="Map"><Option type="QString" name="Slide" value="SL"/></Option><Option type="Map"><Option type="QString" name="Climbing frame" value="CF"/></Option><Option type="Map"><Option type="QString" name="Spring rocker" value="SR"/></Option></Option></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="condition"><editWidget type="ValueMap"><config><Option type="Map"><Option type="List" name="map"><Option type="Map"><Option type="QString" name="Good" value="1"/></Option><Option type="Map"><Option type="QString" name="Fair" value="2"/></Option><Option type="Map"><Option type="QString" name="Poor" value="3"/></Option><Option type="Map"><Option type="QString" name="Closed for repair" value="4"/></Option><Option type="Map"><Option type="QString" name="Not inspected" value="{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}"/></Option></Option></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="supplier"><editWidget type="ValueRelation"><config><Option type="Map"><Option type="QString" value="suppliers_8b41f2c7_3e65_4d0a_9c17_6a2f5e8d1b93" name="Layer"/><Option type="QString" value="Suppliers" name="LayerName"/><Option type="QString" value="code" name="Key"/><Option type="QString" value="name" name="Value"/><Option type="bool" value="false" name="AllowNull"/><Option type="bool" value="false" name="AllowMulti"/><Option type="bool" value="true" name="OrderByValue"/><Option type="QString" value="" name="FilterExpression"/></Option></config></editWidget></field>
+        <field configurationFlags="NoFlag" name="installed"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="asset_id" index="0" name="Asset ID"/>
+        <alias field="equipment" index="1" name="Equipment"/>
+        <alias field="condition" index="2" name="Condition"/>
+        <alias field="supplier" index="3" name="Supplier"/>
+        <alias field="installed" index="4" name="Year installed"/>
+      </aliases>
+      <previewExpression>"asset_id"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="NoGeometry" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>suppliers_8b41f2c7_3e65_4d0a_9c17_6a2f5e8d1b93</id>
+      <datasource>./suppliers.geojson</datasource>
+      <layername>Suppliers</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="code"/>
+        <field configurationFlags="NoFlag" name="name"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="code" index="0" name="Code"/>
+        <alias field="name" index="1" name="Name"/>
+      </aliases>
+      <previewExpression>"name"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <WFSLayers type="QStringList"><value>playground_equipment_5c2e8d41_7a93_4b6f_8e20_9d1f3a6b7c58</value><value>suppliers_8b41f2c7_3e65_4d0a_9c17_6a2f5e8d1b93</value></WFSLayers>
+    <WMSAddWktGeometry type="bool">true</WMSAddWktGeometry>
+  </properties>
+</qgis>

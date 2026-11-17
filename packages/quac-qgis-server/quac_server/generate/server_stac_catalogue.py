@@ -18,6 +18,8 @@ QGIS Server settings, as GetProjectSettings does:
 - A field the project hides from WMS or from WFS is left out of
   `table:columns`, and dropped as the display field; a lock whose expression
   uses one becomes `True`, so that hiding a field never unlocks an edit.
+- A Value Relation names its lookup by the lookup's WMS name, and is dropped
+  where the lookup is not served or the relation uses a hidden field.
 
 The access answers of the person asking are not applied.
 
@@ -246,8 +248,32 @@ def _serve_collection(source: dict[str, Any], context: _ServeContext) -> dict[st
     if str(collection.get('quac:display_field')) in hidden:
         collection.pop('quac:display_field', None)
     _serve_locks(collection, hidden)
-    _serve_columns(collection, hidden, context.field_types.get(layer_id, {}))
+    _serve_columns(collection, hidden, context, layer_id)
     return collection
+
+
+def _serve_column(source: dict[str, Any], hidden: set[str], context: _ServeContext) -> dict[str, Any]:
+    """
+    The column as served. A Value Relation names its lookup by the lookup's
+    WMS name, and is dropped where QGIS Server does not serve the lookup, or
+    where it uses a field the project hides, of the lookup's or, in its filter,
+    of this layer's.
+    """
+    column = dict(source)
+    relation = column.get('quac:value_relation')
+    if isinstance(relation, dict):
+        lookup_id = context.served_ids.get(relation['collection'])
+        lookup_hidden = _hidden_fields_of(context.layers_by_id.get(relation['collection']))
+        uses_hidden = (
+            any(field is not None and field in lookup_hidden for field in (relation.get('key'), relation.get('value'), relation.get('order_field')))
+            or _mentions_any(relation.get('filter'), lookup_hidden)
+            or _mentions_any(relation.get('filter'), hidden)
+        )
+        if not lookup_id or uses_hidden:
+            del column['quac:value_relation']
+        else:
+            column['quac:value_relation'] = {**relation, 'collection': lookup_id}
+    return column
 
 
 def _serve_locks(collection: dict[str, Any], hidden: set[str]) -> None:
@@ -266,11 +292,12 @@ def _with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]
     return with_data_type({**column, 'type': column_type}) if column_type else column
 
 
-def _serve_columns(collection: dict[str, Any], hidden: set[str], field_types: dict[str, dict[str, str]]) -> None:
+def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _ServeContext, layer_id: str) -> None:
     columns = collection.get('table:columns')
     if not isinstance(columns, list):
         return
-    kept = [_with_field_type(column, field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
+    field_types = context.field_types.get(layer_id, {})
+    kept = [_with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
     if kept:
         collection['table:columns'] = kept
     else:

@@ -36,6 +36,8 @@ FIXTURES = PACKAGE.parent / 'quac' / 'src' / 'tests' / 'fixtures' / 'qgis'
 HARNESS = Path(__file__).resolve().parent / 'quac_spike_harness'
 CATALOGUE_PLUGIN = PACKAGE / 'quac_catalogue'
 TEST_ACCESS = Path(__file__).resolve().parent / 'quac_test_access'
+# The value labels demo's project and data, laid out at data/demo/value-labels.
+DEMO = PACKAGE / 'demo'
 # A copy of a fixture the catalogue plugin's cache check edits, apart from the spike's.
 CACHE_PROJECT = 'cache/publishing.qgs'
 
@@ -64,6 +66,8 @@ def prepare(work: Path) -> None:
     (data / 'edit').mkdir(parents=True)
     shutil.copy(FIXTURES / 'server-groups' / 'groups.qgs', data / EDIT_PROJECT)
     write_stand_in_data(data / EDIT_PROJECT)
+
+    shutil.copytree(DEMO, data / 'demo', ignore=shutil.ignore_patterns('*.py', '*.md'))
 
     (data / 'cache').mkdir(parents=True)
     shutil.copy(FIXTURES / 'server-publishing' / 'publishing.qgs', data / CACHE_PROJECT)
