@@ -26,6 +26,13 @@ npm lists a test version under its `next` tag, so `npm install @vectoriahq/quac`
 
 The workflow checks the tag against the version and runs the plugin's tests before it builds the zip.
 
+## The title and the notes
+
+Every release, test version and plugin release alike, is published with two things filled in by hand:
+
+- **The title is the tag**, typed out, such as `@vectoriahq/quac@0.6.0`. Left blank, GitHub shows the tag with the last commit's message, such as a merge commit's.
+- **The notes are plain bullets** saying what changed for someone using the package, each ending in its pull request number, such as `(#51)`. Say what a user has to do, if anything.
+
 ## The schema and the site
 
 The [Publish the schema and front page](.github/workflows/schema-pages.yml) workflow runs when a change to the schema, the site or the mark reaches `main`. It copies the schema to the `gh-pages` branch at the path its `$id` names, each version in a folder of its own, writes the site's front page from [`site/`](site/), listing every version, and publishes the demo catalogue in [`site/demo/`](site/demo/) at `demo/`. GitHub Pages serves that branch at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/).
