@@ -93,7 +93,8 @@ const QGIS_ONLY_FUNCTIONS: Record<string, [min: number, max: number]> = {
   array_first: [1, 1],
   array_get: [2, 2],
   overlay_within: [1, 5],
-  overlay_intersects: [1, 5],
+  overlay_intersects: [1, 9],
+  overlay_nearest: [1, 6],
   aggregate: [3, 6],
   geometry: [1, 1],
   intersects: [2, 2],
@@ -244,15 +245,20 @@ const REGEXP_FUNCTIONS = ['regexp_match', 'regexp_replace', 'regexp_substr']
  */
 const NAMED_PARAMETERS: Record<string, { names: string[], omitted: ExpressionNode }> = {
   make_interval: { names: ['years', 'months', 'weeks', 'days', 'hours', 'minutes', 'seconds'], omitted: { kind: 'number', value: 0 } },
-  // QGIS's own lists go on (`min_overlap` and others); a value for any of
-  // those leaves the expression unread.
+  // QGIS's own lists go on past the ones that are read (`min_overlap`,
+  // `min_inscribed_circle_radius` and `return_details` of `overlay_intersects`);
+  // a value for any of those leaves the expression unread.
   overlay_within: { names: ['layer', 'expression', 'filter', 'limit', 'cache'], omitted: { kind: 'null' } },
-  overlay_intersects: { names: ['layer', 'expression', 'filter', 'limit', 'cache'], omitted: { kind: 'null' } },
+  overlay_intersects: {
+    names: ['layer', 'expression', 'filter', 'limit', 'cache', 'min_overlap', 'min_inscribed_circle_radius', 'return_details', 'sort_by_intersection_size'],
+    omitted: { kind: 'null' }
+  },
+  overlay_nearest: { names: ['layer', 'expression', 'filter', 'limit', 'max_distance', 'cache'], omitted: { kind: 'null' } },
   aggregate: { names: ['layer', 'aggregate', 'expression', 'filter', 'concatenator', 'order_by'], omitted: { kind: 'null' } }
 }
 
 /** The calls that read another layer of the project: `LayerLookup`. */
-const LOOKUPS = ['overlay_within', 'overlay_intersects', 'aggregate']
+const LOOKUPS = ['overlay_within', 'overlay_intersects', 'overlay_nearest', 'aggregate']
 
 /**
  * What `aggregate` reads the filter `intersects($geometry, geometry(@parent))`
@@ -265,18 +271,28 @@ export const LOOKUP_AGGREGATES = ['count', 'min', 'max', 'concatenate'] as const
 
 /**
  * One read of another layer of the project: the features of `layer`, named by
- * its name or its QGIS id, that the record's shape lies within or meets, kept
- * by `filter` and cut to `limit`, each giving the value of `expression`. The
- * answer is the list of those values, in the order the source gave the
- * features. `key` tells one read from another.
+ * its name or its QGIS id, that the record's shape lies within or meets, or
+ * that are nearest to it (`predicate`), kept by `filter` and cut to `limit`,
+ * each giving the value of `expression`. The answer is the list of those
+ * values, in the order the caller works out: nearest first for `nearest`;
+ * otherwise by `sortByOverlap` where it is given, and else as the caller
+ * chooses. `key` tells one read from another.
+ *
+ * `sortByOverlap` is QGIS's `sort_by_intersection_size` of `overlay_intersects`:
+ * the features ordered by the size of the intersection, the largest first for
+ * `descending`. `maxDistance` is `overlay_nearest`'s `max_distance`. Each is
+ * left out where the expression does not give it. A `limit` of null keeps
+ * every feature; `overlay_nearest` keeps one, as QGIS does, where none is given.
  */
 export interface LayerLookup {
   key: string
   layer: string
-  predicate: 'within' | 'intersects'
+  predicate: 'within' | 'intersects' | 'nearest'
   expression: ExpressionNode
   filter: ExpressionNode | null
   limit: number | null
+  sortByOverlap?: 'descending' | 'ascending'
+  maxDistance?: number
 }
 
 /**
@@ -353,7 +369,7 @@ export function isQgisConditionFilter(filter: unknown): filter is { name: 'custo
  * evaluator adds it to a date or takes it away. QGIS reads an interval
  * elsewhere too, which the evaluator does not.
  *
- * `overlay_within`, `overlay_intersects` and `aggregate` read another layer,
+ * `overlay_within`, `overlay_intersects`, `overlay_nearest` and `aggregate` read another layer,
  * and are read only where the caller says `lookups`: the caller then answers
  * each `LayerLookup` before it evaluates (a default value). See
  * `areLookupsReadable` for the forms read.
@@ -850,8 +866,8 @@ function findAddedIntervals(node: ExpressionNode): ExpressionNode[] {
 
 /**
  * Whether an expression's reads of other layers are ones the caller can answer.
- * With `allowed` false, it holds none. Otherwise each `overlay_within` or
- * `overlay_intersects` gives an expression and is the array that
+ * With `allowed` false, it holds none. Otherwise each `overlay_within`,
+ * `overlay_intersects` or `overlay_nearest` gives an expression and is the array that
  * `array_first` or a whole-number `[index]` reads; each `aggregate` is a
  * `count`, `min`, `max` or `concatenate` of the features its filter
  * `intersects($geometry, geometry(@parent))` keeps, with no `order_by`; the
@@ -913,10 +929,25 @@ function isReadableLookup(call: ExpressionNode & { kind: 'call' }): boolean {
       && (args.concatenator!.kind === 'null' || args.concatenator!.kind === 'text')
       && args.order_by!.kind === 'null'
   }
-  return (args.filter!.kind === 'null' || readsTargetFieldsOnly(args.filter!))
+  const isReadableOverlay = (args.filter!.kind === 'null' || readsTargetFieldsOnly(args.filter!))
     && (args.limit!.kind === 'null' || isWholeNumber(args.limit))
     && (args.cache!.kind === 'null' || args.cache!.kind === 'boolean')
+  if (call.name === 'overlay_nearest') {
+    return isReadableOverlay && (args.max_distance!.kind === 'null' || (args.max_distance!.kind === 'number' && args.max_distance!.value >= 0))
+  }
+  if (call.name === 'overlay_intersects') {
+    const sort = args.sort_by_intersection_size!
+    return isReadableOverlay
+      && args.min_overlap!.kind === 'null'
+      && args.min_inscribed_circle_radius!.kind === 'null'
+      && args.return_details!.kind === 'null'
+      && (sort.kind === 'null' || (sort.kind === 'text' && OVERLAP_SORTS.has(sort.value.trim().toLowerCase())))
+  }
+  return isReadableOverlay
 }
+
+/** The values of `sort_by_intersection_size` that QGIS takes: `des` for the largest overlap first, `asc` for the smallest. */
+const OVERLAP_SORTS = new Map<string, 'descending' | 'ascending'>([['des', 'descending'], ['asc', 'ascending']])
 
 /** The `LayerLookup` a readable lookup call makes. */
 function toLayerLookup(call: ExpressionNode & { kind: 'call' }): LayerLookup {
@@ -924,13 +955,19 @@ function toLayerLookup(call: ExpressionNode & { kind: 'call' }): LayerLookup {
   const isAggregate = call.name === 'aggregate'
   const layer = args.layer!
   const limit = args.limit
-  const lookup = {
+  const isNearest = call.name === 'overlay_nearest'
+  const sort = args.sort_by_intersection_size
+  const maxDistance = args.max_distance
+  const lookup: Omit<LayerLookup, 'key'> = {
     layer: layer.kind === 'text' ? layer.value.trim() : '',
-    predicate: call.name === 'overlay_within' ? 'within' as const : 'intersects' as const,
+    predicate: call.name === 'overlay_within' ? 'within' : isNearest ? 'nearest' : 'intersects',
     expression: args.expression!,
     filter: isAggregate || args.filter!.kind === 'null' ? null : args.filter!,
-    limit: !isAggregate && limit?.kind === 'number' && limit.value >= 0 ? limit.value : null
+    // `overlay_nearest` gives the one nearest feature unless it is given a limit, and every one for a limit of -1.
+    limit: isAggregate ? null : limit?.kind === 'number' ? (limit.value >= 0 ? limit.value : null) : isNearest ? 1 : null
   }
+  if (sort?.kind === 'text') lookup.sortByOverlap = OVERLAP_SORTS.get(sort.value.trim().toLowerCase())
+  if (maxDistance?.kind === 'number') lookup.maxDistance = maxDistance.value
   return { key: JSON.stringify(lookup), ...lookup }
 }
 
@@ -1051,7 +1088,7 @@ export function expressionToGeoStylerFunction(node: ExpressionNode): unknown {
       if (node.name === 'concat') return { name: 'strConcat', args }
       if (node.name === '||') return { name: 'custom', fnName: '||', args }
       if (Object.hasOwn(GEOMETRY_VALUES, node.name)) return { name: 'custom', fnName: node.name, args: [node.factor ?? null] }
-      if (node.name === 'overlay_within' || node.name === 'overlay_intersects') return { name: 'custom', fnName: LAYER_LOOKUP, args: [toLayerLookup(node).key] }
+      if (node.name === 'overlay_within' || node.name === 'overlay_intersects' || node.name === 'overlay_nearest') return { name: 'custom', fnName: LAYER_LOOKUP, args: [toLayerLookup(node).key] }
       if (node.name === 'aggregate') {
         const { aggregate, concatenator } = lookupArguments(node)
         return {
