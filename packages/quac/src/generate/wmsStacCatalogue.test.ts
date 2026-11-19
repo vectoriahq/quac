@@ -309,3 +309,17 @@ describe('generateStacCatalogueFromWms — the names QGIS Server gives a layer',
     expect(collection).not.toHaveProperty('quac:qgis_server_wfs_type_name')
   })
 })
+
+describe('generateStacCatalogueFromWms — field comments', () => {
+  it('writes the comment GetProjectSettings gives an attribute as the column description, and none for a blank one', () => {
+    const xml = fixtureXml
+      .replace('comment="" typeName="String" editType="TextEdit" precision="0" name="tagger_moniker"', 'comment=" The name the tagger signs with " typeName="String" editType="TextEdit" precision="0" name="tagger_moniker"')
+    expect(xml).not.toBe(fixtureXml)
+    const collection = collectCatalogueCollections(generateStacCatalogueFromWms(parseGetProjectSettings(xml)))
+      .find((entry) => entry.title === 'Graffiti Reports')!
+    const columns = collection['table:columns'] as Array<{ name: string, description?: string }>
+
+    expect(columns.find((column) => column.name === 'tagger_moniker')?.description).toBe('The name the tagger signs with')
+    expect(columns.filter((column) => 'description' in column).map((column) => column.name)).toEqual(['tagger_moniker'])
+  })
+})

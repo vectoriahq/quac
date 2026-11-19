@@ -578,6 +578,10 @@
             "dropdown"
           ]
         },
+        "quac:label_on_top": {
+          "description": "The form puts the field's name above its value, across the form's width. Written from QGIS's Label on top in the Attributes Form.",
+          "const": true
+        },
         "quac:values": {
           "description": "The values the field takes, each with the label a form shows for it, in the source's order. Written from a QGIS Value Map widget or an ArcGIS coded-value domain.",
           "type": "array",

@@ -236,6 +236,12 @@ export interface LayerEntry {
    */
   fieldAliases: Record<string, string>
   /**
+   * Each field's comment from the Attributes Form's Comment, a custom comment
+   * QGIS 4.2 and later saves in the project as `<customComments>`. Fields with
+   * none, or a blank one, are absent.
+   */
+  fieldComments?: Record<string, string>
+  /**
    * The fields QGIS Server leaves out of WMS (GetProjectSettings, GetFeatureInfo)
    * and of WFS (DescribeFeatureType, GetFeature): the **WMS** and **WFS**
    * checkboxes in the Attributes Form's QGIS Server settings. Absent where the
@@ -548,6 +554,8 @@ export interface FieldEditRule {
   icon?: string | null
   /** The control the edit form draws the field's choices with. Null or absent where the source asks for none. */
   control?: FieldControl | null
+  /** True where the source's form puts the field's name above its value: QGIS's Label on top. */
+  labelOnTop?: boolean
 }
 
 /** How the edit form draws a field's list of choices: a row of `buttons`, or a `dropdown`. */

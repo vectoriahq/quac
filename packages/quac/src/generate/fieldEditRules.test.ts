@@ -2,7 +2,7 @@ import '../tests/xmlParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject.ts'
+import { readCollectionFieldComments, readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject.ts'
 import { generateStacCatalogue } from './stacCatalogue.ts'
 import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
@@ -12,8 +12,9 @@ import type { StacCollection, TableColumn } from '../model/Stac.ts'
 /**
  * QGIS's Attributes Form settings, through to `quac:editable`,
  * `quac:default`, `quac:constraints`, `quac:hidden`, `quac:searchable`,
- * `quac:color` and `quac:reuse_last_value` on the field's `table:columns` entry and back
- * out again. The `<defaults>`, `<editable>`, `<constraints>` and widget
+ * `quac:color`, `quac:reuse_last_value` and `quac:label_on_top`, and the
+ * field's comment as `description`, on the field's `table:columns` entry and
+ * back out again. The `<defaults>`, `<editable>`, `<constraints>` and widget
  * shapes are the ones `packages/quac/src/tests/fixtures/qgis/graffiti/graffiti.qgs` writes.
  */
 
@@ -616,5 +617,57 @@ describe('quac:icon on a layer', () => {
     const collection = { ...collectionFor(''), 'quac:icon': 'http://example.com/tree.svg' } as StacCollection
 
     expect(readCollectionIcon(collection)).toBeNull()
+  })
+})
+
+describe('quac:label_on_top', () => {
+  it('writes Label on top for a non-zero flag and reads it back', () => {
+    const collection = collectionFor('<labelOnTop>'
+      + '<field labelOnTop="1" name="notes"/>'
+      + '<field labelOnTop="0" name="last_edited"/>'
+      + '</labelOnTop>')
+
+    expect(column(collection, 'notes')?.['quac:label_on_top']).toBe(true)
+    expect(column(collection, 'last_edited')).not.toHaveProperty('quac:label_on_top')
+    expect(readCollectionFieldEditRules(collection)).toEqual({ notes: { ...NO_RULE, labelOnTop: true } })
+  })
+
+  it('reads no rule from a catalogue value other than true', () => {
+    const collection = { ...collectionFor(''), 'table:columns': [{ name: 'notes', 'quac:label_on_top': 'true' }, { name: 'last_edited', 'quac:label_on_top': 1 }] } as unknown as StacCollection
+
+    expect(readCollectionFieldEditRules(collection)).toEqual({})
+  })
+})
+
+describe('a field comment as the column description', () => {
+  it('writes each custom comment, trimmed, and leaves out a blank one', () => {
+    const collection = collectionFor('<aliases><alias field="notes" index="0" name="Site notes"/></aliases>'
+      + '<customComments>'
+      + '<customComment field="notes" value="  What the visit found, in a sentence or two "/>'
+      + '<customComment field="last_edited" value=""/>'
+      + '</customComments>')
+
+    expect(column(collection, 'notes')).toMatchObject({ title: 'Site notes', description: 'What the visit found, in a sentence or two' })
+    expect(column(collection, 'last_edited')).not.toHaveProperty('description')
+    expect(readCollectionFieldComments(collection)).toEqual({ notes: 'What the visit found, in a sentence or two' })
+  })
+
+  it('keeps the later of two comments on a field, as QGIS does', () => {
+    const collection = collectionFor('<customComments>'
+      + '<customComment field="notes" value="First"/>'
+      + '<customComment field="notes" value="Second"/>'
+      + '<customComment field="last_edited" value="Set"/>'
+      + '<customComment field="last_edited" value=""/>'
+      + '</customComments>')
+
+    expect(readCollectionFieldComments(collection)).toEqual({ notes: 'Second' })
+  })
+
+  it('reads no comment from a saved alternate style', () => {
+    const collection = collectionFor('<map-layer-style-manager current="default"><map-layer-style name="other"><qgis>'
+      + '<customComments><customComment field="notes" value="From another style"/></customComments>'
+      + '</qgis></map-layer-style></map-layer-style-manager>')
+
+    expect(readCollectionFieldComments(collection)).toEqual({})
   })
 })

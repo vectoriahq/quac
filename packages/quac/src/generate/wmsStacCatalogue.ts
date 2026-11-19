@@ -248,6 +248,8 @@ function deriveTableColumnsFromAttributes(attributes: WmsAttribute[]): TableColu
   return attributes.map((attr) => {
     const column: TableColumn = { name: attr.name }
     if (attr.alias) column.title = attr.alias
+    const comment = attr.comment.trim()
+    if (comment) column.description = comment
     const stacType = mapQtTypeToStacTableType(attr.type, attr.typeName)
     if (stacType) column.type = stacType
     return column

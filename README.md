@@ -120,6 +120,8 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | QGIS setting | QUAC field | Example |
 |---|---|---|
 | Alias | the column's `title` | |
+| Comment (QGIS 4.2 and later) | the column's `description` | |
+| Label on top | `quac:label_on_top` | [label-on-top](packages/quac/spec/examples/label-on-top/) |
 | Value Map widget | `quac:values` | [value-map](packages/quac/spec/examples/value-map/) |
 | Value Relation widget | `quac:value_relation` | [value-relation](packages/quac/spec/examples/value-relation/) |
 | Range widget | `quac:range` | [range](packages/quac/spec/examples/range/) |

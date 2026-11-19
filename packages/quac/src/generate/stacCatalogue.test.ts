@@ -2,7 +2,8 @@ import '../tests/xmlParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { QUAC_ACTIVE_COLLECTION_FIELD, QUAC_FILTERS_FIELD, QUAC_LOCKS_FIELD, readCatalogueActiveCollection, readCollectionFilters, readCollectionLocks, readCatalogueInitialView, readCollectionFieldAliases, readCollectionOpacity } from './normalizedProject.ts'
+import { QUAC_ACTIVE_COLLECTION_FIELD, QUAC_FILTERS_FIELD, QUAC_LOCKS_FIELD, readCatalogueActiveCollection, readCollectionFilters, readCollectionLocks, readCatalogueInitialView, readCollectionFieldAliases,
+  readCollectionFieldComments, readCollectionOpacity } from './normalizedProject.ts'
 import { generateStacCatalogue, parseQgisStyleAssetHref, QUAC_GEOMETRY_FILTER, readCollectionGeometryFilter } from './stacCatalogue.ts'
 import { QUAC_DELIMITED_TEXT, readCollectionDelimitedText } from '../model/delimitedText.ts'
 import { QUAC_FEATURE_FILTER, readCollectionFeatureFilter } from '../model/featureFilter.ts'
@@ -179,10 +180,14 @@ describe('generateStacCatalogue — graffiti fixture', () => {
       ]
     } as unknown as StacCollection
 
+    // A description is the field's comment, never its name.
     expect(readCollectionFieldAliases(collection)).toEqual({
       width_metres: 'Width (m)',
-      area_hectares: 'Area (ha)',
       surface_type: 'Surface'
+    })
+    expect(readCollectionFieldComments(collection)).toEqual({
+      area_hectares: 'Area (ha)',
+      surface_type: 'Surface material'
     })
   })
 

@@ -599,14 +599,24 @@ function* declaredColumns(collection: StacCollection): Generator<[string, Record
   }
 }
 
-/** Field display labels from STAC Table column titles or descriptions. */
+/** Each field's alias, its column's `title`. A column with a blank or no `title` is absent. */
 export function readCollectionFieldAliases(collection: StacCollection): Record<string, string> {
   const aliases: Record<string, string> = {}
   for (const [name, column] of declaredColumns(collection)) {
-    const alias = readNonBlank(column.title) ?? readNonBlank(column.description)
+    const alias = readNonBlank(column.title)
     if (alias) aliases[name] = alias
   }
   return aliases
+}
+
+/** Each field's comment, its column's `description`, trimmed. A column with a blank or no `description` is absent. */
+export function readCollectionFieldComments(collection: StacCollection): Record<string, string> {
+  const comments: Record<string, string> = {}
+  for (const [name, column] of declaredColumns(collection)) {
+    const comment = readNonBlank(column.description)
+    if (comment) comments[name] = comment
+  }
+  return comments
 }
 
 /**
@@ -803,8 +813,8 @@ export function readCollectionFieldAttachments(collection: StacCollection): Reco
  *
  * Only `quac:editable: false` makes a field read-only, only
  * `quac:searchable: false` keeps it out of a search, and only
- * `quac:hidden: true`, `quac:reuse_last_value: true` and `quac:color: true`
- * set theirs. A `quac:icon` that is not an `https://` address is left out, as
+ * `quac:hidden: true`, `quac:reuse_last_value: true`, `quac:color: true` and
+ * `quac:label_on_top: true` set theirs. A `quac:icon` that is not an `https://` address is left out, as
  * is a `quac:control` other than `buttons` or `dropdown`.
  * A default of an unrecognised `kind`, or a `fixed` one without a `value`, is
  * left out; a `uuid` one of an omitted or unrecognised `format` reads as
@@ -835,11 +845,12 @@ export function readCollectionFieldEditRules(collection: StacCollection): Record
     const notSearchable = candidate['quac:searchable'] === false
     const icon = readHttpsAddress(candidate['quac:icon'])
     const control = candidate['quac:control'] === 'buttons' || candidate['quac:control'] === 'dropdown' ? candidate['quac:control'] : null
+    const labelOnTop = candidate['quac:label_on_top'] === true
     const defaultExpression = readDefaultExpression(candidate['quac:default'])
     const relation = relations[name]
     // A field storing several keys gets no list, so no rule about its blank choice.
     const valueRelation = relation && relation.allow_multi !== true ? { allowNull: relation.allow_null === true, relation } : null
-    if (valueRelation || readOnly || defaultValue || defaultExpression || notNull || unique || constraintExpression || hidden || reuseLastValue || duplicatePolicy || checkbox || range || dateFormat || colour || notSearchable || icon || control) {
+    if (valueRelation || readOnly || defaultValue || defaultExpression || notNull || unique || constraintExpression || hidden || reuseLastValue || duplicatePolicy || checkbox || range || dateFormat || colour || notSearchable || icon || control || labelOnTop) {
       rules[name] = {
         readOnly, defaultValue, notNull, unique, hidden, reuseLastValue, duplicatePolicy,
         ...(constraintExpression ? { constraintExpression } : {}),
@@ -851,6 +862,7 @@ export function readCollectionFieldEditRules(collection: StacCollection): Record
         ...(notSearchable ? { notSearchable } : {}),
         ...(icon ? { icon } : {}),
         ...(control ? { control } : {}),
+        ...(labelOnTop ? { labelOnTop } : {}),
         ...(valueRelation ? { valueRelation } : {})
       }
     }

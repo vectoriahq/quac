@@ -139,16 +139,13 @@ export interface StacLink {
 /** Table extension column descriptor (`table:columns`), at the version `TABLE_EXTENSION` names. */
 export interface TableColumn {
   name: string
-  /**
-   * Human-readable field label declared by the source. Readers treat either
-   * `title` or `description` as the display label, with `title` taking
-   * precedence when both are present.
-   */
+  /** The field's alias: the name the source shows for it in place of `name`. */
   title?: string
   /** The column's type: the `TableColumnType` an adapter maps the source's type to, or, for a QGIS Server type this package does not map, its lowercased type name. */
   type?: string
   /** The column's type as a STAC common metadata data type, written beside a `type` that maps to one. */
   data_type?: TableColumnDataType
+  /** The field's comment: a note on what the field holds, which the source's form shows beside the field's name. */
   description?: string
   /** The values the source restricts the field to: a QGIS ValueMap widget or an ArcGIS coded-value domain. */
   'quac:values'?: TableColumnValue[]
@@ -203,6 +200,8 @@ export interface TableColumn {
   'quac:icon'?: string
   /** The control the source asks the edit form to draw the column's choices with. */
   'quac:control'?: 'buttons' | 'dropdown'
+  /** Written only as `true`: the source's form puts the column's name above its value. */
+  'quac:label_on_top'?: true
 }
 
 /**
