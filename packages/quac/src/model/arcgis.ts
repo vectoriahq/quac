@@ -31,6 +31,14 @@ interface ArcgisLayerBase {
   /** The layer's FeatureServer URL, or null for a layer that has none. */
   layerUrl: string | null
   itemId: string | null
+  /** The Web Map group layers that hold the layer, outermost first. Absent or empty for a layer in no group. */
+  groups?: ArcgisLayerGroup[]
+}
+
+/** A Web Map group layer, by its own id and title. */
+export interface ArcgisLayerGroup {
+  id: string
+  title: string
 }
 
 export interface ArcgisFieldMetadata {

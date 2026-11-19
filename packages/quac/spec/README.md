@@ -55,7 +55,7 @@ A Collection's id is its stable handle within its source: the same layer keeps t
 | A folder of data files | the data file's path inside the folder |
 | A single data file | the file's path as given, or for a file at a web address the file name taken from the address, lower-cased |
 
-A group Catalog's id is slugified from its name, because a group has no id of its own.
+A group Catalog's id is slugified from its name, because a QGIS group has no id of its own. An ArcGIS Web Map's group layer has one, so its Catalog's id is slugified from that id. Where two groups would take the same id, the later one is given `-2`, `-3` and so on.
 
 A field that names another Collection, such as `quac:related_to`, `quac:value_relation` or `quac:active_collection`, names it by this id, never by an id of the source's own.
 
