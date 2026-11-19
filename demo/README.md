@@ -15,10 +15,10 @@ The Street trees layer shows what QUAC carries for a form:
 |---|---|---|
 | `tree_id` | Not null and Unique constraints | `quac:constraints` |
 | `species` | Value Relation to the Species layer | `quac:value_relation` |
-| `height` | Range from 0 to 40 m, and a constraint expression that warns | `quac:range` and `quac:constraints` |
+| `height` | Range from 0 to 40 m, a constraint expression that warns, and a Comment | `quac:range`, `quac:constraints` and the column's `description` |
 | `condition` | Value Map, and a categorised style on the field | the column's `values`, and the style asset's `quac:categorised_field` |
 | `heritage` | Checkbox storing `Y` and `N` | `quac:checkbox` |
 | `planted` | Date/Time, and a default of `now()` | `quac:default` |
-| `removal_reason` | In a Drag and Drop Designer group shown while `"condition" = 'D'` | `quac:visible_when` |
+| `removal_reason` | In a Drag and Drop Designer group shown while `"condition" = 'D'`, with Label on top | `quac:visible_when` and `quac:label_on_top` |
 
 `packages/quac/src/tests/demoCatalogue.test.ts` generates the catalogue from the project and checks every file here against it and against the schema. After a change to the project or the package, `npx vitest run -u src/tests/demoCatalogue.test.ts` in `packages/quac/` rewrites them, to be read as a diff.

@@ -119,6 +119,7 @@
     {
       "name": "height",
       "title": "Height",
+      "description": "Measured from the ground to the top of the crown.",
       "quac:constraints": {
         "expression": {
           "expression": "\"height\" < 40",
@@ -175,6 +176,7 @@
     {
       "name": "removal_reason",
       "title": "Reason for removal",
+      "quac:label_on_top": true,
       "quac:visible_when": [
         "\"condition\" = 'D'"
       ]

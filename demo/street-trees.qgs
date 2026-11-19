@@ -143,6 +143,12 @@
         <alias field="planted" index="5" name="Planted"/>
         <alias field="removal_reason" index="6" name="Reason for removal"/>
       </aliases>
+      <customComments>
+        <customComment field="height" value="Measured from the ground to the top of the crown."/>
+      </customComments>
+      <labelOnTop>
+        <field labelOnTop="1" name="removal_reason"/>
+      </labelOnTop>
       <defaults>
         <default field="planted" expression="now()" applyOnUpdate="0"/>
       </defaults>
