@@ -8,9 +8,10 @@ import {
 } from './arcgisStacCatalogue.ts'
 import { readCollectionScaleRange, readCollectionVisibility } from './normalizedProject.ts'
 import { collectCollectionStyles, getDefaultStyle } from '../model/stacStyles.ts'
-import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
+import { collectCatalogueCollections, listCatalogueChildren } from '../model/stacTreeWalk.ts'
 
 import type { ArcgisLayerSet } from '../model/arcgis.ts'
+import type { StacCatalog } from '../model/Stac.ts'
 
 const BOTANICAL = 'https://services3.arcgis.com/x/arcgis/rest/services/BotanicalSignificance/FeatureServer/0'
 const VEGETATION = 'https://services3.arcgis.com/x/arcgis/rest/services/VegetationZones/FeatureServer/0'
@@ -166,5 +167,52 @@ describe('generateStacCatalogueFromArcgisLayers — geometry types', () => {
       expect(collection).not.toHaveProperty('vector:geometry_types')
       expect(collection.stac_extensions ?? []).not.toContain('https://stac-extensions.github.io/vector/v0.1.0/schema.json')
     }
+  })
+})
+
+describe('a Web Map\'s groups', () => {
+  const property = { id: 'Property-Group', title: 'Property' }
+  const easements = { id: 'easements-group', title: 'Easements' }
+  const shown = (id: string, groups: { id: string, title: string }[]) => ({
+    ...base, id, title: id, groups, status: 'shown' as const, source: { layerUrl: `${BOTANICAL}?${id}`, where: null }, styleHref: null
+  })
+  const grouped: ArcgisLayerSet = {
+    ...layerSet,
+    layers: [
+      shown('trees', []),
+      shown('parcels', [property]),
+      shown('lines', [property, easements]),
+      shown('labels', [property, easements]),
+      shown('roads', [])
+    ]
+  }
+
+  /** Each child as `[kind, id]`, a group with its own children after it. */
+  function tree(catalog: StacCatalog): unknown[] {
+    return listCatalogueChildren(catalog).map((child) => (
+      child.kind === 'collection' ? child.collection.id : [child.catalog.id, child.catalog.title, tree(child.catalog)]
+    ))
+  }
+
+  it('writes each group as a Catalog nested in its parent, keeping the Web Map\'s order', () => {
+    const catalogue = generateStacCatalogueFromArcgisLayers(grouped)
+
+    expect(tree(catalogue)).toEqual([
+      'trees',
+      ['property-group', 'Property', ['parcels', ['easements-group', 'Easements', ['lines', 'labels']]]],
+      'roads'
+    ])
+    expect(collectCatalogueCollections(catalogue).map((collection) => collection.id))
+      .toEqual(['trees', 'parcels', 'lines', 'labels', 'roads'])
+  })
+
+  it('writes a group once per run of its layers when the layers asked for are apart', () => {
+    const catalogue = generateStacCatalogueFromArcgisLayers(grouped, { layerIds: ['parcels', 'trees', 'lines'] })
+
+    expect(tree(catalogue)).toEqual([
+      ['property-group', 'Property', ['parcels']],
+      'trees',
+      ['property-group-2', 'Property', [['easements-group', 'Easements', ['lines']]]]
+    ])
   })
 })

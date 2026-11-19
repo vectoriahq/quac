@@ -2,15 +2,19 @@ import { generateStacFromNormalized, slugify, unionBboxes } from './normalizedPr
 import { DEFAULT_STYLE_ROLE, styleAssetKey } from '../model/stacStyles.ts'
 import { GEOJSON_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
-import type { NormalizedBbox, NormalizedLayer, NormalizedProject } from './normalizedProject.ts'
-import type { ArcgisField, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisResolvedLayer } from '../model/arcgis.ts'
+import type { NormalizedBbox, NormalizedLayer, NormalizedNode, NormalizedProject } from './normalizedProject.ts'
+import type { ArcgisField, ArcgisLayerGroup, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisResolvedLayer } from '../model/arcgis.ts'
 import type { StacAsset, StacCatalog, StacCollection, StacLink, TableColumn, TableColumnType } from '../model/Stac.ts'
 
 /**
  * Generates a STAC Catalog from an ArcGIS Online Web Map or Feature Service,
  * already read down to its layers:
  *   the Web Map or item → top-level Catalog
+ *   each group layer    → nested Catalog
  *   each layer          → Collection
+ *
+ * A layer's groups come from `groups`, outermost first. Layers next to each
+ * other that share a group are written into one Catalog for it.
  *
  * A layer that can be shown carries its FeatureServer layer's address and the
  * Web Map's filter on it, and declares its ArcGIS style as its default style
@@ -76,16 +80,66 @@ export function readArcgisNotShownReason(collection: StacCollection): ArcgisNotS
 function arcgisLayersToNormalized(layerSet: ArcgisLayerSet, options: ArcgisStacCatalogueOptions): NormalizedProject {
   const selected = selectLayers(layerSet.layers, options.layerIds)
   const hasAuthor = layerSet.itemType === 'Web Map'
-  const nodes = selected.map((layer) => arcgisLayerToNormalized(layer, options.layerWgs84Extents?.get(layer.id) ?? null, hasAuthor))
+  const layers = selected.map((layer) => ({
+    groups: layer.groups ?? [],
+    node: arcgisLayerToNormalized(layer, options.layerWgs84Extents?.get(layer.id) ?? null, hasAuthor)
+  }))
   return {
     id: slugify(layerSet.title) || 'arcgis',
     title: layerSet.title,
     description: layerSet.summary ?? `STAC catalogue generated from the ArcGIS Online ${layerSet.itemType} "${layerSet.title}".`,
-    bbox: unionBboxes(nodes.map((node) => node.bbox)),
+    bbox: unionBboxes(layers.map(({ node }) => node.bbox)),
     initialView: options.initialView ?? null,
     vendorFields: layerSet.itemId ? { 'quac:arcgis_item_id': layerSet.itemId } : {},
-    nodes
+    nodes: groupLayers(layers)
   }
+}
+
+interface GroupedLayer {
+  groups: ArcgisLayerGroup[]
+  node: NormalizedLayer
+}
+
+/**
+ * The layers as a tree: each run of layers next to each other that share a
+ * group becomes one group node, nested group by group. A group whose layers
+ * are not next to each other, which a caller's `layerIds` order can give, is
+ * written once per run, each Catalog with an id of its own.
+ */
+function groupLayers(layers: GroupedLayer[]): NormalizedNode[] {
+  const usedIds = new Set<string>()
+  const walk = (run: GroupedLayer[], depth: number): NormalizedNode[] => {
+    const nodes: NormalizedNode[] = []
+    let index = 0
+    while (index < run.length) {
+      const group = run[index].groups[depth]
+      if (!group) {
+        nodes.push(run[index].node)
+        index += 1
+        continue
+      }
+      let end = index + 1
+      while (end < run.length && run[end].groups[depth]?.id === group.id) end += 1
+      nodes.push({
+        kind: 'group',
+        id: uniqueGroupId(slugify(group.id) || 'group', usedIds),
+        title: group.title,
+        description: `Group "${group.title}" of an ArcGIS Online map.`,
+        children: walk(run.slice(index, end), depth + 1)
+      })
+      index = end
+    }
+    return nodes
+  }
+  return walk(layers, 0)
+}
+
+/** `id`, or `id-2`, `id-3` and so on where an earlier group took it. */
+function uniqueGroupId(id: string, usedIds: Set<string>): string {
+  let candidate = id
+  for (let suffix = 2; usedIds.has(candidate); suffix += 1) candidate = `${id}-${suffix}`
+  usedIds.add(candidate)
+  return candidate
 }
 
 /** Resolves the requested ids against the layer set, preserving the caller's order. */

@@ -223,7 +223,7 @@ export type { CatalogueChild } from './model/stacTreeWalk.ts'
 export { setDevLogging } from './util/devLog.ts'
 
 // What an application imports by name, beside the exports above.
-export type { ArcgisCodedValue, ArcgisExtent, ArcgisField, ArcgisFieldMetadata, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisPassthrough, ArcgisRange, ArcgisResolution, ArcgisResolvedLayer } from './model/arcgis.ts'
+export type { ArcgisCodedValue, ArcgisExtent, ArcgisField, ArcgisFieldMetadata, ArcgisLayerGroup, ArcgisLayerSet, ArcgisLayerSource, ArcgisNotShownReason, ArcgisPassthrough, ArcgisRange, ArcgisResolution, ArcgisResolvedLayer } from './model/arcgis.ts'
 export type { OgcCollection, OgcCollectionsDocument, OgcItemType, OgcLink } from './model/ogcFeatures.ts'
 export { WEB_MAP_LINKS_EXTENSION, buildWmsLink, readCollectionWms, wmsEndpoint } from './model/stacWms.ts'
 export type { StacWmsSource } from './model/stacWms.ts'
