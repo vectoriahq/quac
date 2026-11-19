@@ -108,6 +108,11 @@ export interface WmsAttribute {
   precision: number
   /** Editor widget hint from QGIS (e.g. "TextEdit", "Range", "DateTime", "CheckBox"). */
   editType: string
-  /** Optional comment / description from QGIS. */
+  /**
+   * The comment the field's data gives, such as a PostgreSQL column comment:
+   * QGIS Server writes `QgsField::comment()`, not the custom comment a project
+   * sets (`qgswmsgetcapabilities.cpp`, `qgis/QGIS@master`, read 2026-11-19).
+   * Empty where there is none.
+   */
   comment: string
 }

@@ -484,7 +484,8 @@ function qgsLayerToNormalized(
       valueRelations,
       layer.formLayout ?? null,
       layer.fieldIcons,
-      layer.fieldControls
+      layer.fieldControls,
+      layer.fieldComments
     ),
     formOrder: layer.formLayout?.fields.map((field) => field.name),
     assets: buildLayerAssets(layer, projectPath, geometryFilter),
@@ -838,6 +839,7 @@ function unionExtent(layers: LayerEntry[], layerWgs84Extents: Map<string, Boundi
  *                  GeoJSON properties or alias keys, so callers that
  *                  haven't parsed fieldConfiguration still get something)
  * - **title**      from QGIS field aliases when set (non-empty)
+ * - **description** from the field's custom comment in QGIS's Attributes Form
  * - **type**       inferred from every GeoJSON property value when data
  *                  is available; omitted otherwise (QGIS doesn't declare
  *                  field types in the .qgs for WFS layers — the type
@@ -872,6 +874,9 @@ function unionExtent(layers: LayerEntry[], layerWgs84Extents: Map<string, Boundi
  *                  from the layer's `quac_icon_<field>` variable
  * - **quac:control** the control the edit form draws the field's choices
  *                  with, from the layer's `quac_control_<field>` variable
+ * - **quac:label_on_top**
+ *                  that the form puts the field's name above its value,
+ *                  from QGIS's Label on top in the Attributes Form
  *
  * The QGS fieldConfiguration is the source of truth for "what fields
  * exist": this means a hidden WFS layer's schema is fully visible to the
@@ -887,7 +892,8 @@ function deriveTableColumns(
   fieldValueRelations: Record<string, TableColumnValueRelation> = {},
   formLayout: LayerFormLayout | null = null,
   fieldIcons: Record<string, string> = {},
-  fieldControls: Record<string, FieldControl> = {}
+  fieldControls: Record<string, FieldControl> = {},
+  fieldComments: Record<string, string> = {}
 ): TableColumn[] {
   const observedTypes = new Map<string, TableColumnType>()
   const orderedFieldNames: string[] = []
@@ -925,6 +931,8 @@ function deriveTableColumns(
     if (type) column.type = type
     const alias = fieldAliases[name]
     if (alias) column.title = alias
+    const comment = fieldComments[name]
+    if (comment) column.description = comment
     const values = fieldValueMaps[name]
     if (values) column['quac:values'] = values
     const valueRelation = fieldValueRelations[name]
@@ -965,6 +973,7 @@ function deriveTableColumns(
     if (icon) column['quac:icon'] = icon
     const control = fieldControls[name]
     if (control) column['quac:control'] = control
+    if (editRule?.labelOnTop) column['quac:label_on_top'] = true
     if (formLayout) {
       const placed = placedFields.get(name)
       if (!placed) column['quac:in_form'] = false

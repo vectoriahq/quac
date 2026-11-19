@@ -36,6 +36,7 @@
       "readCatalogueInitialView": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionDisplayField": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldAliases": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionFieldComments": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldNames": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldTypes": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldValues": "A reader of a catalogue, for an application, not a producer.",

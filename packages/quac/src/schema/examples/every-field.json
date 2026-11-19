@@ -70,7 +70,9 @@
         },
         {
           "name": "survey_date",
+          "description": "The day of the site visit, not the day the record was typed up",
           "quac:date_format": "dd/MM/yyyy",
+          "quac:label_on_top": true,
           "quac:reuse_last_value": true
         },
         {

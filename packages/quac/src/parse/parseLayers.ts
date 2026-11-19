@@ -129,6 +129,7 @@ function parseMapLayer(maplayer: Element, notes: ProjectNote[]): LayerEntry | nu
     editable: maplayer.getAttribute('readOnly') !== '1',
     fieldNames,
     fieldAliases,
+    fieldComments: parseFieldComments(maplayer),
     ...serverHiddenFieldsOf(maplayer),
     styles,
     activeStyleIndex: activeIndex,
@@ -654,6 +655,15 @@ function parseFieldEditRules(maplayer: Element, note: NoteSink): Record<string, 
     if (reuse) ruleFor(name).reuseLastValue = true
   }
 
+  // QGIS reads the flag as a number, any non-zero one setting it
+  // (`QgsEditFormConfig::readXml`, `src/core/editform/qgseditformconfig.cpp`,
+  // `qgis/QGIS@master`, read 2026-11-19).
+  for (const node of directChild(maplayer, 'labelOnTop')?.querySelectorAll(':scope > field') ?? []) {
+    const name = node.getAttribute('name')
+    const flag = Number(node.getAttribute('labelOnTop'))
+    if (name && Number.isInteger(flag) && flag !== 0) ruleFor(name).labelOnTop = true
+  }
+
   return result
 }
 
@@ -930,6 +940,32 @@ function parseFieldAliases(maplayer: Element): Record<string, string> {
     const name = node.getAttribute('name')
     if (!field || !name) continue
     out[field] = name
+  }
+  return out
+}
+
+/**
+ * Each field's custom comment, from the Attributes Form's Comment, which QGIS
+ * 4.2 and later saves as a direct child of `<maplayer>`:
+ *
+ *   <customComments>
+ *     <customComment field="species" value="As on the tree register"/>
+ *   </customComments>
+ *
+ * (`QgsVectorLayer::readSymbology` and `writeSymbology`,
+ * `src/core/vector/qgsvectorlayer.cpp`, `qgis/QGIS@master`, read 2026-11-19).
+ * A blank comment, which QGIS saves to hide the comment the field's data gives,
+ * is left out: a project file does not carry the data's own comment. Where two
+ * entries name a field, the later stands, as QGIS's map of them keeps it.
+ */
+function parseFieldComments(maplayer: Element): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const node of directChild(maplayer, 'customComments')?.querySelectorAll(':scope > customComment') ?? []) {
+    const field = node.getAttribute('field')
+    if (!field) continue
+    const comment = node.getAttribute('value')?.trim()
+    if (comment) out[field] = comment
+    else delete out[field]
   }
   return out
 }

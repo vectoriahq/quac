@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:label_on_top"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

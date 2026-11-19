@@ -141,6 +141,7 @@ export {
   readCollectionDisplayField,
   readCollectionEditable,
   readCollectionFieldAliases,
+  readCollectionFieldComments,
   readCollectionFieldAttachments,
   readCollectionFieldEditRules,
   readCollectionFieldNames,
