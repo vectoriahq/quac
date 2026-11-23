@@ -68,6 +68,9 @@
       "isQgisPlaceholderDescription": "Used by an application to tell a placeholder description from the project's own.",
       "parseQgisStyleAssetHref": "Takes a style asset's address apart. The plugin's first release serves no style."
     },
+    "generate/serverStacCatalogue.ts": {
+      "withoutHiddenFields": "The served catalogue's hidden-field step, for an application that serves a project's layers itself. The plugin's generate_server_stac_catalogue applies the same rules to every Collection it serves."
+    },
     "generate/wmsStacCatalogue.ts": {
       "generateStacCatalogueFromWms": "The GetProjectSettings producer, the other QGIS Server route. The plugin reads the project's text."
     }
