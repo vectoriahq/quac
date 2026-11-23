@@ -1011,6 +1011,15 @@ export function readCurrentValueFields(node: ExpressionNode): string[] | null {
 }
 
 /**
+ * The fields an expression names, each once, in the order it first names
+ * them.
+ */
+export function readExpressionFields(node: ExpressionNode): string[] {
+  const own = node.kind === 'field' ? [node.name] : []
+  return [...new Set([...own, ...childNodes(node).flatMap(readExpressionFields)])]
+}
+
+/**
  * The `{{field}}` template of a label made only of fields, text and joins, or
  * null where it holds anything else. A template draws a field with no value as
  * blank, which is what `concat` does, so a `||` join is a template only when

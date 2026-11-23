@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { EXPRESSION_VARIABLE, expressionToGeoStylerFunction, LAYER_CRS, readQgisExpression, SHAPE_COORDINATE } from './qgisExpression.ts'
+import { EXPRESSION_VARIABLE, expressionToGeoStylerFunction, LAYER_CRS, readExpressionFields, readQgisExpression, SHAPE_COORDINATE } from './qgisExpression.ts'
 
 function read(expression: string, variables = true) {
   return readQgisExpression(expression, { geometry: true, aggregates: true, lookups: true, variables })
@@ -111,5 +111,12 @@ describe('a coordinate of the record\'s shape', () => {
 
   it('cannot be used by a read of another layer', () => {
     expect(readWith("array_first(overlay_within('zones', \"name\" || $x))")).toBeNull()
+  })
+})
+
+describe('readExpressionFields', () => {
+  it('lists each field an expression names once, in the order it first names them', () => {
+    expect(readExpressionFields(read('"approved" = 1 AND ("status" IN (\'a\', \'b\') OR "approved" IS NULL)')!)).toEqual(['approved', 'status'])
+    expect(readExpressionFields(read('CASE WHEN "a" > 1 THEN upper("b") ELSE -"c" END')!)).toEqual(['a', 'b', 'c'])
   })
 })
