@@ -1,6 +1,6 @@
 import { declaredColumns, readCollectionFieldEditRules, readCollectionFieldTypes, readCollectionFieldValues } from './normalizedProject.ts'
 
-import type { FieldRange } from '../model/QgsProject.ts'
+import type { FieldRange, FieldUuidFormat } from '../model/QgsProject.ts'
 import type { StacCollection } from '../model/Stac.ts'
 
 /**
@@ -134,6 +134,19 @@ export function isOutsideFieldRange(value: unknown, range: Pick<FieldRange, 'min
   const number = Number(typeof value === 'string' ? value.trim() : value)
   if (!Number.isFinite(number)) return false
   return (range.min !== undefined && number < range.min) || (range.max !== undefined && number > range.max)
+}
+
+/**
+ * A new identifier written as QGIS's `uuid()` writes it, for a field whose
+ * default is one: `{…}` with hyphens (`with_braces`), hyphens alone
+ * (`without_braces`), or 32 hex digits (`id128`), as QGIS's `fcnUuid`
+ * (`QgsExpressionFunction`) writes them.
+ */
+export function newQgisUuid(format: FieldUuidFormat): string {
+  const uuid = crypto.randomUUID()
+  if (format === 'without_braces') return uuid
+  if (format === 'id128') return uuid.replaceAll('-', '')
+  return `{${uuid}}`
 }
 
 const KNOWN_TYPES = new Set(['string', 'int', 'long', 'double', 'boolean', 'date', 'time', 'timestamp'])
