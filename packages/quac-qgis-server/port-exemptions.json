@@ -15,11 +15,13 @@
     "parse/qgisExpression.ts": "Reads QGIS expressions, for defaults, constraints and conditional fields, which are not in the first release.",
     "parse/qtDateFormat.ts": "Qt date patterns, for quac:date_format and for evaluating expressions, neither in the first release.",
     "parse/qtRegex.ts": "Qt regular expressions, for evaluating expressions, which the first release does not do.",
+    "parse/sqlFeatureFilter.ts": "Evaluates a GDAL SQL feature filter against features, for an application that hands a layer's data to the public itself. QGIS Server applies a layer's filter when it serves the layer.",
     "generate/arcgisStacCatalogue.ts": "The ArcGIS producer: another kind of source.",
     "generate/externalStacCatalogue.ts": "Reads a STAC catalogue from somewhere else: another kind of source.",
     "generate/fileLayerCollection.ts": "The Collection for a single data file: another kind of source.",
     "generate/folderStacCatalogue.ts": "The folder of data files producer: another kind of source.",
     "generate/ogcFeaturesStacCatalogue.ts": "The OGC API Features producer: another kind of source.",
+    "generate/publishLayer.ts": "Publishes a layer's features as QGIS Server would, for an application that hands a layer's data to the public itself. The plugin's catalogue points at QGIS Server, which publishes the features.",
     "generate/qmlForLayer.ts": "Rebuilds a layer's QML style. The plugin's first release serves no style.",
     "generate/wfsStacCatalogue.ts": "The WFS producer: another kind of source."
   },
