@@ -589,7 +589,7 @@ export function readCollectionDisplayField(collection: StacCollection): string |
  * non-blank `name`, as `[trimmed name, column]`, in declared order. An entry
  * of any other shape, or a `table:columns` that is not a list, yields nothing.
  */
-function* declaredColumns(collection: StacCollection): Generator<[string, Record<string, unknown>]> {
+export function* declaredColumns(collection: StacCollection): Generator<[string, Record<string, unknown>]> {
   const columns = collection['table:columns']
   if (!Array.isArray(columns)) return
   for (const column of columns) {
