@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isBlankFieldValue, isOutsideFieldRange, validateNewFeature } from './validateNewFeature.ts'
+import { isBlankFieldValue, isOutsideFieldRange, readNewFeatureFields, validateNewFeature } from './validateNewFeature.ts'
 
 import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
@@ -146,6 +146,19 @@ describe('validateNewFeature', () => {
   it('reads a feature with no properties as all blank', () => {
     const collection = layer({ name: 'comment', 'quac:constraints': { not_null: 'enforced' } })
     expect(validateNewFeature(collection, null).problems).toEqual([{ field: 'comment', problem: 'required' }])
+  })
+})
+
+describe('readNewFeatureFields', () => {
+  it('lists the fields a form for a new feature can fill, in the layer\'s order', () => {
+    const collection = layer(
+      { name: 'comment' },
+      { name: 'created', 'quac:editable': false },
+      { name: 'internal', 'quac:hidden': true },
+      { name: 'unplaced', 'quac:in_form': false },
+      { name: 'rating', type: 'int' }
+    )
+    expect(readNewFeatureFields(collection)).toEqual(['comment', 'rating'])
   })
 })
 

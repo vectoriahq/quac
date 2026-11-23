@@ -68,13 +68,13 @@ export function validateNewFeature(collection: StacCollection, properties: Prope
   const unchecked: NewFeatureCheck['unchecked'] = []
   const known = new Set<string>()
 
+  const fillable = new Set(readNewFeatureFields(collection))
   for (const [field, column] of declaredColumns(collection)) {
     known.add(field)
     const rule = rules[field]
     const value = values[field]
     const blank = isBlankFieldValue(value)
-    const fillable = !rule?.readOnly && !rule?.hidden && column['quac:in_form'] !== false
-    if (!fillable) {
+    if (!fillable.has(field)) {
       if (!blank) problems.push({ field, problem: 'not-fillable' })
       continue
     }
@@ -100,6 +100,18 @@ export function validateNewFeature(collection: StacCollection, properties: Prope
     if (!known.has(field)) problems.push({ field, problem: 'unknown-field' })
   }
   return { problems, unchecked }
+}
+
+/**
+ * The fields a form for a new feature can fill, in the layer's field order:
+ * each declared field that is not read-only, is shown by the form, and is
+ * placed by the form layout where the layer has one.
+ */
+export function readNewFeatureFields(collection: StacCollection): string[] {
+  const rules = readCollectionFieldEditRules(collection)
+  return Array.from(declaredColumns(collection))
+    .filter(([field, column]) => !rules[field]?.readOnly && !rules[field]?.hidden && column['quac:in_form'] !== false)
+    .map(([field]) => field)
 }
 
 /** A field with no value: null, absent, or text that is only spaces. Not null refuses one. */
