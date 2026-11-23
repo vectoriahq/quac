@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isBlankFieldValue, isOutsideFieldRange, readNewFeatureFields, validateNewFeature } from './validateNewFeature.ts'
+import { isBlankFieldValue, isOutsideFieldRange, newQgisUuid, readNewFeatureFields, validateNewFeature } from './validateNewFeature.ts'
 
 import type { StacCollection, TableColumn } from '../model/Stac.ts'
 
@@ -176,5 +176,14 @@ describe('isOutsideFieldRange', () => {
     expect(isOutsideFieldRange(null, { min: 1 })).toBe(false)
     expect(isOutsideFieldRange(true, { max: 0 })).toBe(false)
     expect(isOutsideFieldRange('many', { max: 0 })).toBe(false)
+  })
+})
+
+describe('newQgisUuid', () => {
+  it('writes a new identifier in each of the formats QGIS\'s uuid() takes', () => {
+    expect(newQgisUuid('with_braces')).toMatch(/^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/)
+    expect(newQgisUuid('without_braces')).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    expect(newQgisUuid('id128')).toMatch(/^[0-9a-f]{32}$/)
+    expect(newQgisUuid('id128')).not.toBe(newQgisUuid('id128'))
   })
 })
