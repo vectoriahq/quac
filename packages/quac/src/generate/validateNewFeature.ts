@@ -54,6 +54,11 @@ type Properties = Readonly<Record<string, unknown>>
  * Checkbox spelling, and its range. A rule that needs more than the Collection
  * to check is listed in `unchecked`, not passed.
  *
+ * It checks only what the Collection carries. A catalogue generated from a
+ * QGIS project leaves out a setting it cannot read, such as a constraint
+ * expression `readQgisExpression` cannot read, and lists it in the project's
+ * `notes`, which a caller reads as well.
+ *
  * A Collection that declares no fields refuses every value. A warning
  * (`warn`) constraint refuses nothing, as QGIS saves past it. Values are
  * checked as stored, with no conversion: a number field takes a number, not
