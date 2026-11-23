@@ -23,6 +23,7 @@
     "generate/ogcFeaturesStacCatalogue.ts": "The OGC API Features producer: another kind of source.",
     "generate/publishLayer.ts": "Publishes a layer's features as QGIS Server would, for an application that hands a layer's data to the public itself. The plugin's catalogue points at QGIS Server, which publishes the features.",
     "generate/qmlForLayer.ts": "Rebuilds a layer's QML style. The plugin's first release serves no style.",
+    "generate/validateNewFeature.ts": "Checks a new feature against a layer's field rules, for an application that adds features to a layer from a form it does not draw itself. The plugin's catalogue points at QGIS Server, which takes WFS transactions itself.",
     "generate/wfsStacCatalogue.ts": "The WFS producer: another kind of source."
   },
   "functions": {

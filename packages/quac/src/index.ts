@@ -98,6 +98,8 @@ export { readSqlFeatureTest } from './parse/sqlFeatureFilter.ts'
 export type { FeatureTest } from './parse/sqlFeatureFilter.ts'
 export { publishLayerFeatures } from './generate/publishLayer.ts'
 export type { PublishedLayer, PublishRefusal } from './generate/publishLayer.ts'
+export { validateNewFeature, isBlankFieldValue, isOutsideFieldRange } from './generate/validateNewFeature.ts'
+export type { NewFeatureCheck, NewFeatureProblem, UncheckedFieldRule } from './generate/validateNewFeature.ts'
 export type { FeatureFilter, FeatureFilterDialect } from './model/featureFilter.ts'
 export type { DelimitedTextOptions } from './model/delimitedText.ts'
 export {
