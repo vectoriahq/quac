@@ -1,6 +1,6 @@
 import { buildStacExtent, unionBboxes, withDataType } from './normalizedProject.ts'
 import { serverLayerTree, wmsPublishedLayerIds } from './serverLayerTree.ts'
-import { generateStacCatalogue } from './stacCatalogue.ts'
+import { generateStacCatalogue, QUAC_CATEGORISED_FIELD } from './stacCatalogue.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { mapQtTypeToStacTableType } from './wmsStacCatalogue.ts'
 import { declareQuacExtension, QUAC_SCHEMA_URL } from '../model/quacExtension.ts'
@@ -9,7 +9,7 @@ import { catalogueFolder } from '../model/stacTreeWalk.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS } from '../model/stacWms.ts'
 
 import type { BoundingBox, LayerEntry, QgsProject } from '../model/QgsProject.ts'
-import type { StacCatalog, StacCollection, StacLink, TableColumn } from '../model/Stac.ts'
+import type { StacAsset, StacCatalog, StacCollection, StacLink, TableColumn } from '../model/Stac.ts'
 
 /**
  * The catalogue a QGIS Server would serve for a project: the QUAC plugin's
@@ -195,7 +195,7 @@ function hiddenFieldsOf(layer: LayerEntry | undefined): Set<string> {
  * It errs towards yes: a word inside a string literal that matches a field name
  * counts, so a hidden name is never kept by mistake.
  */
-function mentionsAny(expression: unknown, fields: Set<string>): boolean {
+function mentionsAny(expression: unknown, fields: ReadonlySet<string>): boolean {
   if (typeof expression !== 'string' || fields.size === 0) return false
   for (const field of fields) {
     const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -209,8 +209,6 @@ const SOURCE_FIELDS = ['quac:wfs_endpoint', 'quac:wfs_type_name', 'quac:wfs_srs_
 
 function serveCollection(source: StacCollection, context: ServeContext): StacCollection {
   const layerId = source.id
-  const layer = context.layersById.get(layerId)
-  const hidden = hiddenFieldsOf(layer)
   const wmsName = context.servedIds.get(layerId)!
   const wfsTypeName = context.wfsPublished.has(layerId) ? source['quac:qgis_server_wfs_type_name'] : undefined
 
@@ -235,12 +233,46 @@ function serveCollection(source: StacCollection, context: ServeContext): StacCol
   if (extensions.length > 0) collection.stac_extensions = extensions
   else delete collection.stac_extensions
 
+  const shown = withoutHiddenFields(collection, layerId, {
+    hiddenOf: (id) => hiddenFieldsOf(context.layersById.get(id)),
+    servedId: (id) => context.servedIds.get(id) ?? null
+  })
+  serveFieldTypes(shown, context.fieldTypes[layerId] ?? {})
+  return shown
+}
+
+/**
+ * How `withoutHiddenFields` reads the other layers a Collection refers to: the
+ * fields a layer hides, by its project layer id, and the id a layer is served
+ * under, or null where it is not served.
+ */
+export interface HiddenFieldContext {
+  hiddenOf: (layerId: string) => ReadonlySet<string>
+  servedId: (layerId: string) => string | null
+}
+
+/**
+ * A layer's Collection with every mention of the fields it hides from WMS or
+ * WFS dropped, as QGIS Server leaves them out of what it serves: its columns,
+ * its form order, its preset filters, its display field, a style's categorised
+ * field, a relation joined on a hidden field, and any expression that uses one.
+ * A lock whose expression uses one becomes `true`, and a field editable only
+ * while such an expression holds becomes read-only, so that hiding a field
+ * never unlocks an edit. A relation or Value Relation to a layer that is not
+ * served is dropped, and one to a served layer names it by its served id. For
+ * an application that serves a project's layers itself, as
+ * `generateServerStacCatalogue` does for QGIS Server.
+ */
+export function withoutHiddenFields(source: StacCollection, layerId: string, context: HiddenFieldContext): StacCollection {
+  const collection: StacCollection = { ...source }
+  const hidden = new Set(context.hiddenOf(layerId))
   if (hidden.has(String(collection['quac:display_field']))) delete collection['quac:display_field']
   serveFormOrder(collection, hidden)
   serveFilters(collection, hidden)
   serveRelations(collection, hidden, context)
   serveLocks(collection, hidden)
-  serveColumns(collection, hidden, context, layerId)
+  serveColumns(collection, hidden, context)
+  serveStyleFields(collection, hidden)
   return collection
 }
 
@@ -257,13 +289,13 @@ function serveFilters(collection: StacCollection, hidden: Set<string>): void {
   else delete collection['quac:filters']
 }
 
-function serveRelations(collection: StacCollection, hidden: Set<string>, context: ServeContext): void {
+function serveRelations(collection: StacCollection, hidden: Set<string>, context: HiddenFieldContext): void {
   const relations = collection['quac:related_to']
   if (!Array.isArray(relations)) return
   const kept = relations.flatMap((relation: { parent_collection_id: string; fields: Array<{ parent: string; child: string }> }) => {
-    const parentId = context.servedIds.get(relation.parent_collection_id)
+    const parentId = context.servedId(relation.parent_collection_id)
     if (!parentId) return []
-    const parentHidden = hiddenFieldsOf(context.layersById.get(relation.parent_collection_id))
+    const parentHidden = context.hiddenOf(relation.parent_collection_id)
     if (relation.fields.some((pair) => hidden.has(pair.child) || parentHidden.has(pair.parent))) return []
     return [{ ...relation, parent_collection_id: parentId }]
   })
@@ -281,15 +313,34 @@ function serveLocks(collection: StacCollection, hidden: Set<string>): void {
   collection['quac:locks'] = served
 }
 
-function serveColumns(collection: StacCollection, hidden: Set<string>, context: ServeContext, layerId: string): void {
+function serveColumns(collection: StacCollection, hidden: Set<string>, context: HiddenFieldContext): void {
   const columns = collection['table:columns']
   if (!Array.isArray(columns)) return
-  const fieldTypes = context.fieldTypes[layerId] ?? {}
   const kept = (columns as TableColumn[])
     .filter((column) => !hidden.has(column.name))
-    .map((column) => withFieldType(serveColumn(column, hidden, context), fieldTypes[column.name]))
+    .map((column) => serveColumn(column, hidden, context))
   if (kept.length > 0) collection['table:columns'] = kept
   else delete collection['table:columns']
+}
+
+/** Each column with the `type` QGIS Server reports for its field (`withFieldType`). */
+function serveFieldTypes(collection: StacCollection, fieldTypes: Record<string, QgisFieldType>): void {
+  const columns = collection['table:columns']
+  if (Array.isArray(columns)) collection['table:columns'] = (columns as TableColumn[]).map((column) => withFieldType(column, fieldTypes[column.name]))
+}
+
+/** A style asset's categorised field, dropped where the layer hides it. */
+function serveStyleFields(collection: StacCollection, hidden: Set<string>): void {
+  if (!collection.assets) return
+  const assets: Record<string, StacAsset> = {}
+  for (const [key, asset] of Object.entries(collection.assets)) {
+    if (hidden.has(String(asset[QUAC_CATEGORISED_FIELD]))) {
+      const served = { ...asset }
+      delete served[QUAC_CATEGORISED_FIELD]
+      assets[key] = served
+    } else assets[key] = asset
+  }
+  collection.assets = assets
 }
 
 /** The column with the `type` QGIS Server reports for its field, and the `data_type` beside it, where QGIS Server reports one. */
@@ -298,7 +349,7 @@ function withFieldType(column: TableColumn, fieldType: QgisFieldType | undefined
   return type ? withDataType({ ...column, type }) : column
 }
 
-function serveColumn(source: TableColumn, hidden: Set<string>, context: ServeContext): TableColumn {
+function serveColumn(source: TableColumn, hidden: Set<string>, context: HiddenFieldContext): TableColumn {
   const column: Record<string, unknown> = { ...source }
 
   const visibleWhen = column['quac:visible_when']
@@ -335,8 +386,8 @@ function serveColumn(source: TableColumn, hidden: Set<string>, context: ServeCon
 
   const relation = column['quac:value_relation'] as { collection: string; key: string; value: string; filter?: string; order_field?: string } | undefined
   if (relation) {
-    const lookupId = context.servedIds.get(relation.collection)
-    const lookupHidden = hiddenFieldsOf(context.layersById.get(relation.collection))
+    const lookupId = context.servedId(relation.collection)
+    const lookupHidden = context.hiddenOf(relation.collection)
     const usesHidden = [relation.key, relation.value, relation.order_field].some((field) => field !== undefined && lookupHidden.has(field))
       || mentionsAny(relation.filter, lookupHidden)
       || mentionsAny(relation.filter, hidden)
