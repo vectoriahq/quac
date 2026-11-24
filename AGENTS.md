@@ -23,7 +23,7 @@ The first runs the JavaScript tests, the second checks the JavaScript's types, a
 
 `RELEASING.md` says how the JavaScript package, the QGIS plugin, and the schema and site are published.
 
-When a release needs a person to publish it, hand them the tag, the target, the title (the tag, typed out), the notes to paste and the boxes to tick, not only a link; `RELEASING.md` § "The title and the notes" says what goes in each.
+When a release needs a person to publish it, hand them a link to the new-release form with the tag, the target, the title and the notes filled in, and the same fields typed out: the tag, the target, the title (the tag, typed out), the notes to paste and the box to tick. `RELEASING.md` § "The title and the notes" says what goes in each and how the link fills them in.
 
 ## Keeping the two implementations in agreement
 
