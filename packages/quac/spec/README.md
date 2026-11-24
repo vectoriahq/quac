@@ -8,6 +8,8 @@ QUAC is pre-1.0, and any field may change before 1.0. The schema is [`../src/sch
 
 **A source is a Catalog.** A layer is a Collection, and a group of layers is a Catalog nested inside its parent. There are no Items: a layer's features are fetched as a whole, not catalogued one by one.
 
+**A QGIS project's layers and groups listed under Exclude layers** (Project Properties → QGIS Server → WMS capabilities) **are not in its catalogue**, whether it is built from the project file or served by QGIS Server, and neither is any layer inside such a group. A field that would name one, such as `quac:related_to`, `quac:value_relation` or `quac:active_collection`, is not written.
+
 **Children are inlined.** A Catalog carries its child Collections in a `collections` array and its child Catalogs in a `catalogs` array, so one document holds the whole tree. It may also carry `rel: "child"` links to where each child would sit as a separate document. A reader takes the inlined children and does not follow the `child` links of a child it already holds.
 
 **Every relative href starts from the top-level document**, the one that holds the tree: it is a URI reference against that document's `self` link. That holds inside an inlined Collection or Catalog too, for its `self`, `parent`, `root` and `child` links, its assets and its other links alike. An inlined child's `self` link names where it would sit as a file of its own, inside its parent Catalog's folder: `collections/<id>.json` for a Collection and `catalogs/<id>/catalog.json` for a group, so a Collection in a group `water` at the top level is `./catalogs/water/collections/<id>.json`. A child written out as a file of its own has its relative hrefs rewritten from that file.
@@ -194,7 +196,7 @@ Written by: WFS. Stable. Examples: `"urn:ogc:def:crs:EPSG::7855"`, `["urn:ogc:de
 
 The names QGIS Server gives the layer, so an application reading QGIS Server beside the catalogue can match its layers to the Collections. Unlike `quac:wfs_type_name`, they do not say the layer is read from WFS.
 
-- **`quac:qgis_server_wms_name`** is the layer's WMS name, which QGIS Server lists as its `<Name>`. From a project it is worked out as QGIS Server does (`QgsWmsLayerInfos::buildWmsLayerInfos`, `qgswmslayerinfos.cpp`, `qgis/QGIS@master`, read 2026-11-03): the layer id where the project ticks **Use layer ids as names**, else the layer's **Short name**, else its name. Absent for a layer the project leaves out of WMS.
+- **`quac:qgis_server_wms_name`** is the layer's WMS name, which QGIS Server lists as its `<Name>`. From a project it is worked out as QGIS Server does (`QgsWmsLayerInfos::buildWmsLayerInfos`, `qgswmslayerinfos.cpp`, `qgis/QGIS@master`, read 2026-11-03): the layer id where the project ticks **Use layer ids as names**, else the layer's **Short name**, else its name.
 - **`quac:qgis_server_wfs_type_name`** is the WFS type name, for a layer the project publishes for WFS. From a project it is the short name or else the name, with each space made `_` and each `:` and em dash made `-` (`QgsMapLayerServerProperties::wfsTypeName`). From QGIS Server it is the type name the WFS capabilities confirm.
 
 A file the project splits into a layer per shape gets neither, because QGIS Server names each of those layers separately. Two layers with the same name or short name get the same name here; QGIS's own server check reports that as an error (`QgsProjectServerValidator`).

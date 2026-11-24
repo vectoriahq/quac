@@ -7,6 +7,7 @@ import unittest
 
 from quac_server import generate_server_stac_catalogue, parse_qgs_xml
 from quac_server.generate.server_stac_catalogue import server_wms_endpoint
+from quac_server.generate.stac_catalogue import generate_stac_catalogue, wms_excluded_layer_ids
 from quac_server.parse.parse_data_source import parse_data_source
 
 from .declared import FIXTURES
@@ -86,3 +87,30 @@ class DataSourceKinds(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class LeftOutOfWms(unittest.TestCase):
+    """The project file's catalogue leaves out what Exclude layers lists, as `stacCatalogue.test.ts` checks the JavaScript."""
+
+    def _collection_ids(self, catalogue: dict) -> list[str]:
+        ids = [collection['id'] for collection in catalogue.get('collections') or []]
+        for child in catalogue.get('catalogs') or []:
+            ids.extend(self._collection_ids(child))
+        return ids
+
+    def test_leaves_out_a_listed_group_with_every_layer_inside_it(self) -> None:
+        project = parse_qgs_xml((FIXTURES / 'server-groups' / 'groups.qgs').read_text(encoding='utf-8'))
+        staff_notes = next(layer for layer in project.layers if layer.name == 'Staff notes')
+        catalogue = generate_stac_catalogue(project)
+        self.assertEqual(wms_excluded_layer_ids(project), {staff_notes.id})
+        self.assertNotIn(staff_notes.id, self._collection_ids(catalogue))
+        self.assertNotIn('Internal', [child.get('title') for child in catalogue.get('catalogs') or []])
+
+    def test_drops_a_value_relation_to_a_layer_it_leaves_out(self) -> None:
+        project = parse_qgs_xml((FIXTURES / 'server-publishing' / 'publishing.qgs').read_text(encoding='utf-8'))
+        zones = next(layer for layer in project.layers if layer.name == 'Zones')
+        parcels = next(layer for layer in project.layers if layer.name == 'Parcels')
+        catalogue = generate_stac_catalogue(project)
+        self.assertNotIn(zones.id, self._collection_ids(catalogue))
+        collection = next(c for c in catalogue.get('collections') or [] if c['id'] == parcels.id)
+        self.assertNotIn(zones.id, json.dumps(collection))

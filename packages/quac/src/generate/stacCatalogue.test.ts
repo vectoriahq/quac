@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { QUAC_ACTIVE_COLLECTION_FIELD, QUAC_FILTERS_FIELD, QUAC_LOCKS_FIELD, readCatalogueActiveCollection, readCollectionFilters, readCollectionLocks, readCatalogueInitialView, readCollectionFieldAliases,
   readCollectionFieldComments, readCollectionOpacity } from './normalizedProject.ts'
-import { generateStacCatalogue, parseQgisStyleAssetHref, QUAC_GEOMETRY_FILTER, readCollectionGeometryFilter } from './stacCatalogue.ts'
+import { generateStacCatalogue, parseQgisStyleAssetHref, QUAC_GEOMETRY_FILTER, readCollectionGeometryFilter, wmsExcludedLayerIds } from './stacCatalogue.ts'
 import { QUAC_DELIMITED_TEXT, readCollectionDelimitedText } from '../model/delimitedText.ts'
 import { QUAC_FEATURE_FILTER, readCollectionFeatureFilter } from '../model/featureFilter.ts'
 import { readCollectionDataPath } from '../model/stacHref.ts'
@@ -15,6 +15,8 @@ import annotationsXml from '../tests/fixtures/qgis/geometry-sublayers/annotation
 import graffitiGeoJson from '../tests/fixtures/qgis/graffiti/graffiti.json?raw'
 import fixtureXml from '../tests/fixtures/qgis/graffiti/graffiti.qgs?raw'
 import treesXml from '../tests/fixtures/qgis/related-datasets/street-trees.qgs?raw'
+import groupsXml from '../tests/fixtures/qgis/server-groups/groups.qgs?raw'
+import publishingXml from '../tests/fixtures/qgis/server-publishing/publishing.qgs?raw'
 import { annotationsProjectWith } from '../tests/geometrySublayersFixture.ts'
 
 import type { LayerEntry, QgsProject } from '../model/QgsProject.ts'
@@ -367,11 +369,6 @@ describe('generateStacCatalogue — the names QGIS Server gives a layer', () => 
   it('writes the layer id where the project ticks Use layer ids as names', () => {
     const graffiti = graffitiWith({ wmsPublishing: { useLayerIds: true, restrictedLayers: [] } }, { shortName: 'graffiti' })
     expect(graffiti['quac:qgis_server_wms_name']).toBe(graffitiLayer.id)
-  })
-
-  it('writes no WMS name for a layer the project leaves out of WMS', () => {
-    const graffiti = graffitiWith({ wmsPublishing: { useLayerIds: false, restrictedLayers: ['Graffiti Reports'] } })
-    expect(graffiti).not.toHaveProperty('quac:qgis_server_wms_name')
   })
 
   it('writes the WFS type name of a layer published for WFS, as QGIS Server spells it', () => {
@@ -1055,5 +1052,56 @@ describe('generateStacCatalogue — a layer the layers panel does not list', () 
     const titles = collectCatalogueCollections(generateStacCatalogue(unlisted)).map((collection) => collection.title)
 
     expect(titles).toEqual(['Schools', 'Graffiti Reports'])
+  })
+})
+
+describe('generateStacCatalogue — layers left out of WMS', () => {
+  const restricting = (names: string[], changes: Partial<QgsProject> = {}): QgsProject => ({
+    ...project,
+    ...changes,
+    wmsPublishing: { useLayerIds: false, restrictedLayers: names }
+  })
+  const collectionIds = (catalogue: ReturnType<typeof generateStacCatalogue>) => collectCatalogueCollections(catalogue).map((c) => c.id)
+
+  it('leaves out a layer listed under Exclude layers, and keeps the others', () => {
+    const ids = collectionIds(generateStacCatalogue(restricting(['Graffiti Reports'])))
+    expect(ids).not.toContain(graffitiLayer.id)
+    expect(ids).toContain(schoolsLayer.id)
+  })
+
+  it('leaves out a listed layer that the layers panel does not list', () => {
+    const unlisted = restricting(['Graffiti Reports'], { layerTree: { ...project.layerTree, children: [] } })
+    expect(collectionIds(generateStacCatalogue(unlisted))).toEqual([schoolsLayer.id])
+  })
+
+  it('leaves out nothing for a name no layer or group has', () => {
+    expect(collectionIds(generateStacCatalogue(restricting(['Nothing by this name']))))
+      .toEqual(collectionIds(generateStacCatalogue(project)))
+  })
+
+  it('drops the initial active layer where it is left out', () => {
+    const catalogue = generateStacCatalogue(restricting(['Graffiti Reports'], { initialActiveLayerId: graffitiLayer.id }))
+    expect(catalogue).not.toHaveProperty(QUAC_ACTIVE_COLLECTION_FIELD)
+  })
+
+  it('leaves out a listed group with every layer inside it', () => {
+    const groups = parseQgsXml(groupsXml)
+    const staffNotes = groups.layers.find((layer) => layer.name === 'Staff notes')!
+    const catalogue = generateStacCatalogue(groups)
+    expect(wmsExcludedLayerIds(groups)).toEqual(new Set([staffNotes.id]))
+    expect(collectionIds(catalogue)).not.toContain(staffNotes.id)
+    expect((catalogue.catalogs ?? []).map((catalog) => catalog.title)).not.toContain('Internal')
+  })
+
+  it('drops a relation and a Value Relation to a layer it leaves out', () => {
+    const publishing = parseQgsXml(publishingXml)
+    const zones = publishing.layers.find((layer) => layer.name === 'Zones')!
+    const parcelsLayer = publishing.layers.find((layer) => layer.name === 'Parcels')!
+    const collections = collectCatalogueCollections(generateStacCatalogue(publishing))
+    const parcels = collections.find((c) => c.id === parcelsLayer.id)!
+    expect(collections.map((c) => c.id)).not.toContain(zones.id)
+    expect(JSON.stringify(parcels)).not.toContain(zones.id)
+    const zoneCode = (parcels['table:columns'] as TableColumn[]).find((column) => column.name === 'zone_code')!
+    expect(zoneCode).not.toHaveProperty('quac:value_relation')
   })
 })

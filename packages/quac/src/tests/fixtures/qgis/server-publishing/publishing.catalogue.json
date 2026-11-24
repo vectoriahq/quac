@@ -27,12 +27,6 @@
     },
     {
       "rel": "child",
-      "href": "./collections/zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03.json",
-      "type": "application/json",
-      "title": "Zones"
-    },
-    {
-      "rel": "child",
       "href": "./collections/assets_c5f6a7b2_3d4e_4f5a_8b1c_4d5e6f7a8b04.json",
       "type": "application/json",
       "title": "Assets"
@@ -106,19 +100,6 @@
       "quac:editable": true,
       "quac:identifiable": true,
       "quac:opacity": 1,
-      "quac:related_to": [
-        {
-          "id": "parcels_zone",
-          "name": "Zone",
-          "parent_collection_id": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
-          "fields": [
-            {
-              "parent": "code",
-              "child": "zone_code"
-            }
-          ]
-        }
-      ],
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
@@ -135,12 +116,7 @@
           "name": "parcel_id"
         },
         {
-          "name": "zone_code",
-          "quac:value_relation": {
-            "collection": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
-            "key": "code",
-            "value": "label"
-          }
+          "name": "zone_code"
         },
         {
           "name": "owner_phone"
@@ -233,83 +209,6 @@
         },
         {
           "name": "note"
-        }
-      ]
-    },
-    {
-      "type": "Collection",
-      "stac_version": "1.1.0",
-      "id": "zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03",
-      "title": "Zones",
-      "description": "Layer \"Zones\" from the QGIS project.",
-      "license": "other",
-      "extent": {
-        "spatial": {
-          "bbox": [
-            [
-              -180,
-              -90,
-              180,
-              90
-            ]
-          ]
-        },
-        "temporal": {
-          "interval": [
-            [
-              null,
-              null
-            ]
-          ]
-        }
-      },
-      "assets": {
-        "data": {
-          "href": "./zones.geojson",
-          "type": "application/geo+json",
-          "title": "zones.geojson",
-          "roles": [
-            "data"
-          ],
-          "proj:code": "EPSG:4326"
-        }
-      },
-      "links": [
-        {
-          "rel": "self",
-          "href": "./collections/zones_b4e5f6a1_2c3d_4e5f_9a0b_3c4d5e6f7a03.json"
-        },
-        {
-          "rel": "parent",
-          "href": "./catalog.json"
-        },
-        {
-          "rel": "root",
-          "href": "./catalog.json"
-        },
-        {
-          "rel": "via",
-          "href": "./publishing.qgs",
-          "title": "QGIS project"
-        }
-      ],
-      "quac:display_field": "label",
-      "quac:visibility_checked": true,
-      "quac:editable": true,
-      "quac:identifiable": true,
-      "quac:opacity": 1,
-      "stac_extensions": [
-        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
-        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
-      ],
-      "quac:qgis_server_wfs_type_name": "Zones",
-      "table:columns": [
-        {
-          "name": "code"
-        },
-        {
-          "name": "label"
         }
       ]
     },

@@ -9,3 +9,5 @@ The layers and their settings, in QGIS's own words (`src/ui/qgsprojectproperties
 | Water: bores | Water | **Published** under WFS or OAPIF capabilities, with Update; `owner` listed in the layer's `excludeAttributesWFS`, as QGIS 3.14 and older saved **Do not expose via WFS** | WMS name `Water: bores`, WFS type name `Water-_bores`, `owner` hidden from WFS |
 | Sites | Monitoring, inside Water | Short name `monitoring_sites`; `contact` set to **Do not expose via WMS** and **Do not expose via WFS** | WMS name `monitoring_sites`, not published for WFS, `contact` hidden from both |
 | Staff notes | Internal | The group Internal listed under **Exclude layers** in WMS capabilities; the layer **Published** for WFS; `author` listed in `excludeAttributesWMS` | no WMS name, WFS type name `Staff_notes`, `author` hidden from WMS |
+
+The project file's catalogue (`groups.catalogue.json`) leaves out the group Internal and Staff notes inside it, as the server's does.

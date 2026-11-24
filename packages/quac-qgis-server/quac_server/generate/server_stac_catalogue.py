@@ -68,7 +68,6 @@ def generate_server_stac_catalogue(
         raise ValueError('The server address must be an http or https address with a host, and hold no user name, password, space or control character, in its query either.')
     extents = layer_wgs84_extents or {}
     catalogue = generate_stac_catalogue(project, extents)
-    restricted = set(project.wms_publishing.restricted_layers if project.wms_publishing else [])
     served_layer_ids = wms_published_layer_ids(server_layer_tree(project))
 
     served_ids: dict[str, str] = {}
@@ -95,7 +94,7 @@ def generate_server_stac_catalogue(
 
     def serve_catalog(node: dict[str, Any]) -> dict[str, Any]:
         collections = [_serve_collection(collection, context) for collection in node.get('collections') or [] if collection['id'] in served_ids]
-        catalogs = [serve_catalog(child) for child in node.get('catalogs') or [] if (child.get('title') or '') not in restricted]
+        catalogs = [serve_catalog(child) for child in node.get('catalogs') or []]
         served = {key: value for key, value in node.items() if key not in ('collections', 'catalogs', 'stac_extensions')}
         served['links'] = [*(link for link in node['links'] if link['rel'] != 'child'), *_child_links(catalogue_folder(node) or './', collections, catalogs)]
         if collections:
