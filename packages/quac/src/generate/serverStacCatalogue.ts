@@ -21,7 +21,8 @@ import type { StacAsset, StacCatalog, StacCollection, StacLink, TableColumn } fr
  * does:
  *
  * - A layer or group whose name the project leaves out of WMS
- *   (`WMSRestrictedLayers`) is left out, with every layer inside the group. A
+ *   (`WMSRestrictedLayers`) is left out, with every layer inside the group, as
+ *   `generateStacCatalogue` already leaves it out. A
  *   layer published for WFS but left out of WMS is left out too, because a
  *   server's Collection id is the WMS name (D1). A file the project splits into
  *   a layer per shape is left out: the project route writes it as one
@@ -63,7 +64,6 @@ export function generateServerStacCatalogue(project: QgsProject, options: Server
   const layerWgs84Extents = options.layerWgs84Extents ?? {}
   const catalogue = generateStacCatalogue(project, [], { layerWgs84Extents: new Map(Object.entries(layerWgs84Extents)) })
   const layersById = new Map(project.layers.map((layer) => [layer.id, layer]))
-  const restricted = new Set(project.wmsPublishing?.restrictedLayers ?? [])
   const servedLayerIds = wmsPublishedLayerIds(serverLayerTree(project))
   const wfsPublished = new Set(project.wfsTransactionLayers?.published ?? [])
 
@@ -89,7 +89,7 @@ export function generateServerStacCatalogue(project: QgsProject, options: Server
 
   const serveCatalog = (node: StacCatalog): StacCatalog => {
     const collections = (node.collections ?? []).filter((collection) => servedIds.has(collection.id)).map((collection) => serveCollection(collection, context))
-    const catalogs = (node.catalogs ?? []).filter((child) => !restricted.has(child.title ?? '')).map(serveCatalog)
+    const catalogs = (node.catalogs ?? []).map(serveCatalog)
     const served: StacCatalog = { ...node, links: [...node.links.filter((link) => link.rel !== 'child'), ...childLinks(catalogueFolder(node) ?? './', collections, catalogs)] }
     delete served.collections
     delete served.catalogs

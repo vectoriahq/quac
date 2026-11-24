@@ -21,7 +21,7 @@ import { findValueRelationLookup, isFilterInProject, isRelationInProject } from 
 import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
 
 import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject.ts'
-import type { BoundingBox, EditLock, FieldAttachment, FieldConstraintExpression, FieldControl, FieldDefaultValue, FieldEditRule, FieldValueMapEntry, FieldValueRelation, FileDataSource, LayerEntry, LayerFormLayout, LayerGroup, LayerLocks, LayerStyle, LockedEdit, PresetFilter, ProjectMeasurement, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing } from '../model/QgsProject.ts'
+import type { BoundingBox, EditLock, FieldAttachment, FieldConstraintExpression, FieldControl, FieldDefaultValue, FieldEditRule, FieldValueMapEntry, FieldValueRelation, FileDataSource, LayerEntry, LayerFormLayout, LayerGroup, LayerLocks, LayerStyle, LayerTreeNode, LockedEdit, PresetFilter, ProjectMeasurement, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing } from '../model/QgsProject.ts'
 import type { StacAsset, StacCatalog, StacCollection, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnConstraints, TableColumnDefault, TableColumnType, TableColumnValueRelation } from '../model/Stac.ts'
 import type { FeatureCollection } from 'geojson'
 
@@ -53,6 +53,11 @@ export interface StacCompanionData {
  * This is a thin wrapper: `qgsProjectToNormalized` resolves the QGS-specific
  * wording, assets and columns into the shared `NormalizedProject`, and
  * `generateStacFromNormalized` (see normalizedProject.ts) builds the catalogue.
+ *
+ * A layer or group the project leaves out of WMS (**Exclude layers**) is left
+ * out, as `generateServerStacCatalogue` leaves it out: the catalogue is built
+ * as if the project did not hold it, so a relation, Value Relation, filter or
+ * initial active layer naming it is dropped too (`wmsExcludedLayerIds`).
  */
 export function generateStacCatalogue(
   project: QgsProject,
@@ -94,7 +99,7 @@ export function generateStacCatalogue(
   // entirely) has no box of its own.
   return withSelfLink(
     generateStacFromNormalized(qgsProjectToNormalized(
-      project,
+      withoutWmsExcludedLayers(project),
       companions,
       options.projectPath,
       options.projectPath ?? options.projectFileName,
@@ -442,6 +447,44 @@ export function qgisServerNamesOf(layer: LayerEntry, context: { wmsPublishing: W
   const wfsPublished = context.wfsTransactionLayers?.published.includes(layer.id) ?? false
   const wfsTypeName = wfsPublished ? ownName.replace(/ /g, '_').replace(/[:\u2014]/g, '-') : null
   return { wmsName: wmsName || null, wfsTypeName: wfsTypeName || null }
+}
+
+/**
+ * The layers a project leaves out of WMS under **Exclude layers**
+ * (`WMSRestrictedLayers`): each layer whose name it lists, wherever the layer
+ * sits, and every layer inside a group whose name it lists. Neither route's
+ * catalogue holds them.
+ */
+export function wmsExcludedLayerIds(project: QgsProject): Set<string> {
+  const restricted = new Set(project.wmsPublishing?.restrictedLayers ?? [])
+  const excluded = new Set<string>()
+  if (restricted.size === 0) return excluded
+  for (const layer of project.layers) {
+    if (restricted.has(layer.name)) excluded.add(layer.id)
+  }
+  const walk = (group: LayerGroup, inExcludedGroup: boolean): void => {
+    for (const node of group.children) {
+      if (node.kind === 'group') walk(node, inExcludedGroup || restricted.has(node.name))
+      else if (inExcludedGroup) excluded.add(node.layerId)
+    }
+  }
+  walk(project.layerTree, false)
+  return excluded
+}
+
+/** The project less the layers and groups it leaves out of WMS (`wmsExcludedLayerIds`). */
+function withoutWmsExcludedLayers(project: QgsProject): QgsProject {
+  const excluded = wmsExcludedLayerIds(project)
+  if (excluded.size === 0) return project
+  const restricted = new Set(project.wmsPublishing?.restrictedLayers ?? [])
+  const prune = (group: LayerGroup): LayerGroup => ({
+    ...group,
+    children: group.children.flatMap((node): LayerTreeNode[] => {
+      if (node.kind === 'group') return restricted.has(node.name) ? [] : [prune(node)]
+      return excluded.has(node.layerId) ? [] : [node]
+    })
+  })
+  return { ...project, layers: project.layers.filter((layer) => !excluded.has(layer.id)), layerTree: prune(project.layerTree) }
 }
 
 /** The shape a file layer's own `|geometrytype=` keeps, as the list `quac:geometry_filter` holds. */

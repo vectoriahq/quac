@@ -8,9 +8,10 @@ from: the server route replaces or drops each of them.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Optional
 
-from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, QgsProject, WfsTransactionLayers, WmsPublishing
+from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, QgsProject, WfsTransactionLayers, WmsPublishing
 from ..parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
 from .normalized_project import (
     NormalizedGroup,
@@ -33,8 +34,12 @@ def generate_stac_catalogue(project: QgsProject, layer_wgs84_extents: Optional[d
     The catalogue a project file gives, as far as the first-release fields go.
     `layer_wgs84_extents` is the WGS84 box of a layer whose project saves no
     `<wgs84extent>`, by layer id, as the JavaScript's `layerWgs84Extents` is.
+
+    A layer or group the project leaves out of WMS (**Exclude layers**) is left
+    out: the catalogue is built as if the project did not hold it, so a Value
+    Relation naming it is dropped too (`wms_excluded_layer_ids`).
     """
-    return generate_stac_from_normalized(_qgs_project_to_normalized(project, layer_wgs84_extents or {}))
+    return generate_stac_from_normalized(_qgs_project_to_normalized(_without_wms_excluded_layers(project), layer_wgs84_extents or {}))
 
 
 class _LayerContext:
@@ -163,6 +168,52 @@ def qgis_server_names_of(layer: LayerEntry, wms_publishing: Optional[WmsPublishi
     wfs_published = wfs_transaction_layers is not None and layer.id in wfs_transaction_layers.published
     wfs_type_name = own_name.replace(' ', '_').replace(':', '-').replace('—', '-') if wfs_published else None
     return QgisServerNames(wms_name=wms_name or None, wfs_type_name=wfs_type_name or None)
+
+
+def wms_excluded_layer_ids(project: QgsProject) -> set[str]:
+    """
+    The layers a project leaves out of WMS under **Exclude layers**
+    (`WMSRestrictedLayers`): each layer whose name it lists, wherever the layer
+    sits, and every layer inside a group whose name it lists. Neither route's
+    catalogue holds them.
+    """
+    restricted = set(project.wms_publishing.restricted_layers if project.wms_publishing else [])
+    excluded: set[str] = set()
+    if not restricted:
+        return excluded
+    for layer in project.layers:
+        if layer.name in restricted:
+            excluded.add(layer.id)
+
+    def walk(group: LayerGroup, in_excluded_group: bool) -> None:
+        for node in group.children:
+            if isinstance(node, LayerGroup):
+                walk(node, in_excluded_group or node.name in restricted)
+            elif in_excluded_group:
+                excluded.add(node.layer_id)
+
+    walk(project.layer_tree, False)
+    return excluded
+
+
+def _without_wms_excluded_layers(project: QgsProject) -> QgsProject:
+    """The project less the layers and groups it leaves out of WMS (`wms_excluded_layer_ids`)."""
+    excluded = wms_excluded_layer_ids(project)
+    if not excluded:
+        return project
+    restricted = set(project.wms_publishing.restricted_layers if project.wms_publishing else [])
+
+    def prune(group: LayerGroup) -> LayerGroup:
+        children: list[LayerTreeNode] = []
+        for node in group.children:
+            if isinstance(node, LayerGroup):
+                if node.name not in restricted:
+                    children.append(prune(node))
+            elif node.layer_id not in excluded:
+                children.append(node)
+        return replace(group, children=children)
+
+    return replace(project, layers=[layer for layer in project.layers if layer.id not in excluded], layer_tree=prune(project.layer_tree))
 
 
 def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> NormalizedLayer:

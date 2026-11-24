@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from ..model.qgs_project import LayerEntry, LayerGroup, QgsProject
-from .stac_catalogue import qgis_server_names_of
+from .stac_catalogue import qgis_server_names_of, wms_excluded_layer_ids
 
 
 def server_layer_tree(project: QgsProject) -> dict[str, Any]:
@@ -14,11 +14,13 @@ def server_layer_tree(project: QgsProject) -> dict[str, Any]:
     WFS type name, and the fields the project hides from each service, as the
     JSON the JavaScript's `serverLayerTree` gives.
 
-    A layer inside a group the project leaves out of WMS has no WMS name. A
-    tree entry whose layer the project does not hold is left out.
+    A layer the project leaves out of WMS (`wms_excluded_layer_ids`), such as
+    one inside a group it leaves out, has no WMS name. A tree entry whose layer
+    the project does not hold is left out.
     """
     layers_by_id = {layer.id: layer for layer in project.layers}
     restricted = set(project.wms_publishing.restricted_layers if project.wms_publishing else [])
+    excluded = wms_excluded_layer_ids(project)
 
     def read_group(group: LayerGroup, wms_published: bool) -> list[dict[str, Any]]:
         nodes: list[dict[str, Any]] = []
@@ -29,7 +31,7 @@ def server_layer_tree(project: QgsProject) -> dict[str, Any]:
                 continue
             layer = layers_by_id.get(node.layer_id)
             if layer is not None:
-                nodes.append(_server_layer(layer, wms_published, project))
+                nodes.append(_server_layer(layer, layer.id not in excluded, project))
         return nodes
 
     return {
@@ -38,14 +40,14 @@ def server_layer_tree(project: QgsProject) -> dict[str, Any]:
     }
 
 
-def _server_layer(layer: LayerEntry, in_published_group: bool, project: QgsProject) -> dict[str, Any]:
+def _server_layer(layer: LayerEntry, wms_published: bool, project: QgsProject) -> dict[str, Any]:
     names = qgis_server_names_of(layer, project.wms_publishing, project.wfs_transaction_layers)
     hidden = layer.server_hidden_fields
     return {
         'kind': 'layer',
         'id': layer.id,
         'name': layer.name,
-        'wmsName': names.wms_name if in_published_group else None,
+        'wmsName': names.wms_name if wms_published else None,
         'wfsTypeName': names.wfs_type_name,
         'hiddenFields': {'wms': list(hidden.wms) if hidden else [], 'wfs': list(hidden.wfs) if hidden else []},
     }
