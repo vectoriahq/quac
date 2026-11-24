@@ -160,6 +160,7 @@ export {
   readCollectionMeasurement,
   readCollectionOpacity,
   readCollectionIcon,
+  readCollectionAddedMessage,
   readCollectionLegendImage,
   readCollectionFilters,
   readCollectionLocks,

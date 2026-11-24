@@ -506,6 +506,7 @@ function qgsLayerToNormalized(
     isPrivate: layer.isPrivate,
     legendImage: layer.legendImage,
     icon: layer.icon,
+    addedMessage: layer.addedMessage,
     locks: combineLocks(layer.locks ?? {}, wfsTransactionLocks(layer.id, context.wfsTransactionLayers)),
     filters: context.filtersByCollectionId.get(layer.id),
     vendorFields: buildVendorFields(layer, context.measurement),
