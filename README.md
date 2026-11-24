@@ -190,6 +190,7 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | `quac_icon`, for the layer | `quac:icon` | [layer-icon](packages/quac/spec/examples/layer-icon/) |
 | `quac_icon_<field>`, for a field | `quac:icon` | [column-icon](packages/quac/spec/examples/column-icon/) and [icon-other-library](packages/quac/spec/examples/icon-other-library/) |
 | `quac_control_<field>`, buttons or a dropdown | `quac:control` | [control](packages/quac/spec/examples/control/) |
+| `quac_added_message`, the message once a feature is added | `quac:added_message` | [added-message](packages/quac/spec/examples/added-message/) |
 
 The [field reference](packages/quac/spec/README.md) gives each field's full shape, and the fields that other sources, such as WFS and ArcGIS, write.
 

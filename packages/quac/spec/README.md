@@ -277,6 +277,14 @@ From QGIS's **Drag and Drop Designer** (`<editorlayout>tablayout</editorlayout>`
 
 Written by: QGIS project. Stable. Example: `["tree_id", "species", "status", "label", "heritage", "photo", "removal_reason"]`.
 
+#### `quac:added_message`
+
+The message an application shows once a feature is added to the layer, in place of its own. It is text and may hold HTML markup, such as a heading, a paragraph, a list, a link or an image. A producer writes it as the source holds it and checks none of it, so an application shows only the markup it can show safely and never runs a script the message holds. Absent, the application shows its own.
+
+From a QGIS layer variable named `quac_added_message`, set in **Layer Properties › Variables** and held in the same lists as `quac:icon`'s. A blank value writes nothing. QGIS shows no such message. A Collection made from QGIS's per-shape layers takes its first layer's.
+
+Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"<h2>Thank you</h2><p>Your tree is on the map.</p>"`.
+
 ### How a layer is shown
 
 #### `quac:legend_image`

@@ -2,7 +2,7 @@ import '../tests/xmlParser.ts'
 
 import { describe, expect, it } from 'vitest'
 
-import { readCollectionFieldComments, readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject.ts'
+import { readCollectionAddedMessage, readCollectionFieldComments, readCollectionFieldEditRules, readCollectionIcon } from './normalizedProject.ts'
 import { generateStacCatalogue } from './stacCatalogue.ts'
 import { parseQgsXml } from '../parse/parseQgsXml.ts'
 
@@ -617,6 +617,33 @@ describe('quac:icon on a layer', () => {
     const collection = { ...collectionFor(''), 'quac:icon': 'http://example.com/tree.svg' } as StacCollection
 
     expect(readCollectionIcon(collection)).toBeNull()
+  })
+})
+
+describe('quac:added_message', () => {
+  function variables(names: string[], values: string[]): string {
+    const list = (key: string, entries: string[]) => `<Option name="${key}" type="StringList">`
+      + entries.map((entry) => `<Option type="QString" value="${entry}"/>`).join('')
+      + '</Option>'
+    return `<customproperties><Option type="Map">${list('variableNames', names)}${list('variableValues', values)}</Option></customproperties>`
+  }
+
+  it('writes the message the layer variable holds, markup included, and reads it back', () => {
+    const collection = collectionFor(variables(['quac_icon', 'quac_added_message'], ['tree', '&lt;h2&gt;Thank you&lt;/h2&gt;']))
+
+    expect(collection['quac:added_message']).toBe('<h2>Thank you</h2>')
+    expect(readCollectionAddedMessage(collection)).toBe('<h2>Thank you</h2>')
+  })
+
+  it('writes nothing where the layer has no such variable or its value is blank', () => {
+    expect(collectionFor(variables(['quac_icon'], ['tree']))).not.toHaveProperty('quac:added_message')
+    expect(collectionFor(variables(['quac_added_message'], ['  ']))).not.toHaveProperty('quac:added_message')
+  })
+
+  it('reads no message from a value that is not text', () => {
+    const collection = { ...collectionFor(''), 'quac:added_message': 42 } as unknown as StacCollection
+
+    expect(readCollectionAddedMessage(collection)).toBeNull()
   })
 })
 

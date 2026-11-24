@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:added_message"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

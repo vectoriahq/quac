@@ -33,6 +33,7 @@
       "quac:measurement": { "area_unit": "ha", "distance_unit": "meters" },
       "quac:filters": [{ "field": "status", "name": "Condition" }, { "field": "species" }],
       "quac:locks": { "add": { "expression": "\"status\" = 'surveyed'" }, "delete": true },
+      "quac:added_message": "<h2>Thank you</h2><p>Your tree is on the map.</p>",
       "quac:form_order": ["tree_id", "species", "status", "label", "heritage", "photo", "removal_reason"],
       "table:columns": [
         {

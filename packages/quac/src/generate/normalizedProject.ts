@@ -70,6 +70,12 @@ export const QUAC_LEGEND_IMAGE_FIELD = 'quac:legend_image'
 export const QUAC_ICON_FIELD = 'quac:icon'
 
 /**
+ * The key a Collection takes for the message shown once a feature is added to
+ * it: text that may hold HTML markup.
+ */
+export const QUAC_ADDED_MESSAGE_FIELD = 'quac:added_message'
+
+/**
  * The key a Collection takes for the area and distance units its source gives
  * `$area`, `$length` and `$perimeter` in: `{ area_unit, distance_unit }`, each
  * the name QGIS saves.
@@ -240,6 +246,8 @@ export interface NormalizedLayer {
   legendImage?: string | null
   /** Emitted as `quac:icon`: the `https://` address of the icon drawn beside the layer's name. */
   icon?: string | null
+  /** Emitted as `quac:added_message`: the message shown once a feature is added, as the source wrote it. */
+  addedMessage?: string | null
   /** Emitted as `quac:locks` where it locks an edit. */
   locks?: LayerLocks
   /** Emitted as `quac:filters` where the source sets one up. */
@@ -474,6 +482,7 @@ function buildCollection(layer: NormalizedLayer, defaultProviders: StacProvider[
   }
   if (layer.legendImage) collection[QUAC_LEGEND_IMAGE_FIELD] = layer.legendImage
   if (layer.icon) collection[QUAC_ICON_FIELD] = layer.icon
+  if (layer.addedMessage) collection[QUAC_ADDED_MESSAGE_FIELD] = layer.addedMessage
   if (layer.formOrder) collection[QUAC_FORM_ORDER_FIELD] = layer.formOrder
 
   // Source-declaring vendor fields (`quac:wfs_*`), copied verbatim so a consumer reads the source structurally rather than by
@@ -721,6 +730,17 @@ export function readCollectionLegendImage(collection: StacCollection | null | un
 /** The icon drawn beside a Collection's name (`quac:icon`), or null where it names no `https://` address. */
 export function readCollectionIcon(collection: StacCollection | null | undefined): string | null {
   return readHttpsAddress(collection?.[QUAC_ICON_FIELD])
+}
+
+/**
+ * The message shown once a feature is added to a Collection
+ * (`quac:added_message`), as the source wrote it, or null where it names none.
+ * It may hold HTML markup, which the application shows only as far as it
+ * judges safe.
+ */
+export function readCollectionAddedMessage(collection: StacCollection | null | undefined): string | null {
+  const message = collection?.[QUAC_ADDED_MESSAGE_FIELD]
+  return typeof message === 'string' && message.trim() !== '' ? message : null
 }
 
 const LOCKED_EDITS: readonly LockedEdit[] = ['add', 'attributes', 'geometry', 'delete']

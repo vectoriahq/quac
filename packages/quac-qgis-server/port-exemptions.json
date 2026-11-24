@@ -47,6 +47,7 @@
       "readCollectionMeasurement": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionLegendImage": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionIcon": "A reader of a catalogue, for an application, not a producer.",
+      "readCollectionAddedMessage": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionLocks": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFilters": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionPrivate": "A reader of a catalogue, for an application, not a producer.",

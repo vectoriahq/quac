@@ -142,6 +142,7 @@ function parseMapLayer(maplayer: Element, notes: ProjectNote[]): LayerEntry | nu
     fieldAttachments,
     fieldEditRules: parseFieldEditRules(maplayer, note),
     icon: parseLayerIcon(maplayer),
+    addedMessage: parseAddedMessage(maplayer),
     fieldIcons: parseFieldIcons(maplayer),
     fieldControls: parseFieldControls(maplayer),
     formLayout: parseFormLayout(maplayer),
@@ -1013,18 +1014,40 @@ function parseFieldIcons(maplayer: Element): Record<string, string> {
 /** The name of the layer variable that sets the layer's own icon. */
 const LAYER_ICON_VARIABLE = 'quac_icon'
 
+/** The name of the layer variable that holds the message shown once a feature is added. */
+const ADDED_MESSAGE_VARIABLE = 'quac_added_message'
+
 /**
- * Reads the icon the layer's `quac_icon` variable sets, as an address
- * (`resolveFieldIconAddress`), held in the same lists as the field icons.
- * Null where the layer has no such variable or its value names no icon.
+ * The value of the layer variable of this name, held in the layer's
+ * `variableNames` and `variableValues` custom properties. Null where the layer
+ * has no such variable.
  */
-function parseLayerIcon(maplayer: Element): string | null {
+function readLayerVariable(maplayer: Element, variable: string): string | null {
   const properties = directChild(maplayer, 'customproperties')
   if (!properties) return null
   const names = readCustomPropertyList(properties, 'variableNames')
   const values = readCustomPropertyList(properties, 'variableValues')
-  const index = names.indexOf(LAYER_ICON_VARIABLE)
-  return index === -1 || index >= values.length ? null : resolveFieldIconAddress(values[index])
+  const index = names.indexOf(variable)
+  return index === -1 || index >= values.length ? null : values[index]
+}
+
+/**
+ * Reads the icon the layer's `quac_icon` variable sets, as an address
+ * (`resolveFieldIconAddress`). Null where the layer has no such variable or
+ * its value names no icon.
+ */
+function parseLayerIcon(maplayer: Element): string | null {
+  const value = readLayerVariable(maplayer, LAYER_ICON_VARIABLE)
+  return value === null ? null : resolveFieldIconAddress(value)
+}
+
+/**
+ * Reads the message the layer's `quac_added_message` variable holds, as
+ * written. Null where the layer has no such variable or its value is blank.
+ */
+function parseAddedMessage(maplayer: Element): string | null {
+  const value = readLayerVariable(maplayer, ADDED_MESSAGE_VARIABLE)
+  return value === null || value.trim() === '' ? null : value
 }
 
 /** The start of the name of a layer variable that chooses a field's control: `quac_control_condition`. */

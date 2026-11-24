@@ -301,6 +301,12 @@ export interface LayerEntry {
    */
   icon?: string | null
   /**
+   * The message shown once a feature is added to the layer, from its
+   * `quac_added_message` variable, as written. Null or absent where it sets
+   * none.
+   */
+  addedMessage?: string | null
+  /**
    * The address of each field's icon, from the layer's `quac_icon_<field>`
    * variables. Fields with none are absent.
    */

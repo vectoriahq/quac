@@ -253,6 +253,11 @@
           "type": "string",
           "pattern": "^https://"
         },
+        "quac:added_message": {
+          "description": "The message shown once a feature is added to this Collection, which may hold HTML markup. Written from the layer variable named quac_added_message.",
+          "type": "string",
+          "minLength": 1
+        },
         "quac:form_order": {
           "description": "The names of the fields the source's form layout places, in its order. A column not listed is left out of the form. Written from a QGIS layer's Drag and Drop Designer form.",
           "type": "array",
