@@ -20,8 +20,8 @@ npm lists a test version under its `next` tag, so `npm install @vectoriahq/quac`
 
 ## The QGIS plugin
 
-1. Set the new version in `packages/quac-qgis-server/quac_catalogue/metadata.txt` and in the service's `version()` in `quac_catalogue/service.py`, which `tests/test_plugin_zip.py` checks agree, and merge it to `main`.
-2. Publish a GitHub release from `main` whose tag is the plugin's folder name and that version, such as `quac_catalogue@0.1.0`.
+1. Set the new version in `packages/quac-qgis-server/quac/metadata.txt` and in the service's `version()` in `quac/service.py`, which `tests/test_plugin_zip.py` checks agree, and merge it to `main`.
+2. Publish a GitHub release from `main` whose tag is the plugin's folder name and that version, such as `quac@0.1.0`.
 3. Download the zip the [Build the QGIS plugin](.github/workflows/plugin-release.yml) workflow attaches to the release, and upload it at [plugins.qgis.org](https://plugins.qgis.org/plugins/add/).
 
 The workflow checks the tag against the version and runs the plugin's tests before it builds the zip.

@@ -195,7 +195,7 @@ def main() -> int:
         plugins.mkdir()
         lay_out_plugin(CATALOGUE_PLUGIN, plugins)
         sys.path.insert(0, str(plugins))
-        import quac_catalogue
+        import quac
 
         home = work / 'Parks Project'
         publish = home / 'publish'
@@ -207,7 +207,7 @@ def main() -> int:
 
         processing = start_processing()
         iface = Iface()
-        plugin = quac_catalogue.classFactory(iface)
+        plugin = quac.classFactory(iface)
         plugin.initGui()
         check(len(iface.factories) == 1, 'initGui registers the QUAC page of Project Properties')
         labels = [action.text() for action in iface.project_menu.actions()]

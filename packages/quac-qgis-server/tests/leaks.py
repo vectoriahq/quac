@@ -69,7 +69,7 @@ def leak_failures(catalogue: dict[str, Any], project_text: str, server_address: 
     """
     What the catalogue shows that the project keeps off the web, a sentence
     each; empty where it shows nothing. With `access`, a person's answers by
-    WMS name (`quac_catalogue.access.LayerAnswer`), also what it shows that
+    WMS name (`quac.access.LayerAnswer`), also what it shows that
     the person may not see, and an edit it leaves unlocked that they may not
     make.
     """

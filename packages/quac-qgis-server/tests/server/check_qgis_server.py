@@ -34,7 +34,7 @@ from xml.etree import ElementTree
 PACKAGE = Path(__file__).resolve().parents[2]
 FIXTURES = PACKAGE.parent / 'quac' / 'src' / 'tests' / 'fixtures' / 'qgis'
 HARNESS = Path(__file__).resolve().parent / 'quac_spike_harness'
-CATALOGUE_PLUGIN = PACKAGE / 'quac_catalogue'
+CATALOGUE_PLUGIN = PACKAGE / 'quac'
 TEST_ACCESS = Path(__file__).resolve().parent / 'quac_test_access'
 # The value labels demo's project and data, laid out at data/demo/value-labels.
 DEMO = PACKAGE / 'demo'

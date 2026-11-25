@@ -11,7 +11,7 @@ from __future__ import annotations
 import unittest
 from typing import Any, Optional
 
-from quac_catalogue.access import LayerAnswer, apply_access
+from quac.access import LayerAnswer, apply_access
 from quac_server import generate_server_stac_catalogue, parse_qgs_xml
 from quac_server.generate.stac_catalogue import generate_stac_catalogue
 

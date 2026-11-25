@@ -27,23 +27,23 @@ class PluginZipTest(unittest.TestCase):
         cls._work.cleanup()
 
     def test_is_named_for_the_version(self) -> None:
-        self.assertEqual(self.archive.name, f"quac_catalogue-{read_metadata()['version']}.zip")
+        self.assertEqual(self.archive.name, f"quac-{read_metadata()['version']}.zip")
 
     def test_holds_one_folder_with_a_name_the_repository_accepts(self) -> None:
         folders = {name.split('/')[0] for name in self.names}
-        self.assertEqual(folders, {'quac_catalogue'})
-        self.assertRegex('quac_catalogue', r'^[A-Za-z_-][A-Za-z0-9_-]*$')
+        self.assertEqual(folders, {'quac'})
+        self.assertRegex('quac', r'^[A-Za-z_-][A-Za-z0-9_-]*$')
 
     def test_holds_the_files_the_repository_requires_and_the_python_it_runs(self) -> None:
         for name in ('metadata.txt', '__init__.py', 'LICENSE', 'quac_server/__init__.py'):
-            self.assertIn(f'quac_catalogue/{name}', self.names)
+            self.assertIn(f'quac/{name}', self.names)
 
     def test_holds_the_server_and_desktop_parts(self) -> None:
         for name in ('service.py', 'catalogue.py', 'access.py', 'qgis_inputs.py', 'desktop.py', 'publish.py', 'quac_server/model/stac_styles.py'):
-            self.assertIn(f'quac_catalogue/{name}', self.names)
+            self.assertIn(f'quac/{name}', self.names)
 
     def test_starts_in_qgis_server_and_in_qgis_desktop(self) -> None:
-        source = (Path(__file__).resolve().parent.parent / 'quac_catalogue' / '__init__.py').read_text(encoding='utf-8')
+        source = (Path(__file__).resolve().parent.parent / 'quac' / '__init__.py').read_text(encoding='utf-8')
         self.assertRegex(source, r'def serverClassFactory\(')
         self.assertRegex(source, r'def classFactory\(')
 
@@ -55,10 +55,10 @@ class PluginZipTest(unittest.TestCase):
 
     def test_holds_the_bandit_settings_beside_metadata(self) -> None:
         # The QGIS plugin repository reads `.bandit` only at the plugin's top level.
-        self.assertIn('quac_catalogue/.bandit', self.names)
+        self.assertIn('quac/.bandit', self.names)
 
     def test_the_service_reports_the_version_in_metadata(self) -> None:
-        service = (Path(__file__).resolve().parent.parent / 'quac_catalogue' / 'service.py').read_text(encoding='utf-8')
+        service = (Path(__file__).resolve().parent.parent / 'quac' / 'service.py').read_text(encoding='utf-8')
         reported = re.search(r"def version\(self\) -> str:\s*return '([^']+)'", service)
         self.assertIsNotNone(reported)
         self.assertEqual(reported.group(1), read_metadata()['version'])
@@ -69,7 +69,7 @@ class PluginZipTest(unittest.TestCase):
     def test_metadata_has_every_required_field_and_its_icon(self) -> None:
         metadata = {key.lower(): value for key, value in read_metadata().items()}
         self.assertEqual([field for field in REQUIRED if not metadata.get(field.lower())], [])
-        self.assertIn(f"quac_catalogue/{metadata['icon']}", self.names)
+        self.assertIn(f"quac/{metadata['icon']}", self.names)
 
 
 if __name__ == '__main__':

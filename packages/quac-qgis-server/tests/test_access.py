@@ -1,5 +1,5 @@
 """
-A person's catalogue (`quac_catalogue/access.py`): QGIS's access answers
+A person's catalogue (`quac/access.py`): QGIS's access answers
 applied to a served catalogue, checked on the fixtures with no QGIS, and run
 through the leak checks with the same answers.
 """
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import unittest
 
-from quac_catalogue.access import LayerAnswer, apply_access
+from quac.access import LayerAnswer, apply_access
 from quac_server import read_server_catalogue
 
 from .declared import FIXTURES

@@ -1,8 +1,8 @@
 name: Build the QGIS plugin
 
-# Builds the QUAC catalogue plugin's zip, for the QGIS plugin repository, and
+# Builds the QUAC plugin's zip, for the QGIS plugin repository, and
 # attaches it to a GitHub release whose tag is the plugin's folder name and
-# version, such as quac_catalogue@0.1.0. The zip is uploaded to
+# version, such as quac@0.1.0. The zip is uploaded to
 # plugins.qgis.org by hand.
 
 on:
@@ -15,8 +15,8 @@ permissions:
 
 jobs:
   build:
-    name: Build quac_catalogue
-    if: startsWith(github.event.release.tag_name, 'quac_catalogue@')
+    name: Build quac
+    if: startsWith(github.event.release.tag_name, 'quac@')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,9 +26,9 @@ jobs:
           TAG: ${{ github.event.release.tag_name }}
         run: |
           version=$(cd packages/quac-qgis-server && python3 -c "from build_plugin import read_metadata; print(read_metadata()['version'])")
-          expected="quac_catalogue@$version"
+          expected="quac@$version"
           if [ "$TAG" != "$expected" ]; then
-            echo "::error::The release's tag is $TAG, but quac_catalogue/metadata.txt gives $expected. Change the version in metadata.txt, or publish a release tagged $expected."
+            echo "::error::The release's tag is $TAG, but quac/metadata.txt gives $expected. Change the version in metadata.txt, or publish a release tagged $expected."
             exit 1
           fi
       - name: Tests
