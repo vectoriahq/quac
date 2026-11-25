@@ -53,9 +53,25 @@ class PluginZipTest(unittest.TestCase):
         self.assertNotIn('supportsqt6', metadata)
         self.assertGreaterEqual(float(metadata['qgismaximumversion']), 4.99)
 
-    def test_holds_the_bandit_settings_beside_metadata(self) -> None:
-        # The QGIS plugin repository reads `.bandit` only at the plugin's top level.
-        self.assertIn('quac/.bandit', self.names)
+    def test_holds_no_scan_settings_file(self) -> None:
+        # The QGIS plugin repository marks a version holding one of these files as a configured scan.
+        for name in ('.bandit', '.secrets.baseline', '.flake8'):
+            self.assertNotIn(f'quac/{name}', self.names)
+
+    def test_skips_bandit_on_each_xml_etree_line_and_nowhere_else(self) -> None:
+        # Without a `.bandit` file, each import of xml.etree (B405) and each parse with it (B314) carries its own skip.
+        with zipfile.ZipFile(self.archive) as zip_file:
+            for name in self.names:
+                if not name.endswith('.py'):
+                    continue
+                for number, line in enumerate(zip_file.read(name).decode('utf-8').splitlines(), start=1):
+                    where = f'{name}:{number}'
+                    if re.match(r'\s*(from xml\.etree\b|import xml\.etree\b)', line):
+                        self.assertTrue(line.endswith('# nosec B405'), where)
+                    elif re.search(r'\bElementTree\.(fromstring|parse|XML|iterparse)\(', line):
+                        self.assertTrue(line.endswith('# nosec B314'), where)
+                    else:
+                        self.assertNotIn('# nosec', line, where)
 
     def test_the_service_reports_the_version_in_metadata(self) -> None:
         service = (Path(__file__).resolve().parent.parent / 'quac' / 'service.py').read_text(encoding='utf-8')

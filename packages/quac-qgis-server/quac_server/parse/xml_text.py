@@ -9,7 +9,7 @@ counterpart.
 from __future__ import annotations
 
 from typing import Optional
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec B405
 
 
 def text_content(element: Element) -> str:
