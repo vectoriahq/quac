@@ -44,17 +44,6 @@
         "wms": [],
         "wfs": []
       }
-    },
-    {
-      "kind": "layer",
-      "id": "private_wms",
-      "name": "Private",
-      "wmsName": "Private",
-      "wfsTypeName": null,
-      "hiddenFields": {
-        "wms": [],
-        "wfs": []
-      }
     }
   ]
 }

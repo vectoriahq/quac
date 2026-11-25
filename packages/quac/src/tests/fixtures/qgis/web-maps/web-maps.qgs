@@ -11,8 +11,6 @@
     </layer-tree-layer>
     <layer-tree-layer checked="Qt::Checked" expanded="0" id="streets_xyz" name="Streets">
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Unchecked" expanded="0" id="private_wms" name="Private">
-    </layer-tree-layer>
   </layer-tree-group>
   <projectlayers>
     <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
@@ -42,13 +40,6 @@
       <layername>Streets</layername>
       <provider encoding="">wms</provider>
       <layerOpacity>0.8</layerOpacity>
-    </maplayer>
-    <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
-      <id>private_wms</id>
-      <datasource>authcfg=ab12cd3&amp;crs=EPSG:3857&amp;format=image/png&amp;layers=private&amp;styles&amp;url=https://maps.example.test/wms</datasource>
-      <layername>Private</layername>
-      <provider encoding="">wms</provider>
-      <layerOpacity>1</layerOpacity>
     </maplayer>
   </projectlayers>
 </qgis>

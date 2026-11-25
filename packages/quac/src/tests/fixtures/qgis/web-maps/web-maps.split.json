@@ -42,12 +42,6 @@
               "href": "./collections/streets_xyz.json",
               "type": "application/json",
               "title": "Streets"
-            },
-            {
-              "rel": "child",
-              "href": "./collections/private_wms.json",
-              "type": "application/json",
-              "title": "Private"
             }
           ],
           "stac_extensions": [
@@ -335,65 +329,6 @@
           ],
           "quac:qgis_server_wms_name": "Streets"
         }
-      },
-      {
-        "path": "collections/private_wms.json",
-        "document": {
-          "type": "Collection",
-          "stac_version": "1.1.0",
-          "id": "private_wms",
-          "title": "Private",
-          "description": "Layer \"Private\" from the QGIS project.",
-          "license": "other",
-          "extent": {
-            "spatial": {
-              "bbox": [
-                [
-                  -180,
-                  -90,
-                  180,
-                  90
-                ]
-              ]
-            },
-            "temporal": {
-              "interval": [
-                [
-                  null,
-                  null
-                ]
-              ]
-            }
-          },
-          "assets": {},
-          "links": [
-            {
-              "rel": "self",
-              "href": "./private_wms.json"
-            },
-            {
-              "rel": "parent",
-              "href": "../catalog.json"
-            },
-            {
-              "rel": "root",
-              "href": "../catalog.json"
-            },
-            {
-              "rel": "via",
-              "href": "../web-maps.qgs",
-              "title": "QGIS project"
-            }
-          ],
-          "quac:visibility_checked": false,
-          "quac:editable": true,
-          "quac:identifiable": true,
-          "quac:opacity": 1,
-          "quac:qgis_server_wms_name": "Private",
-          "stac_extensions": [
-            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
-          ]
-        }
       }
     ]
   },
@@ -443,12 +378,6 @@
               "href": "./web-maps/collections/streets_xyz.json",
               "type": "application/json",
               "title": "Streets"
-            },
-            {
-              "rel": "child",
-              "href": "./web-maps/collections/private_wms.json",
-              "type": "application/json",
-              "title": "Private"
             }
           ],
           "stac_extensions": [
@@ -735,65 +664,6 @@
             "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
           ],
           "quac:qgis_server_wms_name": "Streets"
-        }
-      },
-      {
-        "path": "web-maps/collections/private_wms.json",
-        "document": {
-          "type": "Collection",
-          "stac_version": "1.1.0",
-          "id": "private_wms",
-          "title": "Private",
-          "description": "Layer \"Private\" from the QGIS project.",
-          "license": "other",
-          "extent": {
-            "spatial": {
-              "bbox": [
-                [
-                  -180,
-                  -90,
-                  180,
-                  90
-                ]
-              ]
-            },
-            "temporal": {
-              "interval": [
-                [
-                  null,
-                  null
-                ]
-              ]
-            }
-          },
-          "assets": {},
-          "links": [
-            {
-              "rel": "self",
-              "href": "./private_wms.json"
-            },
-            {
-              "rel": "parent",
-              "href": "../../web-maps.json"
-            },
-            {
-              "rel": "root",
-              "href": "../../web-maps.json"
-            },
-            {
-              "rel": "via",
-              "href": "../../web-maps.qgs",
-              "title": "QGIS project"
-            }
-          ],
-          "quac:visibility_checked": false,
-          "quac:editable": true,
-          "quac:identifiable": true,
-          "quac:opacity": 1,
-          "quac:qgis_server_wms_name": "Private",
-          "stac_extensions": [
-            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
-          ]
         }
       }
     ]
