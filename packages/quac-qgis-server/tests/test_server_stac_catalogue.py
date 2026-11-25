@@ -106,6 +106,25 @@ class DataSourceKinds(unittest.TestCase):
                 if kind == 'unsupported':
                     self.assertEqual(parsed.hint, provider)
 
+    def test_reads_a_wfs_source_that_signs_in_as_the_javascript_does(self) -> None:
+        for source, kind in (
+            ("authcfg=ab12cd typename='city:parks' url='https://data.example.test/wfs' version='auto'", 'unsupported'),
+            ("authcfg='ab12cd' typename='city:parks' url='https://data.example.test/wfs'", 'unsupported'),
+            ("password='secret' typename='city:parks' url='https://data.example.test/wfs' user='editor'", 'unsupported'),
+            ("password='secret' typename='city:parks' url='https://data.example.test/wfs' username='editor'", 'unsupported'),
+            ("authcfg='' typename='city:parks' url='https://data.example.test/wfs'", 'wfs'),
+            ("http-header:referer= typename='city:parks' url='https://data.example.test/wfs'", 'wfs'),
+        ):
+            with self.subTest(source=source):
+                parsed = parse_data_source(source, 'WFS')
+                self.assertEqual(parsed.kind, kind)
+                if kind == 'unsupported':
+                    self.assertEqual(parsed.hint, 'WFS')
+
+    def test_reads_an_arcgis_source_with_a_bare_sign_in_as_unsupported(self) -> None:
+        parsed = parse_data_source("authcfg=ab12cd url='https://gis.example.test/arcgis/rest/services/Parks/FeatureServer/0'", 'arcgisfeatureserver')
+        self.assertEqual(parsed.kind, 'unsupported')
+
     def test_reads_a_file_and_its_shape(self) -> None:
         source = parse_data_source('./notes.geojson|geometrytype=Point', 'ogr')
         self.assertEqual((source.kind, source.geometry_type_filter), ('file', 'Point'))

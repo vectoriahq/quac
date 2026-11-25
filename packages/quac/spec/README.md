@@ -192,7 +192,7 @@ Written by: QGIS project, QGIS Server, ArcGIS. Stable. Example: `["Point"]`.
 
 #### `quac:wfs_endpoint` and `quac:wfs_type_name`
 
-The layer is read from a WFS service: the service's address with no query, and the feature type name as the service publishes it. A reader takes them as they stand instead of taking a GetFeature URL apart. Present for a QGIS project's WFS layer, a QGIS Server layer whose WFS type the capabilities confirm, a WFS service's layer, and a fetched STAC Collection whose GetFeature data asset gives both where the source declared neither.
+The layer is read from a WFS service: the service's address with no query, and the feature type name as the service publishes it. A reader takes them as they stand instead of taking a GetFeature URL apart. Present for a QGIS project's WFS layer, a QGIS Server layer whose WFS type the capabilities confirm, a WFS service's layer, and a fetched STAC Collection whose GetFeature data asset gives both where the source declared neither. A QGIS project's WFS layer whose source signs in, through a saved login (`authcfg`) or a user name and password, gets neither.
 
 Written by: QGIS project, QGIS Server, WFS, STAC. Stable. Examples: `"https://example.com/wfs"` and `"ns:parks"`.
 

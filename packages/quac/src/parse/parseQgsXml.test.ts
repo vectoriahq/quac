@@ -287,9 +287,27 @@ describe('parseDataSource — direct unit tests', () => {
     })
   })
 
-  it('finds sql= after a parameter QGIS writes unquoted', () => {
-    const raw = 'authcfg=ab12cd typename=\'ns:layer\' url=\'https://example.com/wfs\' sql=SELECT * FROM layer'
+  it('finds sql= after an unquoted parameter', () => {
+    const raw = 'maxNumFeatures=100 typename=\'ns:layer\' url=\'https://example.com/wfs\' sql=SELECT * FROM layer'
     expect(parseDataSource(raw)).toMatchObject({ kind: 'wfs', typeName: 'ns:layer', featureFilter: { expression: 'SELECT * FROM layer', dialect: 'wfs_sql' } })
+  })
+
+  it.each([
+    ['a saved login, written bare as QGIS writes it', "authcfg=ab12cd typename='city:parks' url='https://data.example.test/wfs' version='auto'"],
+    ['a saved login, quoted', "authcfg='ab12cd' typename='city:parks' url='https://data.example.test/wfs'"],
+    ['a user name and password, as QGIS writes them', "password='secret' typename='city:parks' url='https://data.example.test/wfs' user='editor'"],
+    ['a user name under its other key', "password='secret' typename='city:parks' url='https://data.example.test/wfs' username='editor'"]
+  ])('reads a WFS source that signs in with %s as unsupported', (_case, raw) => {
+    expect(parseDataSource(raw, 'WFS')).toEqual({ kind: 'unsupported', raw, hint: 'WFS' })
+  })
+
+  it('reads a WFS source whose saved login is empty as an open WFS layer', () => {
+    expect(parseDataSource("authcfg='' typename='city:parks' url='https://data.example.test/wfs'", 'WFS')).toMatchObject({ kind: 'wfs', typeName: 'city:parks' })
+  })
+
+  it('reads a key written with no value as no value, not the next pair', () => {
+    expect(parseDataSource("http-header:referer= typename='city:parks' url='https://data.example.test/wfs'", 'WFS'))
+      .toMatchObject({ kind: 'wfs', url: 'https://data.example.test/wfs', typeName: 'city:parks' })
   })
 
   it('reads a WFS layer\'s filter written as OGC Filter XML as one in its own dialect', () => {

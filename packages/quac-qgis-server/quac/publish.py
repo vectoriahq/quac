@@ -33,8 +33,9 @@ The folder rules:
   name or password (`server_wms_endpoint` refuses it), and then it is left out.
   So does a WMS, WMTS or XYZ layer, whose address is written as a web map link,
   or for an XYZ template addressed by `{quadkey}` as its data asset. One whose
-  source holds a user name, a password or an `authcfg` is left out the same
-  way: the catalogue never names the source, and it carries no link for it.
+  source holds a user name, a password or an `authcfg`, and a WFS layer whose
+  source does (`wfs_source_signs_in`), is left out the same way: the catalogue
+  never names the source, and it carries no link for it.
 - A layer whose data is not in a file or at a web address, such as one held in
   a database, is left out.
 - A layer QGIS could not open is left out, unless it is a WMS, WMTS or XYZ
@@ -79,6 +80,7 @@ from .quac_server.model.stac_href import encode_asset_path
 from .quac_server.model.stac_size_and_count import FILE_EXTENSION, FILE_SIZE_FIELD
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
 from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
+from .quac_server.parse.parse_data_source import wfs_source_signs_in
 from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
 from .quac_server.parse.read_project_file import read_project_xml
 from .quac_server.util.catalogue_file_formats import QML_STYLE_MEDIA_TYPE
@@ -569,6 +571,8 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
     if source.kind in _WEB_MAP_KINDS:
         return None if source.url and server_wms_endpoint(source.url) else HOLDS_CREDENTIALS
     if source.kind == 'unsupported' and _web_map_source_holds_credentials(source.raw, source.hint):
+        return HOLDS_CREDENTIALS
+    if source.kind == 'unsupported' and (source.hint or '').lower() == 'wfs' and wfs_source_signs_in(source.raw):
         return HOLDS_CREDENTIALS
     if data is None:
         return NOT_A_FILE
