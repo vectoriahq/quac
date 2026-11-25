@@ -104,6 +104,30 @@ for project in /data/projects/*.qgz; do
 done
 ```
 
+On Windows, `qgis_process` is started through a batch file in the `bin` folder of the QGIS installation: `qgis_process-qgis-ltr.bat` for a long-term release or `qgis_process-qgis.bat` for the latest, under `C:\Program Files\QGIS <version>\` for QGIS's own installer or `C:\OSGeo4W\` for OSGeo4W. Enable the plugin once, as the Windows user the scheduled task runs as, since each user has their own QGIS profile:
+
+```bat
+"C:\Program Files\QGIS 3.40\bin\qgis_process-qgis-ltr.bat" plugins enable quac_catalogue
+```
+
+A batch file such as this, saved as `write-catalogues.cmd`, writes every project in a folder. Change the two paths to the installation's batch file and the projects' folder:
+
+```bat
+@echo off
+set QGIS_PROCESS="C:\Program Files\QGIS 3.40\bin\qgis_process-qgis-ltr.bat"
+for %%p in ("D:\GIS\Projects\*.qgz") do (
+  call %QGIS_PROCESS% run quac:writequaccatalogue -- "PROJECT=%%~fp" || echo Not written: %%~fp 1>&2
+)
+```
+
+Task Scheduler then runs it each night. This command, run once, creates the task:
+
+```bat
+schtasks /Create /SC DAILY /ST 02:00 /TN "Write QUAC catalogues" /TR "D:\GIS\write-catalogues.cmd"
+```
+
+The Windows commands follow the batch file names and folders QGIS's Windows installers use; they have not been run on Windows by this repository's checks.
+
 ### Limits
 
 - STAC software that opens a cloud folder's share link cannot follow relative paths: the link names the folder, and a file inside it is reached through the provider's own API, given the link and the file's path. An application that reads cloud folders through each provider's API, or software that opens the synced folder from disk or a copy on web storage, can follow them.
