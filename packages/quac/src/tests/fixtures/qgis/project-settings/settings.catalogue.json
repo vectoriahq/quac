@@ -1,0 +1,478 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "project-settings",
+  "title": "Project settings",
+  "description": "STAC catalogue generated from QGIS project \"Project settings\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/trees_1.json",
+      "type": "application/json",
+      "title": "Trees"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/inspections_1.json",
+      "type": "application/json",
+      "title": "Inspections"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/parcels_1.json",
+      "type": "application/json",
+      "title": "Parcels"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/parks_1.json",
+      "type": "application/json",
+      "title": "Parks"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "trees_1",
+      "title": "Trees",
+      "description": "Layer \"Trees\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Point"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./trees.geojson",
+          "type": "application/geo+json",
+          "title": "trees.geojson",
+          "roles": [
+            "data"
+          ],
+          "proj:code": "EPSG:4326"
+        },
+        "By species": {
+          "href": "./settings.qgs#trees_1/By%20species",
+          "type": "application/x-qgis-qml+xml",
+          "title": "By species",
+          "roles": [
+            "style",
+            "default"
+          ],
+          "quac:categorised_field": "species"
+        },
+        "By age": {
+          "href": "./settings.qgs#trees_1/By%20age",
+          "type": "application/x-qgis-qml+xml",
+          "title": "By age",
+          "roles": [
+            "style"
+          ],
+          "quac:categorised_field": "age"
+        },
+        "Plain": {
+          "href": "./settings.qgs#trees_1/Plain",
+          "type": "application/x-qgis-qml+xml",
+          "title": "Plain",
+          "roles": [
+            "style"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/trees_1.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./settings.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:private": true,
+      "quac:filters": [
+        {
+          "field": "species",
+          "name": "Species"
+        },
+        {
+          "field": "planted"
+        }
+      ],
+      "quac:legend_image": "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+      "quac:icon": "https://cdn.jsdelivr.net/npm/@material-symbols/svg-400@0/rounded/park.svg",
+      "quac:added_message": "Thanks for adding a tree.",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "Point"
+      ],
+      "quac:qgis_server_wms_name": "Trees",
+      "table:columns": [
+        {
+          "name": "tree_id"
+        },
+        {
+          "name": "species",
+          "quac:icon": "https://cdn.jsdelivr.net/npm/@phosphor-icons/core@2/assets/bold/tree-bold.svg"
+        },
+        {
+          "name": "age",
+          "quac:icon": "https://icons.example.test/age.svg"
+        },
+        {
+          "name": "planted"
+        },
+        {
+          "name": "marker_colour",
+          "quac:color": true,
+          "quac:icon": "https://cdn.jsdelivr.net/npm/heroicons@2/20/solid/swatch.svg"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "inspections_1",
+      "title": "Inspections",
+      "description": "Layer \"Inspections\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "No geometry"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "./inspections.geojson",
+          "type": "application/geo+json",
+          "title": "inspections.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/inspections_1.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./settings.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:related_to": [
+        {
+          "id": "tree_inspections",
+          "name": "Inspections",
+          "parent_collection_id": "trees_1",
+          "fields": [
+            {
+              "parent": "tree_id",
+              "child": "tree_id"
+            },
+            {
+              "parent": "species",
+              "child": "species"
+            }
+          ]
+        },
+        {
+          "id": "parcel_inspections",
+          "parent_collection_id": "parcels_1",
+          "fields": [
+            {
+              "parent": "parcel_id",
+              "child": "parcel_id"
+            }
+          ]
+        }
+      ],
+      "quac:icon": "https://inspector:example-secret@icons.example.test/clipboard.svg",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Inspections",
+      "table:columns": [
+        {
+          "name": "inspection_id"
+        },
+        {
+          "name": "tree_id"
+        },
+        {
+          "name": "species"
+        },
+        {
+          "name": "parcel_id"
+        },
+        {
+          "name": "kerb_id"
+        },
+        {
+          "name": "condition"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "parcels_1",
+      "title": "Parcels",
+      "description": "Layer \"Parcels\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://gis.example.test/arcgis/rest/services/Parcels/FeatureServer/2/query?where=%22zone%22+%3D+%27R1%27&outFields=*&outSR=4326&f=geojson",
+          "type": "application/geo+json",
+          "title": "ArcGIS feature service query: Parcels",
+          "roles": [
+            "data"
+          ],
+          "proj:code": "EPSG:3857"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/parcels_1.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./settings.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:filters": [
+        {
+          "field": "zone",
+          "name": "Zone"
+        }
+      ],
+      "quac:arcgis_layer_url": "https://gis.example.test/arcgis/rest/services/Parcels/FeatureServer/2",
+      "quac:arcgis_where": "\"zone\" = 'R1'",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "MultiPolygon"
+      ],
+      "quac:qgis_server_wms_name": "Parcels",
+      "table:columns": [
+        {
+          "name": "parcel_id"
+        },
+        {
+          "name": "zone"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "parks_1",
+      "title": "Parks",
+      "description": "Layer \"Parks\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "summaries": {
+        "quac:geometry_type": [
+          "Polygon"
+        ]
+      },
+      "assets": {
+        "data": {
+          "href": "https://data.example.test/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=city%3Aparks&OUTPUTFORMAT=application%2Fjson",
+          "type": "application/geo+json",
+          "title": "WFS GetFeature: city:parks",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/parks_1.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./settings.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": false,
+      "quac:editable": true,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:wfs_endpoint": "https://data.example.test/wfs",
+      "quac:wfs_type_name": "city:parks",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/table/v1.3.0/schema.json",
+        "https://stac-extensions.github.io/vector/v0.1.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "vector:geometry_types": [
+        "MultiPolygon"
+      ],
+      "quac:qgis_server_wms_name": "Parks",
+      "table:columns": [
+        {
+          "name": "park_id"
+        }
+      ]
+    }
+  ],
+  "stac_extensions": [
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+  ]
+}
