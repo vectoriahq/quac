@@ -212,7 +212,7 @@ The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/sc
 
 - **The spec**, the field reference and its per-field examples: [`packages/quac/spec/`](packages/quac/spec/).
 - **The JavaScript package**, `@vectoriahq/quac`, which writes QUAC catalogues from QGIS projects and other sources and reads them back: [`packages/quac/`](packages/quac/).
-- **The QGIS Server plugin**, which serves a project's QUAC catalogue from QGIS Server at `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/). It is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
+- **The QGIS plugin**, which serves a project's QUAC catalogue from QGIS Server at `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`, and in QGIS Desktop writes it into a chosen folder as STAC documents each time the project is saved, with the Python port of the JavaScript reader it is built on: [`packages/quac-qgis-server/`](packages/quac-qgis-server/). It is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
 - **The site's front page and the demo catalogue**, published at [`https://vectoriahq.github.io/quac/`](https://vectoriahq.github.io/quac/): [`site/`](site/).
 
 ## Implementations
@@ -220,7 +220,7 @@ The schema is [`packages/quac/src/schema/quac.schema.json`](packages/quac/src/sc
 | Implementation | Writes | Reads |
 |---|---|---|
 | [`@vectoriahq/quac`](packages/quac/), JavaScript | from QGIS projects, QGIS Server, WFS, OGC API Features, ArcGIS, and folders and files of data | each Collection's settings |
-| [QUAC for QGIS Server](packages/quac-qgis-server/), a QGIS Server plugin in Python | from a project QGIS Server publishes | |
+| [QUAC for QGIS Server and QGIS Desktop](packages/quac-qgis-server/), a QGIS plugin in Python | from a project QGIS Server publishes, or a project saved in QGIS Desktop | |
 | Groundwork, Vectoria's web app | through `@vectoriahq/quac` | every map it opens, through `@vectoriahq/quac` |
 
 An application that reads or writes QUAC can be listed here: [open an issue](https://github.com/vectoriahq/quac/issues) naming it.

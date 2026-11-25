@@ -6,7 +6,9 @@ name: QGIS Server
 # a .qgz and a project kept in PostgreSQL, and check_catalogue.py checks the
 # plugin's answers, its leak rules, its cache, its refusals and each test
 # person's catalogue. The value labels demo then compares WFS, GetFeatureInfo
-# and the catalogue's quac:values. The reports are the run's summary.
+# and the catalogue's quac:values. The reports are the run's summary. The
+# QGIS Desktop job saves a made-up project with the plugin's Desktop part in
+# the official QGIS image's Python (tests/desktop/check_desktop.py).
 
 on:
   push:
@@ -42,6 +44,29 @@ jobs:
       - name: Run the Python tests
         working-directory: packages/quac-qgis-server
         run: python3 -m unittest discover -s tests -t . -v
+
+  qgis-desktop:
+    name: QGIS Desktop ${{ matrix.label }}
+    needs: reader
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: 3.44 LTR
+            image: qgis/qgis:3.44.16-noble
+          - label: 4.2
+            image: qgis/qgis:4.2.3-resolute
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Save a project with the plugin in QGIS Desktop's Python
+        run: |
+          docker pull --quiet "${{ matrix.image }}"
+          # The image's python3 may not have QGIS's modules on its path, so find them.
+          docker run --rm -v "$PWD:/io" -w /io/packages/quac-qgis-server -e QT_QPA_PLATFORM=offscreen "${{ matrix.image }}" sh -c '
+            core=$(find / -xdev -type f -path "*/qgis/core/__init__.py" 2>/dev/null | head -n 1)
+            PYTHONPATH=$(dirname "$(dirname "$(dirname "$core")")") python3 tests/desktop/check_desktop.py'
 
   qgis-server:
     name: QGIS Server ${{ matrix.label }}

@@ -1,4 +1,4 @@
-"""Mirrors `packages/quac/src/util/catalogueFileFormats.ts`, as far as a QGIS layer's data asset needs: each format's extensions, role and media type."""
+"""Mirrors `packages/quac/src/util/catalogueFileFormats.ts`, as far as a QGIS layer's data and style assets need: each format's extensions, role and media type."""
 
 from __future__ import annotations
 
@@ -8,6 +8,9 @@ from typing import Optional, Union
 from ..js_compat import js_trim
 
 GEOJSON_MEDIA_TYPE = 'application/geo+json'
+
+# QGIS layer style. QML has no registered media type, so this is an unregistered one.
+QML_STYLE_MEDIA_TYPE = 'application/x-qgis-qml+xml'
 
 # The roles of a file a project layer's data source can name.
 PROJECT_DATA_ROLES = ('data', 'table')
@@ -22,7 +25,7 @@ CATALOGUE_FILE_FORMATS: tuple[dict[str, object], ...] = (
     {'id': 'csv', 'role': 'table', 'extensions': ('csv',), 'media_type': 'text/csv'},
     {'id': 'shapefile', 'role': 'data', 'extensions': ('shp',), 'media_type': 'application/x-esri-shape'},
     {'id': 'sld', 'role': 'style', 'extensions': ('sld',), 'media_type': 'application/vnd.ogc.sld+xml'},
-    {'id': 'qml', 'role': 'style', 'extensions': ('qml',), 'media_type': 'application/x-qgis-qml+xml'},
+    {'id': 'qml', 'role': 'style', 'extensions': ('qml',), 'media_type': QML_STYLE_MEDIA_TYPE},
     {'id': 'qgis-project', 'role': 'project', 'extensions': ('qgs', 'qgz'), 'media_type': None},
 )
 

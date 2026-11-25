@@ -277,8 +277,12 @@ def _serve_locks(collection: dict[str, Any], hidden: set[str]) -> None:
     }
 
 
-def _with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]) -> dict[str, Any]:
-    """The column with the `type` QGIS Server reports for its field, and the `data_type` beside it, where QGIS Server reports one."""
+def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]) -> dict[str, Any]:
+    """
+    The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ...}`
+    as `field_types` holds it, and the `data_type` beside it, where QGIS reports one.
+    The plugin's QGIS Desktop catalogue (`quac_catalogue/publish.py`) gives its columns their types by it too.
+    """
     column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', '')) if field_type else None
     return with_data_type({**column, 'type': column_type}) if column_type else column
 
@@ -288,7 +292,7 @@ def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _Serve
     if not isinstance(columns, list):
         return
     field_types = context.field_types.get(layer_id, {})
-    kept = [_with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
+    kept = [with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
     if kept:
         collection['table:columns'] = kept
     else:

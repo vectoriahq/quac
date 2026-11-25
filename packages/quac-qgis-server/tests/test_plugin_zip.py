@@ -38,6 +38,15 @@ class PluginZipTest(unittest.TestCase):
         for name in ('metadata.txt', '__init__.py', 'LICENSE', 'quac_server/__init__.py'):
             self.assertIn(f'quac_catalogue/{name}', self.names)
 
+    def test_holds_the_server_and_desktop_parts(self) -> None:
+        for name in ('service.py', 'catalogue.py', 'access.py', 'qgis_inputs.py', 'desktop.py', 'publish.py', 'quac_server/model/stac_styles.py'):
+            self.assertIn(f'quac_catalogue/{name}', self.names)
+
+    def test_starts_in_qgis_server_and_in_qgis_desktop(self) -> None:
+        source = (Path(__file__).resolve().parent.parent / 'quac_catalogue' / '__init__.py').read_text(encoding='utf-8')
+        self.assertRegex(source, r'def serverClassFactory\(')
+        self.assertRegex(source, r'def classFactory\(')
+
     def test_metadata_states_qgis_4_support_by_its_maximum_version_alone(self) -> None:
         # The QGIS plugin repository reads QGIS 4 support from qgisMaximumVersion and flags supportsQt6 as deprecated.
         metadata = {key.lower(): value for key, value in read_metadata().items()}

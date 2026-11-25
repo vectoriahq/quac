@@ -1,10 +1,12 @@
-# QUAC for QGIS Server
+# QUAC for QGIS Server and QGIS Desktop
 
-The QUAC Catalogue plugin for QGIS Server, and the Python it is built on. The plugin is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
+The QUAC Catalogue plugin for QGIS Server and QGIS Desktop, and the Python it is built on. The plugin is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
 
 ## The plugin
 
-`quac_catalogue/` is the plugin. On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>` answers the open project's catalogue as one STAC document with its Collections inlined. An installed copy holds `quac_server` inside its folder. `build_plugin.py` lays it out that way, both for the plugin's zip and for the QGIS Server job. The plugin's `icon.png` is `assets/quac-mark.svg` drawn at 128 pixels square.
+`quac_catalogue/` is the plugin, one plugin for both. QGIS Server starts it through `serverClassFactory` and QGIS Desktop through `classFactory` (`quac_catalogue/__init__.py`), and each imports only its own part: the server never loads `desktop.py`, which needs `qgis.gui`, and QGIS Desktop never loads `service.py`.
+
+On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>` answers the open project's catalogue as one STAC document with its Collections inlined. An installed copy holds `quac_server` inside its folder. `build_plugin.py` lays it out that way, both for the plugin's zip and for the QGIS Server job. The plugin's `icon.png` is `assets/quac-mark.svg` drawn at 128 pixels square.
 
 - It reads the project's stored text and builds the catalogue with `quac_server`, taking from QGIS what the text does not hold: each field's type and each layer's WGS84 box (`qgis_inputs.py`). The links name the address QGIS Server's own `QgsServerProjectUtils.wmsServiceUrl` gives.
 - It keeps one copy per project, server address and modification time while QGIS's access controls allow a shared copy, which is while no access-control plugin gives a cache key (`QgsAccessControl.fillCacheKey`), and builds each answer afresh otherwise. The `X-QUAC-Cache` header says `hit`, `miss` or `off`.
@@ -20,6 +22,78 @@ The QUAC Catalogue plugin for QGIS Server, and the Python it is built on. The pl
   QGIS answers nothing finer than that per layer. So which fields a person sees but may not change, changing details but not moving shapes, and which features they may edit are not in the catalogue. The access plugin refuses such a save.
 
 `quac_catalogue/catalogue.py` and `quac_catalogue/access.py` need no QGIS module, so `tests/test_catalogue.py` and `tests/test_access.py` check the answer, the cache, the warning and each person's catalogue anywhere.
+
+## In QGIS Desktop
+
+When a project is saved, the plugin writes its catalogue as STAC documents into a folder chosen in the project's settings, with each layer's data linked by a path relative to the document that links it. The folder can then be read by STAC software as it is: opened from disk, from a synced cloud folder, or from a copy on web storage. Choosing a folder inside the project's folder publishes the layers in it while the project file stays out of what is shared.
+
+### The settings
+
+A QUAC page in Project Properties:
+
+- **Write a STAC catalogue when the project is saved**, off until it is ticked.
+- **Folder**, the project's own folder until another is chosen.
+- **Root file**, the root document's name, shown and not editable.
+
+Both are saved in the project (`QgsProject.writeEntry`, scope `quac`): the option as `catalogue/write_on_save`, and the folder as `catalogue/folder`, a path relative to the project file, empty for the project's own folder. So they travel with the project. A folder on another drive, which has no path relative to the project, is saved as it is. For a project not saved as a `.qgs` or `.qgz` file, such as one kept in a database, the page's controls are off and it says to save the project as a file first, and a save writes nothing.
+
+### What it writes
+
+For a project `Parks.qgz` with `publish/` chosen:
+
+```
+Parks Project/
+├── Parks.qgz                        not in the chosen folder, so not shared
+└── publish/                         the chosen folder
+    ├── Parks.stac.json              the root Catalog
+    ├── Parks.stac/
+    │   ├── catalogs/
+    │   │   └── recreation/
+    │   │       ├── catalog.json
+    │   │       └── collections/
+    │   │           └── <layer id>.json
+    │   ├── collections/
+    │   │   └── <layer id>.json      a layer outside any group
+    │   └── styles/
+    │       └── <layer id>.qml
+    └── vector/
+        └── parks.geojson
+```
+
+- The root document is `<project>.stac.json`, `<project>` being the project file's name less `.qgs` or `.qgz`, and every other document is under `<project>.stac/`, laid out by `split_catalogue`. So several projects can publish into one folder. The documents follow the layer tree: a group's folder is its name through `slugify`, and a Collection's file is its QGIS layer id.
+- The catalogue is the project file's (`generate_stac_catalogue`), with each column's type as QGIS reports it, by the same `with_field_type` the server route uses. It holds the fields the plugin's first release lists (`quac_server/declared_fields.json`), less the names QGIS Server would give a layer and the WMS and WFS links, which are the server's. Each Collection's data asset names its data file, or a web layer's own address.
+- Each layer's current style is written as `<project>.stac/styles/<the Collection's file name>.qml`, as QGIS writes a style (`QgsMapLayer.exportNamedStyle`), with only its drawing settings: symbols, labels, diagrams and rendering. A layer's form settings are left out, because a Value Relation's there names its lookup's data source, which can hold a password. The Collection gets a style asset with the `style` and `default` roles and the QML media type, keyed by the style's name as the spec's § Styles says. A style whose QML names the project's folder or the chosen folder is not written, with a warning.
+
+### The folder rules
+
+- A data file in the chosen folder or below it is linked by its path relative to the document, worked out from the project's folder and the chosen folder, so a Windows drive or an absolute path never reaches an href.
+- A layer is left out, and the message bar names it, where its data file is outside the chosen folder, where its data is not in a file, such as a layer held in a database, where QGIS could not open its data, or where its web address holds a user name or password, which the server plugin refuses for its own address too. A layer from a web feature service or an ArcGIS service keeps its address. A layer from a WMS, WMTS or XYZ service is written with no address, as the Python writes it today.
+- Nothing names a layer left out: a `quac:value_relation` whose lookup was left out is not written, and the warning says what to do to keep it. A group left with no layer is left out too. A layer the project leaves out of WMS is left out, as in the served catalogue.
+- Each Collection's `via` link to the project file is written only where the project file is in the chosen folder or below it.
+
+### How it writes
+
+- Each file is written to a temporary file in its own folder and then renamed over the old one, so a sync client never uploads half a file. A file whose bytes have not changed is left as it is.
+- An existing `<project>.stac.json` that is not a QUAC Catalog, because it is not JSON, is not `type: Catalog` or lists no QUAC schema in `stac_extensions`, is left as it is, nothing is written, and the message bar says so.
+- After writing, the documents and styles under `<project>.stac/` that the previous catalogue linked and the new one does not are removed, found by walking the previous documents' `child` links and style assets. Nothing else is removed, and nothing outside `<project>.stac/`. A folder under `<project>.stac/` left empty is removed.
+- A failure never stops the save. The message bar says what happened and what to do, and the details go to the QGIS log under the tag `QUAC`. A save that leaves layers out shows one warning listing them; any other shows a short message naming the root file.
+
+### Limits
+
+- STAC software that opens a cloud folder's share link cannot follow relative paths: the link names the folder, and a file inside it is reached through the provider's own API, given the link and the file's path. An application that reads cloud folders through each provider's API, or software that opens the synced folder from disk or a copy on web storage, can follow them.
+- Every `.tif` or `.tiff` data file is given the Cloud Optimized GeoTIFF media type, `image/tiff; application=geotiff; profile=cloud-optimized`, whether or not it is one (`quac_server/util/catalogue_file_formats.py`). Software reading the whole file reads a plain GeoTIFF as usual. Software that trusts the label may request parts of the file over the web, which only a cloud-optimised GeoTIFF is laid out for, so on a plain GeoTIFF it can be slow or fail.
+- The catalogue is as current as the last save with the option on.
+- It writes the settings the Python reads today: field names, aliases and types, Value Map and Value Relation choices, locks, the display field, scale range and opacity. The form layout, relations, filters and the other settings the JavaScript writes are not written yet.
+
+### Its code and checks
+
+`quac_catalogue/publish.py` works out what to write, from the saved project's bytes and what QGIS gives, with no QGIS module, and `quac_catalogue/desktop.py` reads those from QGIS, draws the settings page and writes the files. `tests/test_publish.py` checks `publish.py` anywhere: the paths, the hrefs and the folder rules, Windows paths among them, the styles, what an earlier catalogue leaves to remove and the messages, and that no document written for any fixture holds an absolute path, a user name or a password. It imports the plugin as QGIS installs it (`tests/installed_plugin.py`).
+
+`tests/desktop/check_desktop.py` runs the Desktop part in QGIS's own Python: it starts the plugin through `classFactory` with a stand-in for QGIS's `iface`, saves a made-up project with the option off and on, after removing a layer and after a layer's data file is deleted, and draws the settings page. The `QGIS Desktop` job of `.github/workflows/qgis-server.yml` runs it in the official `qgis/qgis` image. To run it where QGIS's Python bindings are installed:
+
+```bash
+cd packages/quac-qgis-server && QT_QPA_PLATFORM=offscreen python3 tests/desktop/check_desktop.py settings-page.png
+```
 
 ## The Python
 
@@ -60,7 +134,7 @@ cd packages/quac-qgis-server && python3 -m quac_server ../quac/spec/examples/ser
 cd packages/quac-qgis-server && python3 -m quac_server --tree ../quac/src/tests/fixtures/qgis/server-groups/groups.qgs
 ```
 
-The first runs the tests; CI runs them in the `Test` job of `ci.yml`, which `main` requires. The second prints one project's catalogue, and the third its layer tree.
+The first runs the tests, the Desktop part's included; CI runs them in the `Test` job of `ci.yml`, which `main` requires. The second prints one project's catalogue, and the third its layer tree.
 
 ## Inside QGIS Server
 
