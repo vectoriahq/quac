@@ -1,15 +1,15 @@
-"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, each field's type, and each layer's WGS84 box."""
+"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, each field's type, each layer's WGS84 box, and the map canvas extent in WGS84."""
 
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Any, Callable, Optional
 
-from qgis.core import QgsReadWriteContext, QgsVectorLayer
+from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsCsException, QgsReadWriteContext, QgsRectangle, QgsVectorLayer
 from qgis.PyQt.QtCore import QBuffer, QIODevice, QMetaType, QVariant
 
 from .access import LayerAnswer
-from .quac_server.model.qgs_project import BoundingBox
+from .quac_server.model.qgs_project import BoundingBox, MapExtent
 
 
 def _read_write_mode() -> Any:
@@ -74,6 +74,29 @@ def layer_extents(project: Any) -> dict[str, BoundingBox]:
             continue
         extents[layer.id()] = BoundingBox(box.xMinimum(), box.yMinimum(), box.xMaximum(), box.yMaximum())
     return extents
+
+
+def wgs84_box(project: Any) -> Callable[[MapExtent], Optional[BoundingBox]]:
+    """
+    A way to give the map canvas extent a project saves (`QgsProject.map_extent`
+    of the parsed project) in WGS84, through the project's transform settings:
+    None where QGIS does not know its coordinate system or cannot transform it.
+    """
+
+    def to_wgs84(extent: MapExtent) -> Optional[BoundingBox]:
+        crs = QgsCoordinateReferenceSystem(extent.crs or '')
+        if not crs.isValid():
+            return None
+        transform = QgsCoordinateTransform(crs, QgsCoordinateReferenceSystem('EPSG:4326'), project.transformContext())
+        try:
+            box = transform.transformBoundingBox(QgsRectangle(extent.xmin, extent.ymin, extent.xmax, extent.ymax))
+        except QgsCsException:
+            return None
+        if box.isNull() or box.isEmpty():
+            return None
+        return BoundingBox(box.xMinimum(), box.yMinimum(), box.xMaximum(), box.yMaximum())
+
+    return to_wgs84
 
 
 def access_answers(project: Any, access_controls: Any, layer_ids_by_name: dict[str, list[str]], columns_by_name: dict[str, list[str]]) -> dict[str, LayerAnswer]:

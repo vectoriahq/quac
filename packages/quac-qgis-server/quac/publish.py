@@ -6,7 +6,9 @@ QGIS and writes the files.
 `plan_publication` takes the saved project's file name and bytes, the field
 types and WGS84 boxes QGIS gives (`qgis_inputs.field_types` and
 `layer_extents`), the project file's folder, the chosen folder, each layer's
-current style as QML, and a way to read a file already in the chosen folder.
+current style as QML, a way to read a file already in the chosen folder, and
+a way to give the map canvas extent the project saves in WGS84
+(`qgis_inputs.wgs84_box`), the catalogue's `quac:initial_view`.
 It returns a `Publication`: the files to write, each by its path relative to
 the chosen folder, the files to remove, and what was left out and why.
 
@@ -15,7 +17,8 @@ column's type from QGIS, and less the names QGIS Server would give a layer. It
 is written as separate documents (`split_catalogue`): the root Catalog as
 `<project>.stac.json` in the chosen folder, every other document under
 `<project>.stac/`, and each layer's style as
-`<project>.stac/styles/<the Collection's file name stem>.qml`.
+`<project>.stac/styles/<the Collection's file name stem>.qml`, with the
+`quac:categorised_field` that style has in the project file.
 
 The folder rules:
 
@@ -36,7 +39,10 @@ The folder rules:
   a layer is written with its address all the same, without the extent and
   field types QGIS would have given, or left out where its source holds a
   user name, a password or an `authcfg`.
-- A Value Relation reading its choices from a layer left out is not written.
+- A Value Relation reading its choices from a layer left out is not written,
+  nor is a relation whose parent layer is left out, nor the initial active
+  layer (`quac:active_collection`) where it is left out.
+- An icon whose web address holds a user name or password is not written.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
 """
@@ -55,8 +61,8 @@ from .quac_server.generate.normalized_project import build_stac_extent
 from .quac_server.js_compat import url_search_params
 from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
-from .quac_server.generate.stac_catalogue import generate_stac_catalogue
-from .quac_server.model.qgs_project import BoundingBox, LayerEntry
+from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue
+from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
 from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from .quac_server.model.stac_href import encode_asset_path
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
@@ -133,6 +139,23 @@ class DroppedChoices:
     lookup: str
 
 
+@dataclass(frozen=True)
+class DroppedRelation:
+    """A relation not written because its parent layer was left out: the layer holding it, the relation's name, and the parent's."""
+
+    layer: str
+    relation: str
+    parent: str
+
+
+@dataclass(frozen=True)
+class DroppedIcon:
+    """An icon not written because its web address holds a user name or password: the layer's, or with `field` set, a field's."""
+
+    layer: str
+    field: Optional[str] = None
+
+
 @dataclass
 class Publication:
     root_file_name: str
@@ -143,6 +166,8 @@ class Publication:
     removals: list[str] = field(default_factory=list)
     left_out: list[LeftOutLayer] = field(default_factory=list)
     dropped_choices: list[DroppedChoices] = field(default_factory=list)
+    dropped_relations: list[DroppedRelation] = field(default_factory=list)
+    dropped_icons: list[DroppedIcon] = field(default_factory=list)
     # Layers whose style was not written because its QML names a folder on this computer.
     skipped_styles: list[str] = field(default_factory=list)
     # Why nothing is written, where nothing is.
@@ -158,8 +183,19 @@ class Publication:
             reason = reasons.get(dropped.lookup, OUTSIDE_FOLDER)
             step = f"Move {dropped.lookup}'s data into the chosen folder to keep them." if reason == OUTSIDE_FOLDER else _NEXT_STEPS[reason]
             sentences.append(f'The choices for {dropped.layer}, field {dropped.field}, were left out, because they come from {dropped.lookup}, which was left out. {step}')
+        for relation in self.dropped_relations:
+            sentences.append(f'The relation {relation.relation} of {relation.layer} was left out, because its parent layer, {relation.parent}, was left out.')
+        for icon in self.dropped_icons:
+            sentences.append(f'The icon of {_icon_owner(icon)} was left out, because its web address holds a user name or password. {_ICON_STEP}')
         sentences += [f"The style of {name} was not written, because it names a folder on this computer." for name in self.skipped_styles]
         return sentences
+
+
+_ICON_STEP = 'To include an icon, give it an address without a user name or password.'
+
+
+def _icon_owner(icon: DroppedIcon) -> str:
+    return icon.layer if icon.field is None else f'{icon.layer}, field {icon.field}'
 
 
 def catalogue_names(project_file_name: str) -> tuple[str, str]:
@@ -209,6 +245,7 @@ def plan_publication(
     read_existing: Callable[[str], Optional[bytes]],
     path: Any = os.path,
     opened_layer_ids: Optional[set[str]] = None,
+    wgs84_box: Optional[Callable[[MapExtent], Optional[BoundingBox]]] = None,
 ) -> Publication:
     """
     What to write into `folder`, the chosen folder, for a saved project.
@@ -220,6 +257,8 @@ def plan_publication(
     None where there is none. `opened_layer_ids` holds the layers QGIS opened,
     its valid layers; a layer of the project not in it is left out, unless it
     is a WMS, WMTS or XYZ layer. None takes every layer as opened.
+    `wgs84_box` gives the project's map canvas extent in WGS84, or None where
+    it cannot; with none given, the catalogue has no initial view.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -238,7 +277,8 @@ def plan_publication(
             return publication
 
     project = parse_qgs_xml(read_project_xml(project_file_name, project_bytes))
-    catalogue = generate_stac_catalogue(project, layer_wgs84_extents)
+    initial_view = wgs84_box(project.map_extent) if wgs84_box is not None and project.map_extent is not None else None
+    catalogue = generate_stac_catalogue(project, layer_wgs84_extents, initial_view)
     layers_by_id = {layer.id: layer for layer in project.layers}
     project_folder = path.normpath(project_folder)
     folder = path.normpath(folder)
@@ -257,11 +297,30 @@ def plan_publication(
             left_out_ids.add(collection['id'])
             publication.left_out.append(LeftOutLayer(collection.get('title', collection['id']), reason))
     _leave_out(catalogue, left_out_ids)
+    if catalogue.get('quac:active_collection') in left_out_ids:
+        del catalogue['quac:active_collection']
 
     project_href = _inside(path.join(project_folder, project_file_name), folder, path)
     for collection in _collections(catalogue):
         for key in _SERVER_FIELDS:
             collection.pop(key, None)
+        title = collection.get('title', collection['id'])
+        relations = collection.get('quac:related_to')
+        if isinstance(relations, list):
+            kept_relations = []
+            for relation in relations:
+                parent = relation.get('parent_collection_id') if isinstance(relation, dict) else None
+                if parent in left_out_ids:
+                    publication.dropped_relations.append(DroppedRelation(title, relation.get('name') or relation.get('id'), titles.get(parent, parent)))
+                else:
+                    kept_relations.append(relation)
+            if kept_relations:
+                collection['quac:related_to'] = kept_relations
+            else:
+                del collection['quac:related_to']
+        if _holds_userinfo(collection.get('quac:icon')):
+            del collection['quac:icon']
+            publication.dropped_icons.append(DroppedIcon(title))
         columns = collection.get('table:columns')
         if isinstance(columns, list):
             types = field_types.get(collection['id'], {})
@@ -270,7 +329,10 @@ def plan_publication(
                 relation = column.get('quac:value_relation')
                 if isinstance(relation, dict) and relation.get('collection') in left_out_ids:
                     column = {key: value for key, value in column.items() if key != 'quac:value_relation'}
-                    publication.dropped_choices.append(DroppedChoices(collection.get('title', collection['id']), column['name'], titles.get(relation['collection'], relation['collection'])))
+                    publication.dropped_choices.append(DroppedChoices(title, column['name'], titles.get(relation['collection'], relation['collection'])))
+                if _holds_userinfo(column.get('quac:icon')):
+                    column = {key: value for key, value in column.items() if key != 'quac:icon'}
+                    publication.dropped_icons.append(DroppedIcon(title, column['name']))
                 kept.append(with_field_type(column, types.get(column['name'])))
             collection['table:columns'] = kept
         if project_href is not None:
@@ -294,12 +356,16 @@ def plan_publication(
         stem = posixpath.basename(entry['path'])[:-len('.json')]
         style_path = f'{children_folder}/styles/{_unclaimed(stem, ".qml", style_names)}'
         assets = document.setdefault('assets', {})
-        assets[style_asset_key(assets, style.name)] = {
+        asset: dict[str, Any] = {
             'href': encode_asset_path(posixpath.relpath(style_path, posixpath.dirname(entry['path']))),
             'type': QML_STYLE_MEDIA_TYPE,
             'title': style.name,
             'roles': ['style', DEFAULT_STYLE_ROLE],
         }
+        categorised_field = _categorised_field(layers_by_id.get(document['id']), style.name)
+        if categorised_field:
+            asset[QUAC_CATEGORISED_FIELD] = categorised_field
+        assets[style_asset_key(assets, style.name)] = asset
         style_files.append((style_path, style.qml))
 
     publication.files = [*style_files, *((entry['path'], _encode(entry['document'])) for entry in documents[1:]), (documents[0]['path'], _encode(documents[0]['document']))]
@@ -329,7 +395,7 @@ def message(publication: Publication) -> tuple[str, str]:
     """
     if publication.refusal:
         return 'warning', publication.refusal
-    if not (publication.left_out or publication.dropped_choices or publication.skipped_styles):
+    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_icons or publication.skipped_styles):
         return 'info', f'Wrote the STAC catalogue {publication.root_file_name}.'
     sentences = [f'Wrote the STAC catalogue {publication.root_file_name}.']
     if publication.left_out:
@@ -339,10 +405,30 @@ def message(publication: Publication) -> tuple[str, str]:
     if publication.dropped_choices:
         listed = ', '.join(f'{dropped.layer} ({dropped.field}, from {dropped.lookup})' for dropped in publication.dropped_choices)
         sentences.append(f'Choices that come from a layer left out were left out too: {listed}.')
+    if publication.dropped_relations:
+        listed = ', '.join(f'{relation.layer} ({relation.relation}, to {relation.parent})' for relation in publication.dropped_relations)
+        sentences.append(f'Relations to a layer left out were left out too: {listed}.')
+    if publication.dropped_icons:
+        listed = ', '.join(_icon_owner(icon) for icon in publication.dropped_icons)
+        sentences.append(f'Icons whose web address holds a user name or password were left out: {listed}.')
     if publication.skipped_styles:
         sentences.append(f"The style of {', '.join(publication.skipped_styles)} was not written, because it names a folder on this computer.")
     sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
+    if publication.dropped_icons:
+        sentences.append(_ICON_STEP)
     return 'warning', ' '.join(sentences)
+
+
+def _holds_userinfo(address: Any) -> bool:
+    """Whether a written address, such as an icon's, holds a user name or password."""
+    return isinstance(address, str) and _USERINFO.match(address) is not None
+
+
+def _categorised_field(layer: Optional[LayerEntry], style_name: str) -> Optional[str]:
+    """The field the layer's style of this name classifies by in the project file, where it is a categorised or graduated one."""
+    if layer is None:
+        return None
+    return next((style.categorised_field for style in layer.styles if style.name == style_name), None)
 
 
 def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project_folder: str, folder: str, path: Any) -> Optional[str]:

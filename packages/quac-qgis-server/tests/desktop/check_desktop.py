@@ -9,9 +9,10 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
 
 1. with the option off, and checks nothing is written;
 2. with the option on and `publish/` chosen, and checks the documents, the
-   data hrefs, the QML styles, the web map links of an XYZ layer and of a WMS
-   layer whose made-up server QGIS cannot reach, and the message bar's one
-   warning for a layer whose data is outside the folder;
+   data hrefs, the QML styles and a categorised one's field, the map
+   canvas's extent in WGS84 as the initial view, the web map links of an XYZ
+   layer and of a WMS layer whose made-up server QGIS cannot reach, and the
+   message bar's one warning for a layer whose data is outside the folder;
 3. after removing a layer, and checks only that layer's document and style
    are removed;
 4. after a layer's data file is deleted and the project read again, and checks
@@ -51,7 +52,19 @@ sys.path.insert(0, str(PACKAGE))
 
 from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin  # noqa: E402
 
-from qgis.core import QgsApplication, QgsEditorWidgetSetup, QgsProcessingException, QgsProcessingFeedback, QgsProject, QgsRasterLayer, QgsVectorLayer  # noqa: E402
+from qgis.core import (  # noqa: E402
+    QgsApplication,
+    QgsCategorizedSymbolRenderer,
+    QgsCoordinateReferenceSystem,
+    QgsEditorWidgetSetup,
+    QgsProcessingException,
+    QgsProcessingFeedback,
+    QgsProject,
+    QgsRasterLayer,
+    QgsRectangle,
+    QgsVectorLayer,
+)
+from qgis.gui import QgsMapCanvas  # noqa: E402
 from qgis.PyQt.QtWidgets import QMainWindow, QMenu  # noqa: E402
 
 try:
@@ -236,6 +249,11 @@ def main() -> int:
             'Layer': kinds_layer.id(), 'LayerName': 'Kinds', 'Key': 'code', 'Value': 'label',
             'AllowNull': False, 'AllowMulti': False, 'OrderByValue': False, 'FilterExpression': '',
         }))
+        parks_layer.setRenderer(QgsCategorizedSymbolRenderer('kind', []))
+        # A map canvas writes its extent into the project on save, as QGIS Desktop's does.
+        canvas = QgsMapCanvas()
+        canvas.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:3857'))
+        canvas.setExtent(QgsRectangle(12890000, -3760000, 12900000, -3750000))
         project_file = home / 'Parks.qgz'
 
         # 1. The option off.
@@ -277,6 +295,12 @@ def main() -> int:
         check(parks_document['assets']['data']['href'] == '../../../../vector/parks.geojson', f"Parks's data href is relative to its document: {parks_document['assets']['data']['href']}")
         style = parks_document['assets'].get('default', {})
         check(style.get('roles') == ['style', 'default'] and style.get('type') == 'application/x-qgis-qml+xml', 'Parks has a QML style asset with the style and default roles')
+        check(style.get('quac:categorised_field') == 'kind', f"Parks's categorised style names the field it classifies by: {style}")
+        view = root_document.get('quac:initial_view')
+        print('      initial view:', view)
+        # The canvas widens the extent to its own shape, so the view is checked to be around the extent's centre, 115.838, -31.936, in degrees.
+        around_centre = isinstance(view, list) and len(view) == 4 and 115.7 < view[0] < 115.838 < view[2] < 116 and -32.1 < view[1] < -31.936 < view[3] < -31.8
+        check(around_centre, "the root's initial view is the canvas's extent in WGS84")
         qml = (publish / 'Parks.stac' / 'styles' / f'{posixpath.basename(parks_name)[:-5]}.qml').read_text(encoding='utf-8')
         check('<renderer-v2' in qml and '<!DOCTYPE qgis' in qml, 'the QML is the style QGIS writes')
         check('ValueRelation' not in qml and str(work) not in qml, "the QML holds no form settings and no path of this computer")

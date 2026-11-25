@@ -95,6 +95,27 @@ def parks_project(*, kinds: str = KINDS, trails: str = TRAILS) -> bytes:
     )
 
 
+def with_parts(project: bytes, parts: str) -> bytes:
+    """The project with `parts`, such as `<relations>` or `<properties>`, before its layers."""
+    return project.replace(b'<projectlayers>', parts.encode('utf-8') + b'<projectlayers>', 1)
+
+
+def with_layer_parts(layer: str, parts: str) -> str:
+    """A `<maplayer>` with `parts` added at its end."""
+    return layer.replace('</maplayer>', f'{parts}</maplayer>', 1)
+
+
+def layer_variables(**variables: str) -> str:
+    """A layer's `<customproperties>` holding its variables."""
+    names = ''.join(f'<Option type="QString" value={quoteattr(name)}/>' for name in variables)
+    values = ''.join(f'<Option type="QString" value={quoteattr(value)}/>' for value in variables.values())
+    return f'<customproperties><Option type="Map"><Option name="variableNames" type="StringList">{names}</Option><Option name="variableValues" type="StringList">{values}</Option></Option></customproperties>'
+
+
+def relation_xml(relation_id: str, name: str, parent: str, child: str, field: str = 'id') -> str:
+    return f'<relation id={quoteattr(relation_id)} name={quoteattr(name)} referencedLayer={quoteattr(parent)} referencingLayer={quoteattr(child)} strength="Association"><fieldRef referencedField={quoteattr(field)} referencingField={quoteattr(field)}/></relation>'
+
+
 def plan(project: bytes, *, folder: str = PUBLISH_FOLDER, project_folder: str = PROJECT_FOLDER, existing: Optional[dict[str, bytes]] = None, styles: Optional[dict[str, Any]] = None, field_types: Optional[dict[str, Any]] = None, file_name: str = 'Parks.qgz', path: Any = posixpath):
     return publish.plan_publication(file_name, qgz(project) if file_name.endswith('.qgz') else project, field_types or {}, {}, project_folder, folder, styles or {}, (existing or {}).get, path)
 
@@ -425,6 +446,79 @@ class Styles(unittest.TestCase):
         self.assertNotIn('default', collection(publication, 'parks_1')[1]['assets'])
 
 
+class ProjectSettings(unittest.TestCase):
+    """The settings that name another layer, and those that hold an address, under the folder rules."""
+
+    def test_drops_a_relation_whose_parent_is_left_out_and_says_so(self) -> None:
+        project = with_parts(parks_project(), f'<relations>{relation_xml("kind_parks", "Kind", "kinds_4", "parks_1")}{relation_xml("trail_parks", "Trail parks", "trails_3", "parks_1")}</relations>')
+        publication = plan(project)
+        _name, parks = collection(publication, 'parks_1')
+        self.assertEqual(parks['quac:related_to'], [{'id': 'kind_parks', 'name': 'Kind', 'parent_collection_id': 'kinds_4', 'fields': [{'parent': 'id', 'child': 'id'}]}])
+        self.assertEqual(publication.dropped_relations, [publish.DroppedRelation('Parks', 'Trail parks', 'Trails')])
+        self.assertNotIn('trails_3', json.dumps(documents(publication)))
+        self.assertIn('Relations to a layer left out were left out too: Parks (Trail parks, to Trails).', publish.message(publication)[1])
+
+    def test_drops_the_field_where_every_relation_is_dropped(self) -> None:
+        publication = plan(with_parts(parks_project(), f'<relations>{relation_xml("trail_parks", "", "trails_3", "parks_1")}</relations>'))
+        self.assertNotIn('quac:related_to', collection(publication, 'parks_1')[1])
+        self.assertEqual(publication.dropped_relations, [publish.DroppedRelation('Parks', 'trail_parks', 'Trails')])
+
+    def test_drops_the_initial_active_layer_only_where_it_is_left_out(self) -> None:
+        def active(layer_id: str) -> Optional[str]:
+            properties = f'<properties><qfieldsync><initialActiveLayer type="QString">{layer_id}</initialActiveLayer></qfieldsync></properties>'
+            return documents(plan(with_parts(parks_project(), properties)))['Parks.stac.json'].get('quac:active_collection')
+
+        self.assertEqual(active('kinds_4'), 'kinds_4')
+        self.assertIsNone(active('trails_3'))
+
+    def test_keeps_a_filter_which_names_its_own_layer_only(self) -> None:
+        filters = escape(json.dumps([{'filter_name': 'Kind', 'layer_id': 'parks_1', 'field_name': 'kind', 'filter_type': 'Single select', 'sql_expression': '"kind" IS @@value@@'}]))
+        properties = f'<properties><Mergin><Filtering><Enabled type="bool">true</Enabled><Filters type="QString">{filters}</Filters></Filtering></Mergin></properties>'
+        publication = plan(with_parts(parks_project(), properties))
+        self.assertEqual(collection(publication, 'parks_1')[1]['quac:filters'], [{'field': 'kind', 'name': 'Kind'}])
+
+    def test_drops_an_icon_whose_address_holds_a_user_name_or_password_and_says_so(self) -> None:
+        parks = with_layer_parts(PARKS, layer_variables(quac_icon='https://editor:secret@icons.example.test/park.svg', quac_icon_kind='https://editor@icons.example.test/kind.svg', quac_icon_name='tabler:tag'))
+        kinds = with_layer_parts(KINDS, layer_variables(quac_icon='https://icons.example.test/kinds.svg'))
+        publication = plan(project_xml({'Recreation': [('parks_1', 'Parks')]}, [parks, kinds], top=(('kinds_4', 'Kinds'),)))
+        _name, written = collection(publication, 'parks_1')
+        self.assertNotIn('quac:icon', written)
+        self.assertEqual({column['name']: column.get('quac:icon') for column in written['table:columns']}, {'id': None, 'name': 'https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/tag.svg', 'kind': None})
+        self.assertEqual(collection(publication, 'kinds_4')[1]['quac:icon'], 'https://icons.example.test/kinds.svg')
+        self.assertEqual(publication.dropped_icons, [publish.DroppedIcon('Parks'), publish.DroppedIcon('Parks', 'kind')])
+        level, text = publish.message(publication)
+        self.assertEqual(level, 'warning')
+        self.assertIn('Icons whose web address holds a user name or password were left out: Parks, Parks, field kind. To include an icon, give it an address without a user name or password.', text)
+        self.assertNotIn('secret', json.dumps(documents(publication)))
+
+    def test_writes_the_categorised_field_of_the_style_it_writes(self) -> None:
+        manager = (
+            '<map-layer-style-manager current="By kind"><map-layer-style name="By kind"/>'
+            '<map-layer-style name="By name"><qgis><renderer-v2 type="categorizedSymbol" attr="name"/></qgis></map-layer-style></map-layer-style-manager>'
+            '<renderer-v2 type="categorizedSymbol" attr="kind"/>'
+        )
+        project = project_xml({'Recreation': [('parks_1', 'Parks')]}, [with_layer_parts(PARKS, manager), KINDS], top=(('kinds_4', 'Kinds'),))
+        publication = plan(project, styles={'parks_1': publish.LayerStyle('By kind', QML), 'kinds_4': publish.LayerStyle('default', QML)})
+        self.assertEqual(collection(publication, 'parks_1')[1]['assets']['By kind']['quac:categorised_field'], 'kind')
+        self.assertNotIn('quac:categorised_field', collection(publication, 'kinds_4')[1]['assets']['default'])
+
+    def test_writes_the_initial_view_in_wgs84_where_it_is_given_one(self) -> None:
+        canvas = '<mapcanvas><extent><xmin>12890000</xmin><ymin>-3760000</ymin><xmax>12900000</xmax><ymax>-3750000</ymax></extent><destinationsrs><spatialrefsys><authid>EPSG:3857</authid></spatialrefsys></destinationsrs></mapcanvas>'
+        project = with_parts(parks_project(), canvas)
+        given: list[Any] = []
+
+        def wgs84_box(extent: Any) -> Any:
+            given.append(extent)
+            return publish.BoundingBox(115.8, -32.0, 115.9, -31.9)
+
+        publication = publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, wgs84_box=wgs84_box)
+        self.assertEqual(documents(publication)['Parks.stac.json']['quac:initial_view'], [115.8, -32.0, 115.9, -31.9])
+        self.assertEqual([(extent.xmin, extent.ymax, extent.crs) for extent in given], [(12890000, -3750000, 'EPSG:3857')])
+        self.assertNotIn('quac:initial_view', documents(plan(project))['Parks.stac.json'])
+        unknown = publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, wgs84_box=lambda extent: None)
+        self.assertNotIn('quac:initial_view', documents(unknown)['Parks.stac.json'])
+
+
 class AnEarlierCatalogue(unittest.TestCase):
     def test_leaves_a_root_that_is_not_a_quac_catalogue_alone(self) -> None:
         for existing in (b'not json', b'[]', json.dumps({'type': 'Collection'}).encode(), json.dumps({'type': 'Catalog', 'stac_extensions': []}).encode()):
@@ -538,7 +632,9 @@ class NoPathOrPasswordIsWritten(unittest.TestCase):
             web_layer_xml('i_9', 'WMS keys', 'layers=a&password=secret&styles&url=https://maps.example.test/wms&username=editor'),
             web_layer_xml('j_10', 'WMS sign-in', 'authcfg=ab12cd3&layers=a&styles&url=https://maps.example.test/wms'),
             web_layer_xml('k_11', 'WMS open', 'layers=a&styles&url=https://maps.example.test/wms'),
-        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user'), ('h_8', 'WMS user'), ('i_9', 'WMS keys'), ('j_10', 'WMS sign-in'), ('k_11', 'WMS open')))
+            with_layer_parts(layer_xml('l_12', 'Icons', './l.geojson'), layer_variables(quac_icon='https://editor:secret@icons.example.test/l.svg', quac_icon_name='https://editor@icons.example.test/name.svg')),
+            layer_xml('m_13', 'WFS layer', "authcfg='ab12cd3' srsname='EPSG:4326' typename='m' url='https://maps.example.test/wfs'", provider='WFS'),
+        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user'), ('h_8', 'WMS user'), ('i_9', 'WMS keys'), ('j_10', 'WMS sign-in'), ('k_11', 'WMS open'), ('l_12', 'Icons'), ('m_13', 'WFS layer')))
         publication = publish.plan_publication('Parks.qgs', project, {}, {}, '/home/someone/maps', '/home/someone/maps', {}, {}.get, posixpath)
         self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows', 'WMS user', 'WMS keys', 'WMS sign-in'])
         self.assertIn('https://maps.example.test/wms', json.dumps(documents(publication)))

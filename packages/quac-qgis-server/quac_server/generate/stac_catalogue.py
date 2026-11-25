@@ -1,14 +1,15 @@
-"""Mirrors `packages/quac/src/generate/stacCatalogue.ts`, as far as the plugin's first-release fields need.
+"""Mirrors `packages/quac/src/generate/stacCatalogue.ts`, as far as a QGIS project's catalogue needs.
 
 `generate_stac_catalogue` is the project file's catalogue, which the server
-route starts from, written with the first-release fields, each layer's data
-asset and each web map layer's link: a file layer's relative path or online
-address, a WFS layer's GetFeature request or an ArcGIS layer's query, as
-`buildAssets` writes it, and a WMS, WMTS or XYZ layer's web-map-links link,
-or for an XYZ template addressed by `{quadkey}` its data asset. It writes no
-style asset, `via` link or other field naming where a layer's own data comes
-from. The server route replaces the links and replaces or drops the data
-asset, so a served catalogue never names a data file or another service.
+route starts from and the QGIS Desktop part writes (`quac/publish.py`): each
+layer's settings, its data asset and its web map link, as `qgsLayerToNormalized`
+writes them, with a file layer's relative path or online address, a WFS layer's
+GetFeature request or an ArcGIS layer's query, as `buildAssets` writes it, and a
+WMS, WMTS or XYZ layer's web-map-links link, or for an XYZ template addressed by
+`{quadkey}` its data asset. It writes no style asset and no `via` link to the
+project. The server route keeps only the fields it declares, replaces the
+links and replaces or drops the data asset, so a served catalogue never names
+a data file or another service.
 """
 
 from __future__ import annotations
@@ -17,16 +18,20 @@ import re
 from dataclasses import replace
 from typing import Any, Optional
 
-from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, QgsProject, WfsTransactionLayers, WmsPublishing
+from ..model.qgs_project import BoundingBox, EditLock, FieldEditRule, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, PresetFilter, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing
 from ..model.stac_href import encode_asset_path
 from ..model.stac_projection import PROJ_CODE
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, build_wms_link
 from ..model.stac_wmts import build_wmts_link
 from ..model.stac_xyz import build_xyz_link
 from ..parse.geometry_siblings import find_geometry_siblings, read_sibling_shapes, sibling_collection_id
+from ..parse.project_notes import find_value_relation_lookup, is_filter_in_project, is_relation_in_project
 from ..util.catalogue_file_formats import PROJECT_DATA_ROLES, declared_media_type_for_file, is_layer_file_of_format
 from .arcgis_stac_catalogue import arcgis_query_asset
 from .normalized_project import (
+    CollectionFilter,
+    CollectionRelation,
+    CollectionRelationField,
     NormalizedGroup,
     NormalizedLayer,
     NormalizedNode,
@@ -44,33 +49,48 @@ QUAC_LAYER_NAME = 'quac:layer_name'
 QUAC_DELIMITED_TEXT = 'quac:delimited_text'
 QUAC_FEATURE_FILTER = 'quac:feature_filter'
 
+# The key a style asset takes for the field its renderer classifies by, when that renderer is a categorised one.
+QUAC_CATEGORISED_FIELD = 'quac:categorised_field'
+
 # The source kinds that are images: a layer of one has no features to edit.
 _IMAGE_KINDS = ('wms', 'wmts', 'xyz')
 
 
-def generate_stac_catalogue(project: QgsProject, layer_wgs84_extents: Optional[dict[str, BoundingBox]] = None) -> dict[str, Any]:
+def generate_stac_catalogue(
+    project: QgsProject,
+    layer_wgs84_extents: Optional[dict[str, BoundingBox]] = None,
+    initial_view: Optional[BoundingBox] = None,
+) -> dict[str, Any]:
     """
-    The catalogue a project file gives, as far as the first-release fields go.
-    `layer_wgs84_extents` is the WGS84 box of a layer whose project saves no
-    `<wgs84extent>`, by layer id, as the JavaScript's `layerWgs84Extents` is.
+    The catalogue a project file gives. `layer_wgs84_extents` is the WGS84 box
+    of a layer whose project saves no `<wgs84extent>`, by layer id, as the
+    JavaScript's `layerWgs84Extents` is, and `initial_view` the project's map
+    canvas extent (`QgsProject.map_extent`) already in WGS84, as its
+    `initialView` is: this package holds no reprojection, so the caller
+    converts both.
 
     A layer or group the project leaves out of WMS (**Exclude layers**) is left
-    out: the catalogue is built as if the project did not hold it, so a Value
-    Relation naming it is dropped too (`wms_excluded_layer_ids`).
+    out: the catalogue is built as if the project did not hold it, so a
+    relation, Value Relation, filter or initial active layer naming it is
+    dropped too (`wms_excluded_layer_ids`).
     """
-    return generate_stac_from_normalized(_qgs_project_to_normalized(_without_wms_excluded_layers(project), layer_wgs84_extents or {}))
+    return generate_stac_from_normalized(_qgs_project_to_normalized(_without_wms_excluded_layers(project), layer_wgs84_extents or {}, initial_view))
 
 
 class _LayerContext:
     def __init__(self, project: QgsProject, siblings_by_id: dict[str, list[LayerEntry]], layer_wgs84_extents: dict[str, BoundingBox]) -> None:
+        layers_by_id = {layer.id: layer for layer in project.layers}
         self.siblings_by_id = siblings_by_id
         self.layer_wgs84_extents = layer_wgs84_extents
         self.wfs_transaction_layers = project.wfs_transaction_layers
         self.wms_publishing = project.wms_publishing
         self.value_relations_by_layer_id = _collect_value_relations_by_layer_id(project.layers, siblings_by_id)
+        self.relations_by_child_layer_id = _collect_relations_by_child_layer_id(project.relations, layers_by_id, siblings_by_id)
+        # The filters the project sets up, by the id of the Collection each goes onto.
+        self.filters_by_collection_id = _collect_filters_by_collection_id(project.mergin_filters, layers_by_id, siblings_by_id)
 
 
-def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[str, BoundingBox]) -> NormalizedProject:
+def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[str, BoundingBox], initial_view: Optional[BoundingBox]) -> NormalizedProject:
     layers_by_id = {layer.id: layer for layer in project.layers}
     context = _LayerContext(project, find_geometry_siblings(project), layer_wgs84_extents)
     nodes = _walk_qgs_group(project.layer_tree, layers_by_id, context)
@@ -101,8 +121,54 @@ def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[st
         if project.metadata.abstract is not None
         else (f'STAC catalogue generated from QGIS project "{title}".' if title else 'STAC catalogue generated from a QGIS project.'),
         bbox=union_bboxes([effective_wgs84_bbox(layer, layer_wgs84_extents) for layer in project.layers]),
+        initial_view=initial_view,
+        active_collection_id=sibling_collection_id(context.siblings_by_id, project.initial_active_layer_id)
+        if project.initial_active_layer_id and project.initial_active_layer_id in layers_by_id
+        else None,
         nodes=nodes,
     )
+
+
+def _collect_filters_by_collection_id(
+    filters: list[PresetFilter],
+    layers_by_id: dict[str, LayerEntry],
+    siblings_by_id: dict[str, list[LayerEntry]],
+) -> dict[str, list[CollectionFilter]]:
+    """
+    Sorts a project's filters by the Collection each goes onto: its layer's,
+    the first sibling's for a layer QGIS split by shape. A filter whose layer
+    is not in the project, or does not have its field, goes nowhere.
+    """
+    by_collection_id: dict[str, list[CollectionFilter]] = {}
+    for preset in filters:
+        if not is_filter_in_project(preset, layers_by_id):
+            continue
+        by_collection_id.setdefault(sibling_collection_id(siblings_by_id, preset.layer_id), []).append(CollectionFilter(field=preset.field, name=preset.name))
+    return by_collection_id
+
+
+def _collect_relations_by_child_layer_id(
+    relations: list[QgsRelation],
+    layers_by_id: dict[str, LayerEntry],
+    siblings_by_id: dict[str, list[LayerEntry]],
+) -> dict[str, list[CollectionRelation]]:
+    """
+    Groups the project's relations under the child layer each one hangs off a
+    parent, which is the layer whose Collection has them. A relation naming a
+    layer the project does not hold is dropped: it would point at a Collection
+    this catalogue has no entry for.
+    """
+    by_child_layer_id: dict[str, list[CollectionRelation]] = {}
+    for relation in relations:
+        if not is_relation_in_project(relation, layers_by_id):
+            continue
+        by_child_layer_id.setdefault(sibling_collection_id(siblings_by_id, relation.child_layer_id), []).append(CollectionRelation(
+            id=relation.id,
+            name=relation.name,
+            parent_collection_id=sibling_collection_id(siblings_by_id, relation.parent_layer_id),
+            fields=[CollectionRelationField(parent=pair.parent_field, child=pair.child_field) for pair in relation.field_pairs],
+        ))
+    return by_child_layer_id
 
 
 def _walk_qgs_group(group: LayerGroup, layers_by_id: dict[str, LayerEntry], context: _LayerContext) -> list[NormalizedNode]:
@@ -264,7 +330,9 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry
             layer.field_names,
             layer.field_aliases,
             layer.field_value_maps,
+            layer.field_edit_rules,
             context.value_relations_by_layer_id.get(layer.id, {}),
+            layer.field_icons,
         ),
         license=metadata.license,
         temporal_interval=metadata.temporal_interval,
@@ -274,11 +342,39 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry
         identifiable=layer.queryable,
         scale_range=layer.scale_range,
         opacity=layer.opacity,
+        related_to=context.relations_by_child_layer_id.get(layer.id, []),
+        is_private=layer.is_private,
+        legend_image=layer.legend_image,
+        icon=layer.icon,
+        added_message=layer.added_message,
         locks=_combine_locks(layer.locks, _wfs_transaction_locks(layer.id, context.wfs_transaction_layers)),
+        filters=context.filters_by_collection_id.get(layer.id, []),
+        vendor_fields=_build_vendor_fields(layer),
         assets=_build_assets(layer, geometry_filter),
         links=[web_map_link] if web_map_link else [],
         extensions=[WEB_MAP_LINKS_EXTENSION] if web_map_link else [],
     )
+
+
+def _build_vendor_fields(layer: LayerEntry) -> dict[str, Any]:
+    """
+    An XYZ layer's deepest zoom level as `quac:max_zoom`, a WFS layer's service,
+    feature type and coordinate system as `quac:wfs_*` fields, and an ArcGIS
+    layer's address and filter as `quac:arcgis_*` fields, so a reader reads them
+    directly instead of taking them back apart out of the asset href.
+    """
+    source = layer.data_source
+    if source.kind == 'xyz':
+        return {} if source.max_zoom is None else {'quac:max_zoom': source.max_zoom}
+    # The same fields an ArcGIS Online layer's Collection carries, so one reader loads both.
+    if source.kind == 'arcgis':
+        return {'quac:arcgis_layer_url': source.url, **({'quac:arcgis_where': source.where} if source.where else {})}
+    if source.kind != 'wfs':
+        return {}
+    fields: dict[str, Any] = {'quac:wfs_endpoint': source.url, 'quac:wfs_type_name': source.type_name}
+    if source.srs_name:
+        fields['quac:wfs_srs_name'] = source.srs_name
+    return fields
 
 
 def _layer_crs_field(layer: LayerEntry) -> dict[str, str]:
@@ -388,25 +484,12 @@ def _collect_value_relations_by_layer_id(
     for layer in layers:
         relations: dict[str, dict[str, Any]] = {}
         for field, widget in layer.field_value_relations.items():
-            lookup = _find_value_relation_lookup(widget, layers, layers_by_id)
+            lookup = find_value_relation_lookup(widget, layers, layers_by_id)
             if lookup is not None:
                 relations[field] = _value_relation_to_json(sibling_collection_id(siblings_by_id, lookup.id), widget)
         if relations:
             by_layer_id[layer.id] = relations
     return by_layer_id
-
-
-def _find_value_relation_lookup(widget: FieldValueRelation, layers: list[LayerEntry], layers_by_id: dict[str, LayerEntry]) -> Optional[LayerEntry]:
-    """
-    The layer a Value Relation widget reads its choices from: the layer whose
-    id the widget names, and where none has it the first layer with the name
-    it names, as QGIS finds it (`QgsVectorLayerRef::resolveByIdOrNameOnly`).
-    Mirrors `findValueRelationLookup` in `packages/quac/src/parse/projectNotes.ts`.
-    """
-    found = layers_by_id.get(widget.layer_id)
-    if found is not None:
-        return found
-    return next((candidate for candidate in layers if candidate.name == widget.layer_name), None)
 
 
 def _value_relation_to_json(collection_id: str, widget: FieldValueRelation) -> dict[str, Any]:
@@ -431,13 +514,17 @@ def _derive_table_columns(
     field_names: list[str],
     field_aliases: dict[str, str],
     field_value_maps: dict[str, list[FieldValueMapEntry]],
+    field_edit_rules: dict[str, FieldEditRule],
     field_value_relations: dict[str, dict[str, Any]],
+    field_icons: dict[str, str],
 ) -> list[dict[str, Any]]:
     """
     `table:columns` from the fields QGIS declares in `<fieldConfiguration>`,
     then any field only an alias names, each with its alias as `title`, its
-    Value Map's list as `quac:values` and its Value Relation as
-    `quac:value_relation`. With no data to read, no `type` is written.
+    Value Map's list as `quac:values`, its Value Relation as
+    `quac:value_relation`, `quac:color` where its widget is QGIS's Color
+    widget, and the address of the icon its `quac_icon_<field>` variable names
+    as `quac:icon`. With no data to read, no `type` is written.
     """
     ordered = list(dict.fromkeys([*field_names, *field_aliases]))
     columns: list[dict[str, Any]] = []
@@ -452,5 +539,11 @@ def _derive_table_columns(
         value_relation = field_value_relations.get(name)
         if value_relation:
             column['quac:value_relation'] = value_relation
+        edit_rule = field_edit_rules.get(name)
+        if edit_rule is not None and edit_rule.colour:
+            column['quac:color'] = True
+        icon = field_icons.get(name)
+        if icon:
+            column['quac:icon'] = icon
         columns.append(column)
     return columns
