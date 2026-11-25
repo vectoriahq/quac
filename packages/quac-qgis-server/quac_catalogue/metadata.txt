@@ -28,7 +28,7 @@ about=One plugin with two parts. QGIS Desktop writes the project's catalogue int
     - Without one, it keeps one shared copy per project until the project changes.
 
     Runs on QGIS and QGIS Server 3.40 or later, QGIS 4 included, with Python's standard library only. The QUAC spec, its JSON Schema and a JavaScript package that writes and reads catalogues are at https://github.com/vectoriahq/quac.
-version=0.2.0
+version=0.3.0
 qgisMinimumVersion=3.40
 qgisMaximumVersion=4.99
 author=Vectoria
