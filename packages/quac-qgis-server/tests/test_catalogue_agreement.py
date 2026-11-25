@@ -38,6 +38,7 @@ DEPARTURES: dict[str, dict[str, str]] = {'catalog': {}, 'collection': {}, 'colum
 
 # The field and form settings a column carries, each of which the comparisons below must see written.
 FORM_FIELDS = (
+    'description',
     'quac:attachment',
     'quac:checkbox',
     'quac:color',

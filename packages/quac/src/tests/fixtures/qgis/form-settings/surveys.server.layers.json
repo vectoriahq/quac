@@ -1,0 +1,27 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "sites_5c2e9a41_7d3b_4f60_a8e1_2b9c4d6f0a11",
+      "name": "Survey sites",
+      "wmsName": "Survey sites",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "site_kinds_8f4a1c27_3e6d_4b92_9c05_7a1e3d5b2c22",
+      "name": "Site kinds",
+      "wmsName": "Site kinds",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

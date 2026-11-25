@@ -1,0 +1,315 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Site surveys" version="3.40.4-Bratislava">
+  <homePath path=""/>
+  <title>Site surveys</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+      <description>WGS 84</description>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" source="./sites.geojson" expanded="1" name="Survey sites" providerKey="ogr" id="sites_5c2e9a41_7d3b_4f60_a8e1_2b9c4d6f0a11"/>
+    <layer-tree-layer checked="Qt::Checked" source="./site_kinds.geojson" expanded="1" name="Site kinds" providerKey="ogr" id="site_kinds_8f4a1c27_3e6d_4b92_9c05_7a1e3d5b2c22"/>
+  </layer-tree-group>
+  <relations>
+  </relations>
+  <projectlayers>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Point" geometry="Point" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>sites_5c2e9a41_7d3b_4f60_a8e1_2b9c4d6f0a11</id>
+      <datasource>./sites.geojson</datasource>
+      <layername>Survey sites</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <customproperties>
+        <Option type="Map">
+          <Option name="variableNames" type="StringList">
+            <Option type="QString" value="quac_control_kind"/>
+            <Option type="QString" value="quac_control_healthy"/>
+          </Option>
+          <Option name="variableValues" type="StringList">
+            <Option type="QString" value=" Dropdown "/>
+            <Option type="QString" value="switch"/>
+          </Option>
+        </Option>
+      </customproperties>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="site_id">
+          <editWidget type="UuidGenerator"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="code">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="ref128">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="surveyor">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="visits">
+          <editWidget type="Range">
+            <config>
+              <Option type="Map">
+                <Option type="bool" value="false" name="AllowNull"/>
+                <Option type="int" value="10" name="Max"/>
+                <Option type="int" value="0" name="Min"/>
+                <Option type="int" value="0" name="Precision"/>
+                <Option type="int" value="1" name="Step"/>
+                <Option type="QString" value="SpinBox" name="Style"/>
+                <Option type="QString" value=" visits" name="Suffix"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="surveyed_on">
+          <editWidget type="DateTime">
+            <config>
+              <Option type="Map">
+                <Option type="bool" value="false" name="allow_null"/>
+                <Option type="bool" value="true" name="calendar_popup"/>
+                <Option type="QString" value="dd.MM.yyyy" name="display_format"/>
+                <Option type="QString" value="dd.MM.yyyy" name="field_format"/>
+                <Option type="bool" value="false" name="field_iso_format"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="logged_at">
+          <editWidget type="DateTime">
+            <config>
+              <Option type="Map">
+                <Option type="bool" value="true" name="allow_null"/>
+                <Option type="QString" value="yyyy-MM-ddTHH:mm:ss" name="field_format"/>
+                <Option type="bool" value="true" name="field_iso_format"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="planted_on">
+          <editWidget type="DateTime">
+            <config>
+              <Option type="Map">
+                <Option type="QString" value="yyyy-MM-dd" name="field_format"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="healthy">
+          <editWidget type="CheckBox">
+            <config>
+              <Option type="Map">
+                <Option type="bool" value="true" name="AllowNullState"/>
+                <Option type="QString" value="yes" name="CheckedState"/>
+                <Option type="int" value="1" name="TextDisplayMethod"/>
+                <Option type="QString" value="no" name="UncheckedState"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="kind">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NotSearchable" name="notes">
+          <editWidget type="TextEdit"><config><Option type="Map"><Option type="bool" value="true" name="IsMultiline"/></Option></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="photo">
+          <editWidget type="ExternalResource">
+            <config>
+              <Option type="Map">
+                <Option type="QString" value="/srv/survey/photos" name="DefaultRoot"/>
+                <Option type="int" value="1" name="DocumentViewer"/>
+                <Option type="QString" value="Images (*.jpg *.png)" name="FileWidgetFilter"/>
+                <Option type="int" value="2" name="RelativeStorage"/>
+                <Option type="int" value="0" name="StorageMode"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="sketch">
+          <editWidget type="ExternalResource">
+            <config>
+              <Option type="Map">
+                <Option type="QString" value="C:\Survey\sketches" name="DefaultRoot"/>
+                <Option type="int" value="0" name="DocumentViewer"/>
+                <Option type="invalid" name="FileWidgetFilter"/>
+                <Option type="int" value="0" name="RelativeStorage"/>
+                <Option type="int" value="3" name="StorageMode"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="field_notes">
+          <editWidget type="ExternalResource">
+            <config>
+              <Option type="Map">
+                <Option type="QString" value="field-notes" name="DefaultRoot"/>
+                <Option type="int" value="1" name="RelativeStorage"/>
+                <Option type="int" value="1" name="StorageMode"/>
+              </Option>
+            </config>
+          </editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="height">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="checked_by">
+          <editWidget type="Hidden"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="condition">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="remarks">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+        <field configurationFlags="NoFlag" name="closed">
+          <editWidget type="TextEdit"><config><Option/></config></editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="site_id" index="0" name=""/>
+        <alias field="code" index="1" name="Site code"/>
+        <alias field="surveyor" index="3" name="Surveyed by"/>
+      </aliases>
+      <customComments>
+        <customComment field="surveyor" value="The person who visited the site"/>
+        <customComment field="notes" value="Anything else seen"/>
+        <customComment field="notes" value=" "/>
+        <customComment field="kind" value="As on the site register"/>
+      </customComments>
+      <defaults>
+        <default field="site_id" expression="" applyOnUpdate="0"/>
+        <default field="code" expression="uuid('WithoutBraces')" applyOnUpdate="0"/>
+        <default field="ref128" expression="uuid(format:='Id128', version:=4)" applyOnUpdate="1"/>
+        <default field="surveyor" expression="'Unknown surveyor'" applyOnUpdate="0"/>
+        <default field="visits" expression=" -1 " applyOnUpdate="0"/>
+        <default field="logged_at" expression="now()" applyOnUpdate="1"/>
+        <default field="planted_on" expression="to_date(now())" applyOnUpdate="0"/>
+        <default field="healthy" expression="TRUE" applyOnUpdate="0"/>
+        <default field="kind" expression="aggregate('Site kinds', 'max', &quot;code&quot;, intersects($geometry, geometry(@parent)))" applyOnUpdate="0"/>
+        <default field="height" expression="&quot;visits&quot; * 2" applyOnUpdate="1"/>
+        <default field="checked_by" expression="@user_account_name" applyOnUpdate="0"/>
+        <default field="remarks" expression="uuid('WithBraces', 7)" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint field="code" constraints="2" notnull_strength="0" unique_strength="2" exp_strength="0"/>
+        <constraint field="visits" constraints="1" notnull_strength="2" unique_strength="0" exp_strength="0"/>
+        <constraint field="height" constraints="4" notnull_strength="0" unique_strength="0" exp_strength="1"/>
+        <constraint field="condition" constraints="5" notnull_strength="1" unique_strength="0" exp_strength="2"/>
+        <constraint field="remarks" constraints="4" notnull_strength="0" unique_strength="0" exp_strength="1"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="height" exp="&quot;height&quot; >= 0" desc=""/>
+        <constraint field="condition" exp="&quot;condition&quot; IN ('good', 'fair', 'poor')" desc="One of good, fair or poor"/>
+        <constraint field="remarks" exp="length(&quot;remarks&quot;) &lt; aggregate('Site kinds', 'count', &quot;code&quot;)" desc=""/>
+      </constraintExpressions>
+      <editable>
+        <field editable="1" name="code"/>
+        <field editable="0" name="checked_by"/>
+        <field editable="0" name="closed"/>
+      </editable>
+      <labelOnTop>
+        <field labelOnTop="1" name="notes"/>
+        <field labelOnTop="0" name="remarks"/>
+        <field labelOnTop="2" name="condition"/>
+      </labelOnTop>
+      <reuseLastValue>
+        <field reuseLastValue="1" name="surveyor"/>
+        <field reuseLastValue="1" name="visits"/>
+      </reuseLastValue>
+      <reuseLastValuePolicy>
+        <field reuseLastValuePolicy="AllowedDefaultOff" name="visits"/>
+        <field reuseLastValuePolicy="AllowedDefaultOn" name="kind"/>
+      </reuseLastValuePolicy>
+      <duplicatePolicies>
+        <policy field="site_id" policy="UnsetField"/>
+        <policy field="code" policy="DefaultValue"/>
+        <policy field="surveyor" policy="Duplicate"/>
+      </duplicatePolicies>
+      <editorlayout>tablayout</editorlayout>
+      <attributeEditorForm>
+        <attributeEditorContainer name="Site" columnCount="1" groupBox="0" visibilityExpressionEnabled="0" visibilityExpression="">
+          <attributeEditorField index="1" name="code" showLabel="1"/>
+          <attributeEditorField index="3" name="surveyor" showLabel="1"/>
+          <attributeEditorField index="4" name="visits" showLabel="1"/>
+          <attributeEditorField index="5" name="surveyed_on" showLabel="1"/>
+          <attributeEditorField index="9" name="kind" showLabel="1"/>
+        </attributeEditorContainer>
+        <attributeEditorContainer name="Health" columnCount="1" groupBox="0" visibilityExpressionEnabled="1" visibilityExpression="&quot;visits&quot; > 0">
+          <attributeEditorField index="8" name="healthy" showLabel="1"/>
+          <attributeEditorContainer name="When unhealthy" columnCount="1" groupBox="1" visibilityExpressionEnabled="1" visibilityExpression=" &quot;healthy&quot; = 'no' ">
+            <attributeEditorField index="15" name="condition" showLabel="1"/>
+            <attributeEditorContainer name="Notes" columnCount="1" groupBox="1" visibilityExpressionEnabled="0" visibilityExpression="&quot;condition&quot; = 'poor'">
+              <attributeEditorField index="10" name="notes" showLabel="1"/>
+            </attributeEditorContainer>
+          </attributeEditorContainer>
+          <attributeEditorField index="1" name="code" showLabel="1"/>
+        </attributeEditorContainer>
+        <attributeEditorContainer name="Kind" columnCount="1" groupBox="1" visibilityExpressionEnabled="1" visibilityExpression="aggregate('Site kinds', 'count', &quot;code&quot;) > 0">
+          <attributeEditorField index="16" name="remarks" showLabel="1"/>
+          <attributeEditorField index="11" name="photo" showLabel="1"/>
+          <attributeEditorField index="12" name="sketch" showLabel="1"/>
+        </attributeEditorContainer>
+        <attributeEditorField index="14" name="height" showLabel="1"/>
+        <attributeEditorField index="17" name="closed" showLabel="1"/>
+        <attributeEditorRelation name="sites_kinds" relation="" showLabel="1"/>
+      </attributeEditorForm>
+      <dataDefinedFieldProperties>
+        <field name="condition"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="true" name="active"/><Option type="QString" value=" &quot;visits&quot; > 0 " name="expression"/><Option type="int" value="3" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+        <field name="remarks"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="true" name="active"/><Option type="QString" value="healthy" name="field"/><Option type="int" value="2" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+        <field name="closed"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="1" name="active"/><Option type="QString" value="False" name="val"/><Option type="int" value="1" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+        <field name="height"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="false" name="active"/><Option type="QString" value="&quot;visits&quot; > 1" name="expression"/><Option type="int" value="3" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+        <field name="photo"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="true" name="active"/><Option type="QString" value="aggregate('Site kinds', 'count', &quot;code&quot;) = 0" name="expression"/><Option type="int" value="3" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+        <field name="site_id"><Option type="Map"><Option type="QString" value="" name="name"/><Option type="Map" name="properties"><Option type="Map" name="dataDefinedEditable"><Option type="bool" value="true" name="active"/><Option type="QString" value="false" name="expression"/><Option type="int" value="3" name="type"/></Option></Option><Option type="QString" value="collection" name="type"/></Option></field>
+      </dataDefinedFieldProperties>
+      <previewExpression>"code"</previewExpression>
+    </maplayer>
+    <maplayer maxScale="0" minScale="100000000" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" wkbType="Polygon" geometry="Polygon" type="vector" readOnly="0" styleCategories="AllStyleCategories">
+      <id>site_kinds_8f4a1c27_3e6d_4b92_9c05_7a1e3d5b2c22</id>
+      <datasource>./site_kinds.geojson</datasource>
+      <layername>Site kinds</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+          <description>WGS 84</description>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="code"/>
+        <field configurationFlags="NoFlag" name="label"/>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="code" index="0" name=""/>
+        <alias field="label" index="1" name="Kind"/>
+      </aliases>
+      <editorlayout>tablayout</editorlayout>
+      <attributeEditorForm>
+        <attributeEditorRelation name="kinds_sites" relation="" showLabel="1"/>
+      </attributeEditorForm>
+      <previewExpression>"label"</previewExpression>
+    </maplayer>
+  </projectlayers>
+  <properties>
+    <Measurement>
+      <AreaUnits type="QString">ha</AreaUnits>
+      <DistanceUnits type="QString">km</DistanceUnits>
+    </Measurement>
+  </properties>
+</qgis>
