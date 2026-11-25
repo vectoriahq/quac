@@ -41,7 +41,13 @@ The folder rules:
   user name, a password or an `authcfg`.
 - A Value Relation reading its choices from a layer left out is not written,
   nor is a relation whose parent layer is left out, nor the initial active
-  layer (`quac:active_collection`) where it is left out.
+  layer (`quac:active_collection`) where it is left out. A field's default,
+  constraint, condition for showing it or condition for editing it whose
+  expression names a layer not written, by its id or name in a text literal,
+  is not written either.
+- An Attachment widget's default folder (`default_root` in
+  `quac:attachment`) that is not a path relative to the project, such as an
+  absolute path or a drive, is not written.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
 """
@@ -60,11 +66,12 @@ from .quac_server.generate.normalized_project import build_stac_extent
 from .quac_server.js_compat import url_search_params
 from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
-from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue
+from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue, wms_excluded_layer_ids
 from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
 from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from .quac_server.model.stac_href import encode_asset_path
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
+from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
 from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
 from .quac_server.parse.read_project_file import read_project_xml
 from .quac_server.util.catalogue_file_formats import QML_STYLE_MEDIA_TYPE
@@ -111,6 +118,18 @@ _QUAC_SCHEMA = re.compile(r'^https://vectoriahq\.github\.io/quac/v[^/]+/schema\.
 
 _DRIVE = re.compile(r'^[A-Za-z]:([\\/]|\Z)')
 _SCHEME = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]+:')
+# A path that is not relative: from the root, a drive, a share or the home folder, or an address such as `file:`.
+_NOT_RELATIVE = re.compile(r'^([/\\~]|[A-Za-z]:|[A-Za-z][A-Za-z0-9+.-]+:)')
+# A QGIS expression's double-quoted field names, skipped, and its text literals, whose text is the first group.
+_EXPRESSION_TEXT = re.compile(r'"(?:""|[^"])*"|\'((?:\'\'|\\.|[^\'\\])*)\'', re.DOTALL)
+# The column settings holding an expression, and how a warning names each.
+_SETTING_NAMES = {
+    'quac:default': 'default value',
+    'quac:constraints': 'constraint',
+    'quac:visible_when': 'condition for showing it',
+    'quac:editable_when': 'condition for editing it',
+}
+
 # An address whose authority holds a user name or password.
 _USERINFO = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]*:[/\\\\]*[^/\\\\?#]*@')
 
@@ -147,6 +166,24 @@ class DroppedRelation:
     parent: str
 
 
+@dataclass(frozen=True)
+class DroppedSetting:
+    """A field's setting not written because its expression names a layer left out: the layer holding it, the field, the setting's key and the layer it names."""
+
+    layer: str
+    field: str
+    setting: str
+    lookup: str
+
+
+@dataclass(frozen=True)
+class DroppedFolder:
+    """An Attachment widget's default folder not written because it is not a path relative to the project: the layer and the field."""
+
+    layer: str
+    field: str
+
+
 @dataclass
 class Publication:
     root_file_name: str
@@ -158,6 +195,8 @@ class Publication:
     left_out: list[LeftOutLayer] = field(default_factory=list)
     dropped_choices: list[DroppedChoices] = field(default_factory=list)
     dropped_relations: list[DroppedRelation] = field(default_factory=list)
+    dropped_settings: list[DroppedSetting] = field(default_factory=list)
+    dropped_folders: list[DroppedFolder] = field(default_factory=list)
     # Layers whose style was not written because its QML names a folder on this computer.
     skipped_styles: list[str] = field(default_factory=list)
     # Why nothing is written, where nothing is.
@@ -175,6 +214,13 @@ class Publication:
             sentences.append(f'The choices for {dropped.layer}, field {dropped.field}, were left out, because they come from {dropped.lookup}, which was left out. {step}')
         for relation in self.dropped_relations:
             sentences.append(f'The relation {relation.relation} of {relation.layer} was left out, because its parent layer, {relation.parent}, was left out.')
+        for dropped in self.dropped_settings:
+            sentences.append(f'The {_SETTING_NAMES[dropped.setting]} of {dropped.layer}, field {dropped.field}, was left out, because it reads {dropped.lookup}, which was left out.')
+        for dropped in self.dropped_folders:
+            sentences.append(
+                f"The attachment folder of {dropped.layer}, field {dropped.field}, was not written, because it is a folder on this computer. "
+                "To keep it, give the field's Attachment widget a default path relative to the project's folder."
+            )
         sentences += [f"The style of {name} was not written, because it names a folder on this computer." for name in self.skipped_styles]
         return sentences
 
@@ -282,6 +328,7 @@ def plan_publication(
         del catalogue['quac:active_collection']
 
     project_href = _inside(path.join(project_folder, project_file_name), folder, path)
+    unwritten = _unwritten_layers(project, catalogue)
     for collection in _collections(catalogue):
         for key in _SERVER_FIELDS:
             collection.pop(key, None)
@@ -308,6 +355,8 @@ def plan_publication(
                 if isinstance(relation, dict) and relation.get('collection') in left_out_ids:
                     column = {key: value for key, value in column.items() if key != 'quac:value_relation'}
                     publication.dropped_choices.append(DroppedChoices(title, column['name'], titles.get(relation['collection'], relation['collection'])))
+                column = _without_unwritten_lookups(column, unwritten, title, publication)
+                column = _without_local_folder(column, title, publication)
                 kept.append(with_field_type(column, types.get(column['name'])))
             collection['table:columns'] = kept
         if project_href is not None:
@@ -370,7 +419,7 @@ def message(publication: Publication) -> tuple[str, str]:
     """
     if publication.refusal:
         return 'warning', publication.refusal
-    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.skipped_styles):
+    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.skipped_styles):
         return 'info', f'Wrote the STAC catalogue {publication.root_file_name}.'
     sentences = [f'Wrote the STAC catalogue {publication.root_file_name}.']
     if publication.left_out:
@@ -383,10 +432,111 @@ def message(publication: Publication) -> tuple[str, str]:
     if publication.dropped_relations:
         listed = ', '.join(f'{relation.layer} ({relation.relation}, to {relation.parent})' for relation in publication.dropped_relations)
         sentences.append(f'Relations to a layer left out were left out too: {listed}.')
+    if publication.dropped_settings:
+        listed = ', '.join(f'{dropped.layer} ({dropped.field}, its {_SETTING_NAMES[dropped.setting]}, from {dropped.lookup})' for dropped in publication.dropped_settings)
+        sentences.append(f'Field settings that read a layer left out were left out too: {listed}.')
+    if publication.dropped_folders:
+        listed = ', '.join(f'{dropped.layer} ({dropped.field})' for dropped in publication.dropped_folders)
+        sentences.append(
+            f"Attachment folders on this computer were not written: {listed}. "
+            "To keep one, give the field's Attachment widget a default path relative to the project's folder."
+        )
     if publication.skipped_styles:
         sentences.append(f"The style of {', '.join(publication.skipped_styles)} was not written, because it names a folder on this computer.")
     sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
     return 'warning', ' '.join(sentences)
+
+
+def _unwritten_layers(project: Any, catalogue: dict[str, Any]) -> dict[str, str]:
+    """
+    The ids and names of the project's layers the catalogue does not write, a
+    layer it leaves out of WMS among them, each with the layer's name. A
+    geometry sibling is written where the Collection standing for its set is.
+    """
+    written = {collection['id'] for collection in _collections(catalogue)}
+    excluded = wms_excluded_layer_ids(project)
+    siblings = find_geometry_siblings(project)
+    unwritten: dict[str, str] = {}
+    for layer in project.layers:
+        if layer.id in excluded or sibling_collection_id(siblings, layer.id) not in written:
+            unwritten[layer.id] = layer.name
+            if layer.name:
+                unwritten[layer.name] = layer.name
+    return unwritten
+
+
+def _named_layer(expression: Any, unwritten: dict[str, str]) -> Optional[str]:
+    """The name of the first layer not written that a text literal of the expression names by its id or name, as a lookup such as `aggregate` names a layer."""
+    if not isinstance(expression, str):
+        return None
+    for match in _EXPRESSION_TEXT.finditer(expression):
+        text = match.group(1)
+        if text is None:
+            continue
+        text = re.sub(r'\\(.)', r'\1', text.replace("''", "'"), flags=re.DOTALL)
+        for candidate in (text, text.strip()):
+            if candidate in unwritten:
+                return unwritten[candidate]
+    return None
+
+
+def _without_unwritten_lookups(column: dict[str, Any], unwritten: dict[str, str], title: str, publication: Publication) -> dict[str, Any]:
+    """
+    The column less each expression in `quac:default`, `quac:constraints`,
+    `quac:visible_when` and `quac:editable_when` that names a layer not
+    written: a constraint expression is taken out of `quac:constraints`, and a
+    condition out of `quac:visible_when`, the field going where nothing is left.
+    """
+    if not unwritten:
+        return column
+    column = dict(column)
+
+    def drop(setting: str, lookup: str) -> None:
+        publication.dropped_settings.append(DroppedSetting(title, column['name'], setting, lookup))
+
+    default = column.get('quac:default')
+    lookup = _named_layer(default.get('expression'), unwritten) if isinstance(default, dict) else None
+    if lookup is not None:
+        del column['quac:default']
+        drop('quac:default', lookup)
+    constraints = column.get('quac:constraints')
+    expression = constraints.get('expression') if isinstance(constraints, dict) else None
+    lookup = _named_layer(expression.get('expression'), unwritten) if isinstance(expression, dict) else None
+    if lookup is not None:
+        kept = {key: value for key, value in constraints.items() if key != 'expression'}
+        if kept:
+            column['quac:constraints'] = kept
+        else:
+            del column['quac:constraints']
+        drop('quac:constraints', lookup)
+    conditions = column.get('quac:visible_when')
+    if isinstance(conditions, list):
+        kept_conditions = []
+        for condition in conditions:
+            lookup = _named_layer(condition, unwritten)
+            if lookup is None:
+                kept_conditions.append(condition)
+            else:
+                drop('quac:visible_when', lookup)
+        if kept_conditions:
+            column['quac:visible_when'] = kept_conditions
+        else:
+            del column['quac:visible_when']
+    lookup = _named_layer(column.get('quac:editable_when'), unwritten)
+    if lookup is not None:
+        del column['quac:editable_when']
+        drop('quac:editable_when', lookup)
+    return column
+
+
+def _without_local_folder(column: dict[str, Any], title: str, publication: Publication) -> dict[str, Any]:
+    """The column less its Attachment widget's `default_root` where that is not a path relative to the project, such as an absolute path."""
+    attachment = column.get('quac:attachment')
+    root = attachment.get('default_root') if isinstance(attachment, dict) else None
+    if not isinstance(root, str) or not _NOT_RELATIVE.match(root.strip()):
+        return column
+    publication.dropped_folders.append(DroppedFolder(title, column['name']))
+    return {**column, 'quac:attachment': {key: value for key, value in attachment.items() if key != 'default_root'}}
 
 
 def _categorised_field(layer: Optional[LayerEntry], style_name: str) -> Optional[str]:
