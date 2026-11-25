@@ -957,17 +957,17 @@ function parseFieldAliases(maplayer: Element): Record<string, string> {
  * (`QgsVectorLayer::readSymbology` and `writeSymbology`,
  * `src/core/vector/qgsvectorlayer.cpp`, `qgis/QGIS@master`, read 2026-11-19).
  * A blank comment, which QGIS saves to hide the comment the field's data gives,
- * is left out: a project file does not carry the data's own comment. Where two
- * entries name a field, the later stands, as QGIS's map of them keeps it.
+ * is kept as an empty string, so a producer that has the data's comment knows
+ * to leave it out (`QgsAttributeForm`, `src/gui/qgsattributeform.cpp`, same
+ * revision, read 2026-11-25). Where two entries name a field, the later
+ * stands, as QGIS's map of them keeps it.
  */
 function parseFieldComments(maplayer: Element): Record<string, string> {
   const out = nameRecord<string>()
   for (const node of directChild(maplayer, 'customComments')?.querySelectorAll(':scope > customComment') ?? []) {
     const field = node.getAttribute('field')
     if (!field) continue
-    const comment = node.getAttribute('value')?.trim()
-    if (comment) out[field] = comment
-    else delete out[field]
+    out[field] = node.getAttribute('value')?.trim() ?? ''
   }
   return out
 }

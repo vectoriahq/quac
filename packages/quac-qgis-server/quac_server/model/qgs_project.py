@@ -294,7 +294,7 @@ class LayerEntry:
     # The address of the icon each field's `quac_icon_<field>` variable names, by field name.
     field_icons: dict[str, str] = field(default_factory=dict)
     field_edit_rules: dict[str, FieldEditRule] = field(default_factory=dict)
-    # Each field's Attachment widget, the control its `quac_control_<field>` variable asks for, and its custom comment, by field name.
+    # Each field's Attachment widget, the control its `quac_control_<field>` variable asks for, and its custom comment, by field name; a blank comment, which hides the data's own, is an empty string.
     field_attachments: dict[str, FieldAttachment] = field(default_factory=dict)
     field_controls: dict[str, str] = field(default_factory=dict)
     field_comments: dict[str, str] = field(default_factory=dict)

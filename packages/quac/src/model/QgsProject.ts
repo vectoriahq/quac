@@ -248,8 +248,9 @@ export interface LayerEntry {
   fieldAliases: Record<string, string>
   /**
    * Each field's comment from the Attributes Form's Comment, a custom comment
-   * QGIS 4.2 and later saves in the project as `<customComments>`. Fields with
-   * none, or a blank one, are absent.
+   * QGIS 4.2 and later saves in the project as `<customComments>`. A blank one,
+   * which hides the comment the field's data gives, is an empty string. Fields
+   * with none are absent.
    */
   fieldComments?: Record<string, string>
   /**

@@ -748,19 +748,16 @@ def _parse_field_comments(maplayer: Element) -> dict[str, str]:
     """
     Each field's custom comment, from the Attributes Form's Comment, which QGIS
     4.2 and later saves as `<customComments><customComment field value/>`, a
-    direct child of `<maplayer>`. A blank comment is left out, and where two
-    entries name a field, the later stands.
+    direct child of `<maplayer>`. A blank comment, which hides the comment the
+    field's data gives, is kept as an empty string, and where two entries name
+    a field, the later stands.
     """
     out: dict[str, str] = {}
     for node in _children(direct_child(maplayer, 'customComments'), 'customComment'):
         field = node.get('field')
         if not field:
             continue
-        comment = js_trim(node.get('value') or '')
-        if comment:
-            out[field] = comment
-        else:
-            out.pop(field, None)
+        out[field] = js_trim(node.get('value') or '')
     return out
 
 

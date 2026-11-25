@@ -223,6 +223,23 @@ describe('generateServerStacCatalogue', () => {
     expect(columns.filter((column) => column.type !== undefined).map((column) => column.name).sort()).toEqual(['species', 'tree_id'])
   })
 
+  it("describes a column by its data's comment where the project saves none of its own, and hides it behind a blank one", () => {
+    const fieldTypes = {
+      [TREES_ID]: {
+        tree_id: { type: 'qlonglong', typeName: 'Integer64', comment: ' The tree register number ' },
+        species: { type: 'QString', typeName: 'String', comment: 'From the data' },
+        planted: { type: 'QDate', typeName: 'Date', comment: 'Also from the data' }
+      }
+    }
+    const comments = '<customComments><customComment field="species" value="From the project"/><customComment field="planted" value=""/></customComments>'
+    const xml = project({ edit: (text) => text.replace(`<id>${TREES_ID}</id>`, `<id>${TREES_ID}</id>${comments}`) })
+    const trees = byId(JSON.parse(JSON.stringify(generateServerStacCatalogue(parseQgsXml(xml), { serverAddress: SERVER, fieldTypes }))) as StacCatalog).get('Street trees')!
+    const description = (name: string) => (trees['table:columns'] as TableColumn[]).find((column) => column.name === name)?.description
+    expect(description('tree_id')).toBe('The tree register number')
+    expect(description('species')).toBe('From the project')
+    expect(description('planted')).toBeUndefined()
+  })
+
   it('takes the box of a layer whose project saves none from QGIS Server, and covers only the served layers at the top', () => {
     const box = { xmin: 115.8, ymin: -32.0, xmax: 115.9, ymax: -31.9 }
     const away = { xmin: 0, ymin: 0, xmax: 1, ymax: 1 }

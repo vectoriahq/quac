@@ -8,7 +8,8 @@ types and WGS84 boxes QGIS gives (`qgis_inputs.field_types` and
 `layer_extents`), the project file's folder, the chosen folder, each layer's
 current style as QML, a way to read a file already in the chosen folder, and
 a way to give the map canvas extent the project saves in WGS84
-(`qgis_inputs.wgs84_box`), the catalogue's `quac:initial_view`.
+(`qgis_inputs.wgs84_box`), the catalogue's `quac:initial_view`, and a way to
+read a data file's size and last change (`read_data_file`).
 It returns a `Publication`: the files to write, each by its path relative to
 the chosen folder, the files to remove, and what was left out and why.
 
@@ -24,7 +25,10 @@ The folder rules:
 
 - A file layer's data asset names its file by a path relative to the
   document, worked out from the project's folder and the chosen folder. A
-  layer whose file is not in the chosen folder or below it is left out.
+  layer whose file is not in the chosen folder or below it is left out. The
+  asset carries the file's size as `file:size`, from the File extension, and
+  when it last changed as `updated`, which STAC's common metadata gives an
+  asset as the date of its data.
 - A layer read from a web address keeps it, unless the address holds a user
   name or password (`server_wms_endpoint` refuses it), and then it is left out.
   So does a WMS, WMTS or XYZ layer, whose address is written as a web map link,
@@ -60,6 +64,7 @@ import os
 import posixpath
 import re
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Callable, Optional
 from urllib.parse import unquote
 
@@ -71,6 +76,7 @@ from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generat
 from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
 from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from .quac_server.model.stac_href import encode_asset_path
+from .quac_server.model.stac_size_and_count import FILE_EXTENSION, FILE_SIZE_FIELD
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
 from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
 from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
@@ -273,6 +279,7 @@ def plan_publication(
     path: Any = os.path,
     opened_layer_ids: Optional[set[str]] = None,
     wgs84_box: Optional[Callable[[MapExtent], Optional[BoundingBox]]] = None,
+    data_file: Optional[Callable[[str], Optional[DataFile]]] = None,
 ) -> Publication:
     """
     What to write into `folder`, the chosen folder, for a saved project.
@@ -286,6 +293,8 @@ def plan_publication(
     is a WMS, WMTS or XYZ layer. None takes every layer as opened.
     `wgs84_box` gives the project's map canvas extent in WGS84, or None where
     it cannot; with none given, the catalogue has no initial view.
+    `data_file` gives a data file's size and last change by its absolute path,
+    or None where it cannot; with none given, a data asset carries neither.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -319,7 +328,7 @@ def plan_publication(
         if opened_layer_ids is not None and collection['id'] not in opened_layer_ids and not web_map:
             reason: Optional[str] = NOT_OPENED
         else:
-            reason = _place_data(layer, collection, project_folder, folder, path)
+            reason = _place_data(layer, collection, project_folder, folder, path, data_file)
         if reason is not None:
             left_out_ids.add(collection['id'])
             publication.left_out.append(LeftOutLayer(collection.get('title', collection['id']), reason))
@@ -349,6 +358,8 @@ def plan_publication(
         columns = collection.get('table:columns')
         if isinstance(columns, list):
             types = field_types.get(collection['id'], {})
+            entry = layers_by_id.get(collection['id'])
+            project_comments = entry.field_comments if entry is not None else {}
             kept = []
             for column in columns:
                 relation = column.get('quac:value_relation')
@@ -357,7 +368,7 @@ def plan_publication(
                     publication.dropped_choices.append(DroppedChoices(title, column['name'], titles.get(relation['collection'], relation['collection'])))
                 column = _without_unwritten_lookups(column, unwritten, title, publication)
                 _note_local_folder(column, layers_by_id.get(collection['id']), title, publication)
-                kept.append(with_field_type(column, types.get(column['name'])))
+                kept.append(with_field_type(column, types.get(column['name']), project_comments))
             collection['table:columns'] = kept
         if project_href is not None:
             collection['links'] = [*collection['links'], {'rel': 'via', 'href': f'./{encode_asset_path(project_href)}', 'title': QGIS_PROJECT_LINK_TITLE}]
@@ -544,11 +555,12 @@ def _categorised_field(layer: Optional[LayerEntry], style_name: str) -> Optional
     return next((style.categorised_field for style in layer.styles if style.name == style_name), None)
 
 
-def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project_folder: str, folder: str, path: Any) -> Optional[str]:
+def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project_folder: str, folder: str, path: Any, data_file: Optional[Callable[[str], Optional[DataFile]]]) -> Optional[str]:
     """
     Rewrites a Collection's data asset for the chosen folder, or returns why
     the layer is left out. A file's href becomes its path from the chosen
-    folder, which `split_catalogue` then writes from each document.
+    folder, which `split_catalogue` then writes from each document, and the
+    asset takes the file's size and last change where `data_file` gives them.
     """
     if layer is None:
         return NOT_A_FILE
@@ -569,11 +581,38 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
     if _DRIVE.match(written) and path.sep != '\\':
         # A Windows path, read on a system with no drives.
         return OUTSIDE_FOLDER
-    relative = _inside(path.join(project_folder, written), folder, path)
+    target = path.normpath(path.join(project_folder, written))
+    relative = _inside(target, folder, path)
     if relative is None:
         return OUTSIDE_FOLDER
     data['href'] = f'./{encode_asset_path(relative)}'
+    facts = data_file(target) if data_file is not None else None
+    if facts is not None:
+        # A size of nothing is not written, as `readDataAssetFileSize` reads none.
+        if facts.size > 0:
+            data[FILE_SIZE_FIELD] = facts.size
+            extensions = collection.setdefault('stac_extensions', [])
+            if FILE_EXTENSION not in extensions:
+                extensions.append(FILE_EXTENSION)
+        data['updated'] = facts.updated
     return None
+
+
+@dataclass(frozen=True)
+class DataFile:
+    """A data file's size in bytes, and when it last changed as an RFC 3339 time in UTC, such as `2026-11-25T03:04:05Z`."""
+
+    size: int
+    updated: str
+
+
+def read_data_file(file_path: str) -> Optional[DataFile]:
+    """The size and last change the file system gives a file, or None where it cannot be read."""
+    try:
+        status = os.stat(file_path)
+    except OSError:
+        return None
+    return DataFile(status.st_size, datetime.fromtimestamp(status.st_mtime, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'))
 
 
 def _web_map_source_holds_credentials(raw: str, provider: Optional[str]) -> bool:

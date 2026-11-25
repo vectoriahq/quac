@@ -11,10 +11,12 @@ default folder among them.
 from __future__ import annotations
 
 import io
+import os
 import json
 import ntpath
 import posixpath
 import re
+import tempfile
 import unittest
 import zipfile
 from typing import Any, Iterator, Optional
@@ -160,8 +162,8 @@ def with_attachment(layer: str, field: str, default_root: str) -> str:
     return layer.replace(empty, f'<field configurationFlags="NoFlag" name={quoteattr(field)}>{widget}</field>', 1)
 
 
-def plan(project: bytes, *, folder: str = PUBLISH_FOLDER, project_folder: str = PROJECT_FOLDER, existing: Optional[dict[str, bytes]] = None, styles: Optional[dict[str, Any]] = None, field_types: Optional[dict[str, Any]] = None, file_name: str = 'Parks.qgz', path: Any = posixpath):
-    return publish.plan_publication(file_name, qgz(project) if file_name.endswith('.qgz') else project, field_types or {}, {}, project_folder, folder, styles or {}, (existing or {}).get, path)
+def plan(project: bytes, *, folder: str = PUBLISH_FOLDER, project_folder: str = PROJECT_FOLDER, existing: Optional[dict[str, bytes]] = None, styles: Optional[dict[str, Any]] = None, field_types: Optional[dict[str, Any]] = None, file_name: str = 'Parks.qgz', path: Any = posixpath, data_file: Any = None):
+    return publish.plan_publication(file_name, qgz(project) if file_name.endswith('.qgz') else project, field_types or {}, {}, project_folder, folder, styles or {}, (existing or {}).get, path, data_file=data_file)
 
 
 def qgz(project: bytes) -> bytes:
@@ -298,6 +300,45 @@ class FieldTypes(unittest.TestCase):
         self.assertEqual((columns['id']['type'], columns['id']['data_type']), ('long', 'int64'))
         self.assertEqual(columns['name']['type'], 'string')
         self.assertNotIn('type', columns['kind'])
+
+    def test_describes_a_column_by_the_comment_its_data_holds(self) -> None:
+        publication = plan(parks_project(), field_types={'parks_1': {'name': {'type': 'QString', 'typeName': 'String', 'comment': 'The name on the park sign'}}})
+        _name, parks = collection(publication, 'parks_1')
+        columns = {column['name']: column for column in parks['table:columns']}
+        self.assertEqual(columns['name']['description'], 'The name on the park sign')
+        self.assertNotIn('description', columns['id'])
+
+
+class DataFiles(unittest.TestCase):
+    FILES = {
+        f'{PROJECT_FOLDER}/publish/vector/parks.geojson': publish.DataFile(2048, '2026-11-20T01:02:03Z'),
+        f'{PROJECT_FOLDER}/publish/vector/playgrounds.gpkg': publish.DataFile(0, '2026-11-21T04:05:06Z'),
+    }
+
+    def test_gives_a_file_layer_its_file_size_and_last_change(self) -> None:
+        publication = plan(parks_project(), data_file=self.FILES.get)
+        _name, parks = collection(publication, 'parks_1')
+        self.assertEqual(parks['assets']['data']['file:size'], 2048)
+        self.assertEqual(parks['assets']['data']['updated'], '2026-11-20T01:02:03Z')
+        self.assertIn(publish.FILE_EXTENSION, parks['stac_extensions'])
+
+    def test_writes_no_size_of_nothing_and_nothing_for_a_file_it_cannot_read(self) -> None:
+        publication = plan(parks_project(), data_file=self.FILES.get)
+        _name, playgrounds = collection(publication, 'playgrounds_2')
+        self.assertNotIn('file:size', playgrounds['assets']['data'])
+        self.assertEqual(playgrounds['assets']['data']['updated'], '2026-11-21T04:05:06Z')
+        self.assertNotIn(publish.FILE_EXTENSION, playgrounds.get('stac_extensions', []))
+        _name, kinds = collection(publication, 'kinds_4')
+        self.assertFalse({'file:size', 'updated'} & set(kinds['assets']['data']))
+
+    def test_reads_a_file_size_and_last_change_in_utc(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            target = os.path.join(folder, 'parks.geojson')
+            with open(target, 'wb') as handle:
+                handle.write(b'{}')
+            os.utime(target, (0, 1764032645))
+            self.assertEqual(publish.read_data_file(target), publish.DataFile(2, '2025-11-25T01:04:05Z'))
+            self.assertIsNone(publish.read_data_file(os.path.join(folder, 'missing.geojson')))
 
 
 class FolderRules(unittest.TestCase):

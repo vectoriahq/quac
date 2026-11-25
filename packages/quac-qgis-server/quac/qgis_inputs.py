@@ -1,4 +1,4 @@
-"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, each field's type, each layer's WGS84 box, and the map canvas extent in WGS84."""
+"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, each field's type and its data's comment, each layer's WGS84 box, and the map canvas extent in WGS84."""
 
 from __future__ import annotations
 
@@ -54,12 +54,17 @@ def qt_type_name(field: Any) -> str:
 
 
 def field_types(project: Any) -> dict[str, dict[str, dict[str, str]]]:
-    """Each valid vector layer's fields' types, by layer id and field name, as the server route takes them."""
+    """
+    Each valid vector layer's fields' types, with the comment the field's data
+    holds, such as a PostgreSQL column comment (`QgsField.comment`), by layer
+    id and field name, as the server route takes them and as GetProjectSettings
+    reports them.
+    """
     types: dict[str, dict[str, dict[str, str]]] = {}
     for layer in project.mapLayers().values():
         if not isinstance(layer, QgsVectorLayer) or not layer.isValid():
             continue
-        types[layer.id()] = {field.name(): {'type': qt_type_name(field), 'typeName': field.typeName()} for field in layer.fields()}
+        types[layer.id()] = {field.name(): {'type': qt_type_name(field), 'typeName': field.typeName(), 'comment': field.comment() or ''} for field in layer.fields()}
     return types
 
 

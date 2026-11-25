@@ -63,6 +63,18 @@ class InputsFromQgisServer(unittest.TestCase):
         self.assertEqual((columns['species']['type'], columns['species']['data_type']), ('string', 'other'))
         self.assertEqual(sorted(name for name, column in columns.items() if 'type' in column), ['species', 'tree_id'])
 
+    def test_describes_a_column_by_its_data_comment_where_the_project_saves_none_as_the_javascript_does(self) -> None:
+        field_types = {TREES_ID: {
+            'tree_id': {'type': 'qlonglong', 'typeName': 'Integer64', 'comment': ' The tree register number '},
+            'species': {'type': 'QString', 'typeName': 'String', 'comment': 'From the data'},
+            'planted': {'type': 'QDate', 'typeName': 'Date', 'comment': 'Also from the data'},
+        }}
+        comments = '<customComments><customComment field="species" value="From the project"/><customComment field="planted" value=""/></customComments>'
+        xml = _published(self.xml).replace(f'<id>{TREES_ID}</id>', f'<id>{TREES_ID}</id>{comments}')
+        trees = _collections(generate_server_stac_catalogue(parse_qgs_xml(xml), SERVER, field_types=field_types))['Street trees']
+        descriptions = {column['name']: column.get('description') for column in trees['table:columns']}
+        self.assertEqual(descriptions, {'tree_id': 'The tree register number', 'species': 'From the project', 'planted': None})
+
     def test_takes_a_missing_box_from_qgis_server_and_covers_only_served_layers(self) -> None:
         from quac_server.model.qgs_project import BoundingBox
         project = parse_qgs_xml(_published(self.xml, restricted=('Inspections',)))
