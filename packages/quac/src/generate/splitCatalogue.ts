@@ -227,7 +227,11 @@ const RESERVED_NAME = /^(con|prn|aux|nul|com[0-9¹²³]|lpt[0-9¹²³])(\.|$)/i
  * empty, `.` or `..`.
  */
 function safeName(id: string): string {
-  let name = id.replace(UNSAFE_CHARACTERS, '_').replace(/[. ]+$/, (end) => '_'.repeat(end.length))
+  let name = id.replace(UNSAFE_CHARACTERS, '_')
+  // Counted from the end, not matched with /[. ]+$/, which takes time growing with the square of a run of spaces that does not end the id.
+  let kept = name.length
+  while (kept > 0 && (name[kept - 1] === '.' || name[kept - 1] === ' ')) kept -= 1
+  name = name.slice(0, kept) + '_'.repeat(name.length - kept)
   if (name === '') name = '_'
   return RESERVED_NAME.test(name) ? `_${name}` : name
 }

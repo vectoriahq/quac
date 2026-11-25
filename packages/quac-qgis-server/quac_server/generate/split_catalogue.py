@@ -221,7 +221,9 @@ def _safe_name(identifier: str) -> str:
     no name is empty, `.` or `..`.
     """
     name = _UNSAFE_CHARACTERS.sub('_', identifier)
-    name = re.sub(r'[. ]+\Z', lambda end: '_' * len(end.group(0)), name)
+    # Counted from the end, not matched with `[. ]+\Z`, which takes time growing with the square of a run of spaces that does not end the id.
+    kept = len(name.rstrip('. '))
+    name = name[:kept] + '_' * (len(name) - kept)
     if name == '':
         name = '_'
     return f'_{name}' if _RESERVED_NAME.match(name) else name

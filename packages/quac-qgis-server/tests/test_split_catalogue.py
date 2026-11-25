@@ -10,6 +10,7 @@ A catalogue written as separate documents is the one the JavaScript's
 from __future__ import annotations
 
 import json
+import time
 import unittest
 from pathlib import Path
 
@@ -44,6 +45,15 @@ class SplitMatchesTheJavaScript(unittest.TestCase):
             with self.subTest(root_file_name=root_file_name, children_folder=children_folder):
                 with self.assertRaises(ValueError):
                     split_catalogue(catalogue, root_file_name, children_folder)
+
+
+    def test_makes_a_long_run_of_spaces_safe_in_linear_time(self) -> None:
+        # A pattern for the dots and spaces ending a name took time growing with the square of a run of spaces inside it.
+        catalogue = json.loads((SPLIT_FIXTURES / 'awkward-ids.catalogue.json').read_text(encoding='utf-8'))
+        root_file_name = 'a' + ' ' * 100_000 + 'b.json'
+        started = time.perf_counter()
+        self.assertEqual(split_catalogue(catalogue, root_file_name)[0]['path'], root_file_name)
+        self.assertLess(time.perf_counter() - started, 1.0)
 
 
 if __name__ == '__main__':

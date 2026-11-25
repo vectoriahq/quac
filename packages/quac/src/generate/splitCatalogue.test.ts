@@ -136,6 +136,14 @@ describe('splitCatalogue', () => {
     expect(new Set(lowerCase).size).toBe(lowerCase.length)
   })
 
+  // A pattern for the dots and spaces ending a name took time growing with the square of a run of spaces inside it.
+  it('makes a name with a long run of spaces inside it safe in linear time', () => {
+    const rootFileName = `a${' '.repeat(100_000)}b.json`
+    const started = performance.now()
+    expect(splitCatalogue(catalogue, { rootFileName })[0].path).toBe(rootFileName)
+    expect(performance.now() - started).toBeLessThan(1000)
+  })
+
   it.each<[string, SplitCatalogueOptions]>([
     ['a root file name with a folder', { rootFileName: 'out/catalog.json' }],
     ['a root file name not ending in .json', { rootFileName: 'catalog' }],
