@@ -1,8 +1,9 @@
 """JavaScript's answers for numbers and text, in Python.
 
-The JavaScript reader relies on `Number()`, `String.prototype.trim`,
-`encodeURIComponent`, and the `URL` class and `URLSearchParams` for `http`
-and `https` addresses and a layer source's query. These helpers
+The JavaScript reader relies on `Number()`, `String()`, `JSON.stringify`,
+`Number.parseInt`, `String.prototype.trim`, the whitespace of a regular expression's `\\s`, the
+order `<` puts text in, `encodeURIComponent`, and the `URL` class and
+`URLSearchParams` for `http` and `https` addresses and a layer source's query. These helpers
 give the same answers for what a QGIS project holds, so a Python module can
 follow its JavaScript counterpart line by line. This module has no JavaScript
 counterpart.
@@ -10,6 +11,7 @@ counterpart.
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from typing import Any, Callable, Optional, Union
@@ -53,6 +55,92 @@ def js_number(text: Optional[str]) -> float:
         except ValueError:
             return math.nan
     return math.nan
+
+
+_LEADING_INTEGER = re.compile(r'^([+-]?[0-9]+)')
+
+
+def js_parse_int(text: Optional[str]) -> float:
+    """`Number.parseInt(text, 10)`: the whole number the text opens with, after any space, or NaN where it opens with none."""
+    match = _LEADING_INTEGER.match(js_trim(text or ''))
+    return int(match.group(1)) if match else math.nan
+
+
+# The characters JavaScript's `\\s` matches, as the inside of a Python class.
+JS_SPACE = '\\t\\n\\v\\f\\r \\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000\\ufeff'
+
+
+def js_number_string(value: Number) -> str:
+    """`String(number)`: the fewest digits that read back as the number, written out up to 21 digits and with an exponent past them, as JavaScript writes it."""
+    number = float(value)
+    if math.isnan(number):
+        return 'NaN'
+    if math.isinf(number):
+        return 'Infinity' if number > 0 else '-Infinity'
+    if number == 0:
+        return '0'
+    sign = '-' if number < 0 else ''
+    mantissa, _, exponent = repr(abs(number)).partition('e')
+    integer, _, fraction = mantissa.partition('.')
+    digits = integer + fraction
+    point = len(integer) + int(exponent or 0)
+    stripped = digits.lstrip('0')
+    point -= len(digits) - len(stripped)
+    digits = stripped.rstrip('0')
+    count = len(digits)
+    if count <= point <= 21:
+        return sign + digits + '0' * (point - count)
+    if 0 < point <= 21:
+        return f'{sign}{digits[:point]}.{digits[point:]}'
+    if -6 < point <= 0:
+        return f"{sign}0.{'0' * -point}{digits}"
+    power = point - 1
+    written = digits if count == 1 else f'{digits[0]}.{digits[1:]}'
+    return f"{sign}{written}e{'+' if power >= 0 else '-'}{abs(power)}"
+
+
+def js_string(value: Any) -> str:
+    """`String(value)` for what a feature's properties hold: text, a number, true or false, null, a list or an object."""
+    if value is None:
+        return 'null'
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, (int, float)):
+        return js_number_string(value)
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple)):
+        return ','.join('' if item is None else js_string(item) for item in value)
+    return '[object Object]'
+
+
+def js_truthy(value: Any) -> bool:
+    """`Boolean(value)`: false for null, false, 0, NaN and empty text, and true for anything else, an empty list or object included."""
+    if value is None or value is False:
+        return False
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return value != 0 and not math.isnan(value)
+    if isinstance(value, str):
+        return value != ''
+    return True
+
+
+def code_unit_key(text: str) -> bytes:
+    """A key that puts text in the order JavaScript's `<` does, by UTF-16 code unit, where Python's own order is by code point."""
+    return text.encode('utf-16-be', 'surrogatepass')
+
+
+def js_json_stringify(value: Any) -> str:
+    """`JSON.stringify(value)` with no spacing, for text, numbers, true, false, null, lists and dictionaries, which keep their order."""
+    if value is None or value is True or value is False:
+        return json.dumps(value)
+    if isinstance(value, (int, float)):
+        return 'null' if isinstance(value, float) and not math.isfinite(value) else js_number_string(value)
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)
+    if isinstance(value, (list, tuple)):
+        return '[' + ','.join(js_json_stringify(item) for item in value) + ']'
+    return '{' + ','.join(f'{json.dumps(key, ensure_ascii=False)}:{js_json_stringify(item)}' for key, item in value.items()) + '}'
 
 
 def whole(value: float) -> Number:

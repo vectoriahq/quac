@@ -65,6 +65,11 @@ describe('writeLayoutTemplate', () => {
       <LayoutItem type="65640" file="C:/Users/editor/logo.png"/>
       <LayoutItem type="65640" file="/home/editor/logo.png"/>
       <LayoutItem type="65640" file="./logo.png"/>
+      <LayoutItem type="65640" file="~/logos/logo.png"/>
+      <LayoutItem type="65640" file=" /srv/logo.png"/>
+      <LayoutItem type="65640" file="D:"/>
+      <LayoutItem type="65640" file="\\\\server\\share\\logo.png"/>
+      <LayoutItem type="65641" labelText="Address: 12 Main St"/>
       <LayoutItem type="65639"><LayerSet><Layer name="Parks" source="dbname='parks' user='editor' password='secret'" provider="postgres">parks_1</Layer></LayerSet></LayoutItem>
       <Atlas enabled="1" coverageLayer="parks_1" coverageLayerName="Parks" coverageLayerSource="//server/share/parks.gpkg" coverageLayerProvider="ogr"/>
     </Layout>`)
@@ -73,6 +78,11 @@ describe('writeLayoutTemplate', () => {
       + '<LayoutItem type="65640" file=""/>'
       + '<LayoutItem type="65640" file=""/>'
       + '<LayoutItem type="65640" file="./logo.png"/>'
+      + '<LayoutItem type="65640" file=""/>'
+      + '<LayoutItem type="65640" file=""/>'
+      + '<LayoutItem type="65640" file=""/>'
+      + '<LayoutItem type="65640" file=""/>'
+      + '<LayoutItem type="65641" labelText="Address: 12 Main St"/>'
       + '<LayoutItem type="65639"><LayerSet><Layer name="Parks">parks_1</Layer></LayerSet></LayoutItem>'
       + '<Atlas enabled="1" coverageLayer="parks_1" coverageLayerName="Parks"/>'
       + '</Layout>'

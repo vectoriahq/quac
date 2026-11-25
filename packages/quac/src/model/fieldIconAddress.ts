@@ -89,12 +89,16 @@ export function isIconLibraryAddress(url: string): boolean {
   return Object.values(ICON_LIBRARIES).some((library) => rest.startsWith(`${library.packageName}@`) || rest.startsWith(`${library.packageName}/`))
 }
 
-/** The address as the URL parser writes it, or null where it is not an `https://` address. */
+/**
+ * The address as the URL parser writes it, or null where it is not an
+ * `https://` address or holds a user name or password, which a catalogue
+ * would otherwise publish.
+ */
 export function readHttpsAddress(value: unknown): string | null {
   if (typeof value !== 'string') return null
   try {
     const url = new URL(value.trim())
-    return url.protocol === 'https:' ? url.href : null
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : null
   } catch {
     return null
   }

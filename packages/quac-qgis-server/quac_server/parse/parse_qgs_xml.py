@@ -1,4 +1,4 @@
-"""Mirrors `packages/quac/src/parse/parseQgsXml.ts`, as far as the plugin's first-release fields read a project."""
+"""Mirrors `packages/quac/src/parse/parseQgsXml.ts`, as far as the plugin's catalogues read a project."""
 
 from __future__ import annotations
 
@@ -10,10 +10,14 @@ from xml.etree.ElementTree import Element  # nosec B405
 from ..js_compat import js_trim
 from ..model.qgs_project import ProjectMetadata, QgsProject
 from .collect_layer_visibility import collect_layer_visibility
+from .parse_extent import parse_map_extent
 from .parse_layers import parse_project_layers
 from .parse_legend_tree import parse_legend_tree
+from .parse_measurement import parse_project_measurement
+from .parse_mergin import parse_mergin_filters
 from .parse_print_layouts import parse_print_layouts
-from .parse_qfield_sync import parse_wfs_transaction_layers
+from .parse_qfield_sync import parse_initial_active_layer_id, parse_wfs_transaction_layers
+from .parse_relations import parse_project_relations
 from .parse_wms_publishing import parse_wms_crs_list, parse_wms_publishing
 from .xml_text import direct_child, direct_child_text, first_descendant, text_content
 
@@ -36,6 +40,8 @@ def parse_qgs_xml(xml_text: str) -> QgsProject:
     if qgis_root.tag != 'qgis':
         raise ValueError(f'Expected <qgis> root element, got <{qgis_root.tag}>')
 
+    project_crs = _read_project_crs(qgis_root)
+    map_extent = parse_map_extent(qgis_root, project_crs)
     layer_tree = parse_legend_tree(qgis_root)
     # Visibility flows from the layer tree, where the checked state is stored, not from the maplayer itself.
     visibility_by_layer_id = collect_layer_visibility(layer_tree)
@@ -44,13 +50,18 @@ def parse_qgs_xml(xml_text: str) -> QgsProject:
     return QgsProject(
         qgis_version=qgis_root.get('version') or None,
         title=direct_child_text(qgis_root, 'title') or '',
-        project_crs=_read_project_crs(qgis_root),
+        project_crs=project_crs,
+        map_extent=map_extent,
         layers=layers,
         layer_tree=layer_tree,
+        relations=parse_project_relations(qgis_root),
         metadata=_parse_project_metadata(qgis_root),
+        measurement=parse_project_measurement(qgis_root),
+        initial_active_layer_id=parse_initial_active_layer_id(qgis_root),
         wfs_transaction_layers=parse_wfs_transaction_layers(qgis_root),
         wms_publishing=parse_wms_publishing(qgis_root),
         wms_crs_list=parse_wms_crs_list(qgis_root),
+        mergin_filters=parse_mergin_filters(qgis_root),
         print_layouts=parse_print_layouts(qgis_root),
     )
 

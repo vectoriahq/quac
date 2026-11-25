@@ -313,7 +313,7 @@ Written by: QGIS project. Stable. Example: `"data:image/png;base64,iVBORw0KGgoâ€
 
 The `https://` address of an icon drawn before the layer's name. A reader takes the address as it stands. From a QGIS layer variable named `quac_icon`, set in **Layer Properties â€º Variables**, whose value is one of:
 
-- an `https://` address, written as it stands;
+- an `https://` address, written as it stands, unless it holds a user name or password, when nothing is written;
 - `prefix:name`, an icon named as Iconify names it, from one of the libraries below, such as `lucide:tree-pine`;
 - a bare name, such as `tree`, read as a Tabler icon.
 
@@ -564,7 +564,7 @@ The column holds a path to a file rather than a value of its own: `{ viewer?, fi
 |---|---|
 | `viewer` | how the file is meant to be shown: `image`, `web`, `audio` or `video`; absent where the source names none |
 | `filter` | the file types the source offers, in the source's own wording |
-| `default_root` | the folder the source declares the files live in |
+| `default_root` | the folder the source declares the files live in, relative to the project; a folder given as a path on the computer, such as `C:\Survey\sketches` or `/srv/photos`, a network share or an address is not written |
 | `relative_storage` | what a stored path is relative to: `absolute`, `project` or `default-root`. Always written. `absolute` names a path on the author's own machine |
 
 From a QGIS **Attachment** widget, which QGIS registers as `ExternalResource`: its `DocumentViewer`, `FileWidgetFilter`, `DefaultRoot` and `RelativeStorage`. The widget's other keys are not read.

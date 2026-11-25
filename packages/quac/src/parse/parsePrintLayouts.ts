@@ -31,8 +31,15 @@ export function parsePrintLayouts(qgisRoot: Element): PrintLayoutTemplate[] {
  */
 const SOURCE_ATTRIBUTE = /^(source|provider)$|(Source|Provider)$/
 
-/** A value that is a file path from the root of a disk or a network share, or a `file:` address. */
-const ABSOLUTE_PATH = /^(\/|[A-Za-z]:[\\/]|\\\\|file:)/i
+/**
+ * A value that is a path on the computer that saved the project: from the
+ * root of a disk or a home folder (`~/`), a drive, a network share, or a
+ * `file:` address. It is narrower than `isProjectRelativeFolder`'s test of an
+ * Attachment folder, because it reads every attribute of a layout, label text
+ * included, so a value such as `Address: 12 Main St` is not taken for an
+ * address.
+ */
+const ABSOLUTE_PATH = /^\s*(\/|\\|~[\\/]|[A-Za-z]:([\\/]|$)|file:)/i
 
 /**
  * A layout element as XML text, written by one fixed rule so that the

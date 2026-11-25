@@ -1,0 +1,281 @@
+{
+  "parsed": [
+    {
+      "project": "<qgis/>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><properties/></qgis>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement/></properties></qgis>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><AreaUnits type=\"QString\">ha</AreaUnits><DistanceUnits type=\"QString\">km</DistanceUnits></Measurement></properties></qgis>",
+      "measurement": {
+        "areaUnit": "ha",
+        "distanceUnit": "km"
+      },
+      "factors": {
+        "area": 0.0001,
+        "distance": 0.001
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><AreaUnits type=\"QString\">ac</AreaUnits></Measurement></properties></qgis>",
+      "measurement": {
+        "areaUnit": "ac",
+        "distanceUnit": "meters"
+      },
+      "factors": {
+        "area": 0.0002471053814671653,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><DistanceUnits type=\"QString\">feet</DistanceUnits></Measurement></properties></qgis>",
+      "measurement": {
+        "areaUnit": "m2",
+        "distanceUnit": "feet"
+      },
+      "factors": {
+        "area": 1,
+        "distance": 3.280839895013123
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><AreaUnits type=\"QString\">  </AreaUnits><DistanceUnits type=\"QString\"> mi </DistanceUnits></Measurement></properties></qgis>",
+      "measurement": {
+        "areaUnit": "m2",
+        "distanceUnit": "mi"
+      },
+      "factors": {
+        "area": 1,
+        "distance": 0.0006213711922373339
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><AreaUnits type=\"QString\"></AreaUnits><DistanceUnits type=\"QString\"></DistanceUnits></Measurement></properties></qgis>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><properties><Measurement><AreaUnits type=\"QString\">deg2</AreaUnits><DistanceUnits type=\"QString\">degrees</DistanceUnits></Measurement></properties></qgis>",
+      "measurement": {
+        "areaUnit": "deg2",
+        "distanceUnit": "degrees"
+      },
+      "factors": {
+        "area": null,
+        "distance": null
+      }
+    },
+    {
+      "project": "<qgis><properties><properties name=\"Measurement\"><properties name=\"AreaUnits\" type=\"QString\">km2</properties><properties name=\"DistanceUnits\" type=\"QString\">nautical miles</properties></properties></properties></qgis>",
+      "measurement": {
+        "areaUnit": "km2",
+        "distanceUnit": "nautical miles"
+      },
+      "factors": {
+        "area": 0.000001,
+        "distance": 0.0005399568034557236
+      }
+    },
+    {
+      "project": "<qgis><properties><properties name=\"Measurement\"><properties name=\"DistanceUnits\" type=\"QString\">yd</properties></properties></properties></qgis>",
+      "measurement": {
+        "areaUnit": "m2",
+        "distanceUnit": "yd"
+      },
+      "factors": {
+        "area": 1,
+        "distance": 1.0936132983377078
+      }
+    },
+    {
+      "project": "<qgis><properties><properties name=\"Measure\"><properties name=\"Ellipsoid\" type=\"QString\">EPSG:7019</properties></properties></properties></qgis>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "project": "<qgis><Measurement><AreaUnits>ha</AreaUnits></Measurement></qgis>",
+      "measurement": null,
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    }
+  ],
+  "factors": [
+    {
+      "measurement": {
+        "areaUnit": "m2",
+        "distanceUnit": "meters"
+      },
+      "factors": {
+        "area": 1,
+        "distance": 1
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "km2",
+        "distanceUnit": "km"
+      },
+      "factors": {
+        "area": 0.000001,
+        "distance": 0.001
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "ft2",
+        "distanceUnit": "feet"
+      },
+      "factors": {
+        "area": 10.763910416709722,
+        "distance": 3.280839895013123
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "y2",
+        "distanceUnit": "yd"
+      },
+      "factors": {
+        "area": 1.1959900463010802,
+        "distance": 1.0936132983377078
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "mi2",
+        "distanceUnit": "mi"
+      },
+      "factors": {
+        "area": 3.861021585424458e-7,
+        "distance": 0.0006213711922373339
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "ha",
+        "distanceUnit": "nautical miles"
+      },
+      "factors": {
+        "area": 0.0001,
+        "distance": 0.0005399568034557236
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "ac",
+        "distanceUnit": "cm"
+      },
+      "factors": {
+        "area": 0.0002471053814671653,
+        "distance": 100
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "nm2",
+        "distanceUnit": "mm"
+      },
+      "factors": {
+        "area": 2.9155334959812285e-7,
+        "distance": 1000
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "cm2",
+        "distanceUnit": "in"
+      },
+      "factors": {
+        "area": 10000,
+        "distance": 39.37007874015748
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "mm2",
+        "distanceUnit": "meters"
+      },
+      "factors": {
+        "area": 1000000,
+        "distance": 1
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "in2",
+        "distanceUnit": "meters"
+      },
+      "factors": {
+        "area": 1550.0031000062002,
+        "distance": 1
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "deg2",
+        "distanceUnit": "degrees"
+      },
+      "factors": {
+        "area": null,
+        "distance": null
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "HA",
+        "distanceUnit": "Meters"
+      },
+      "factors": {
+        "area": null,
+        "distance": null
+      }
+    },
+    {
+      "measurement": {
+        "areaUnit": "constructor",
+        "distanceUnit": "toString"
+      },
+      "factors": {
+        "area": null,
+        "distance": null
+      }
+    }
+  ],
+  "defaults": [
+    {
+      "area": 1,
+      "distance": 1
+    },
+    {
+      "area": 1,
+      "distance": 1
+    }
+  ]
+}

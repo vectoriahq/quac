@@ -29,8 +29,8 @@ def parse_print_layouts(qgis_root: Element) -> list[PrintLayoutTemplate]:
 # An attribute QGIS writes a layer's data source or provider in.
 _SOURCE_ATTRIBUTE = re.compile(r'^(source|provider)$|(Source|Provider)$')
 
-# A value that is a file path from the root of a disk or a network share, or a `file:` address.
-_ABSOLUTE_PATH = re.compile(r'^(/|[A-Za-z]:[\\/]|\\\\|file:)', re.IGNORECASE)
+# A value that is a path on the computer that saved the project: from the root of a disk or a home folder, a drive, a network share or a `file:` address.
+_ABSOLUTE_PATH = re.compile(r'^\s*(/|\\|~[\\/]|[A-Za-z]:([\\/]|$)|file:)', re.IGNORECASE)
 
 
 def write_layout_template(element: Element) -> str:

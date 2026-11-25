@@ -70,6 +70,12 @@ describe('readHttpsAddress', () => {
     expect(readHttpsAddress('javascript:alert(1)')).toBeNull()
     expect(readHttpsAddress(42)).toBeNull()
   })
+
+  it('reads no address holding a user name or password', () => {
+    expect(readHttpsAddress('https://user:secret@icons.example.test/tree.svg')).toBeNull()
+    expect(readHttpsAddress('https://user@icons.example.test/tree.svg')).toBeNull()
+    expect(readHttpsAddress('https://:secret@icons.example.test/tree.svg')).toBeNull()
+  })
 })
 
 describe('the icon libraries in the field reference', () => {

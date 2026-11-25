@@ -1,4 +1,4 @@
-"""Mirrors `packages/quac/src/generate/normalizedProject.ts`, as far as the plugin's first-release fields need: the shared writer and its helpers.
+"""Mirrors `packages/quac/src/generate/normalizedProject.ts`, as far as a QGIS project's catalogue needs: the shared writer and its helpers.
 
 The readers that take a field back out of a catalogue (`readCollection*`) are
 for an application reading a catalogue, not for a producer, and are not
@@ -21,9 +21,63 @@ TABLE_EXTENSION = 'https://stac-extensions.github.io/table/v1.3.0/schema.json'
 
 VECTOR_EXTENSION = 'https://stac-extensions.github.io/vector/v0.1.0/schema.json'
 
+QUAC_RELATED_TO_FIELD = 'quac:related_to'
+
+QUAC_PRIVATE_FIELD = 'quac:private'
+
 QUAC_LOCKS_FIELD = 'quac:locks'
 
+QUAC_FILTERS_FIELD = 'quac:filters'
+
+QUAC_LEGEND_IMAGE_FIELD = 'quac:legend_image'
+
+QUAC_ICON_FIELD = 'quac:icon'
+
+QUAC_ADDED_MESSAGE_FIELD = 'quac:added_message'
+
 QUAC_MUTUALLY_EXCLUSIVE_FIELD = 'quac:mutually_exclusive'
+
+# The units a Collection's expressions measure `$area`, `$length` and `$perimeter` in: `{area_unit, distance_unit}`, each the name QGIS saves.
+QUAC_MEASUREMENT_FIELD = 'quac:measurement'
+
+# The fields a Collection's edit form places, in the layout's order: a QGIS Drag and Drop Designer form.
+QUAC_FORM_ORDER_FIELD = 'quac:form_order'
+
+# The WGS84 box the source's author saved the map showing, on the top-level Catalog.
+_INITIAL_VIEW_FIELD = 'quac:initial_view'
+
+# The id of the Collection the source names as the map's opening active layer, on the top-level Catalog.
+QUAC_ACTIVE_COLLECTION_FIELD = 'quac:active_collection'
+
+
+@dataclass
+class CollectionRelationField:
+    """One field on each side of a relation's join: the parent Collection's and this Collection's."""
+
+    parent: str
+    child: str
+
+
+@dataclass
+class CollectionRelation:
+    """
+    One relation a Collection declares in `quac:related_to`: its id, the name
+    it is shown under (empty where the source gives none), the parent
+    Collection its records hang off, and the field pairs joining them.
+    """
+
+    id: str
+    name: str
+    parent_collection_id: str
+    fields: list[CollectionRelationField]
+
+
+@dataclass
+class CollectionFilter:
+    """A filter a Collection declares in `quac:filters`: the field it filters by, and the name it is shown under, None where it has none."""
+
+    field: str
+    name: Optional[str]
 
 
 @dataclass
@@ -53,6 +107,17 @@ class NormalizedLayer:
     scale_range: Optional[LayerScaleRange]
     opacity: Optional[float]
     locks: dict[str, EditLock]
+    # Relations with this layer as the child, written as `quac:related_to`.
+    related_to: list[CollectionRelation] = field(default_factory=list)
+    is_private: bool = False
+    legend_image: Optional[str] = None
+    icon: Optional[str] = None
+    added_message: Optional[str] = None
+    filters: list[CollectionFilter] = field(default_factory=list)
+    # The fields the layer's form places, in its order, written as `quac:form_order`; None for a layer with no form layout.
+    form_order: Optional[list[str]] = None
+    # Fields that name the layer's source, such as `quac:wfs_endpoint`, copied straight onto the Collection.
+    vendor_fields: dict[str, Any] = field(default_factory=dict)
     assets: dict[str, Any] = field(default_factory=dict)
     links: list[dict[str, Any]] = field(default_factory=list)
     extensions: list[str] = field(default_factory=list)
@@ -79,6 +144,10 @@ class NormalizedProject:
     description: str
     bbox: Optional[BoundingBox]
     nodes: list[NormalizedNode]
+    # The WGS84 box the source's author saved the map showing, a different fact from `bbox`.
+    initial_view: Optional[BoundingBox] = None
+    # The id of the Collection the source names as the map's opening active layer, written only where the tree holds it.
+    active_collection_id: Optional[str] = None
     # Vendor-namespaced fields copied straight onto the top-level Catalog.
     vendor_fields: dict[str, Any] = field(default_factory=dict)
 
@@ -100,13 +169,23 @@ def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
     }
     if project.bbox:
         catalog['extent'] = build_stac_extent(project.bbox)
+    if project.initial_view:
+        view = project.initial_view
+        catalog[_INITIAL_VIEW_FIELD] = [view.xmin, view.ymin, view.xmax, view.ymax]
     for key, value in project.vendor_fields.items():
         catalog[key] = value
     if collections:
         catalog['collections'] = collections
     if catalogs:
         catalog['catalogs'] = catalogs
+    if project.active_collection_id and any(collection['id'] == project.active_collection_id for collection in _tree_collections(catalog)):
+        catalog[QUAC_ACTIVE_COLLECTION_FIELD] = project.active_collection_id
     return declare_quac_extension(catalog)
+
+
+def _tree_collections(catalog: dict[str, Any]) -> list[dict[str, Any]]:
+    """Every Collection in a Catalog tree, as `collectCatalogueCollections` in `packages/quac/src/model/stacTreeWalk.ts` collects them."""
+    return [*(catalog.get('collections') or []), *(collection for child in catalog.get('catalogs') or [] for collection in _tree_collections(child))]
 
 
 def _walk_nodes(nodes: list[NormalizedNode], folder: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
@@ -195,8 +274,25 @@ def _build_collection(layer: NormalizedLayer, folder: str) -> dict[str, Any]:
         collection['quac:max_scale'] = layer.scale_range.max_scale
     if layer.opacity is not None:
         collection['quac:opacity'] = layer.opacity
+    # A Collection with this is a related dataset rather than a map layer, and the field states what its records hang off.
+    if layer.related_to:
+        collection[QUAC_RELATED_TO_FIELD] = [_relation_to_json(relation) for relation in layer.related_to]
+    if layer.is_private:
+        collection[QUAC_PRIVATE_FIELD] = True
     if layer.locks:
         collection[QUAC_LOCKS_FIELD] = dict(layer.locks)
+    if layer.filters:
+        collection[QUAC_FILTERS_FIELD] = [{'field': entry.field, 'name': entry.name} if entry.name else {'field': entry.field} for entry in layer.filters]
+    if layer.legend_image:
+        collection[QUAC_LEGEND_IMAGE_FIELD] = layer.legend_image
+    if layer.icon:
+        collection[QUAC_ICON_FIELD] = layer.icon
+    if layer.added_message:
+        collection[QUAC_ADDED_MESSAGE_FIELD] = layer.added_message
+    if layer.form_order is not None:
+        collection[QUAC_FORM_ORDER_FIELD] = layer.form_order
+    for key, value in layer.vendor_fields.items():
+        collection[key] = value
 
     if stac_extensions:
         collection['stac_extensions'] = stac_extensions
@@ -209,6 +305,16 @@ def _build_collection(layer: NormalizedLayer, folder: str) -> dict[str, Any]:
     if layer.table_columns:
         collection['table:columns'] = [with_data_type(column) for column in layer.table_columns]
     return collection
+
+
+def _relation_to_json(relation: CollectionRelation) -> dict[str, Any]:
+    """One relation as `quac:related_to` stores it: a name the source left blank is left off."""
+    return {
+        'id': relation.id,
+        **({'name': relation.name} if relation.name else {}),
+        'parent_collection_id': relation.parent_collection_id,
+        'fields': [{'parent': pair.parent, 'child': pair.child} for pair in relation.fields],
+    }
 
 
 # The STAC common metadata data type each column type holds its values in.

@@ -1,4 +1,4 @@
-"""Mirrors `packages/quac/src/parse/parseQfieldSync.ts`, as far as the first-release fields need: `parseQfieldSyncLocks` and `parseWfsTransactionLayers`."""
+"""Mirrors `packages/quac/src/parse/parseQfieldSync.ts`."""
 
 from __future__ import annotations
 
@@ -8,8 +8,20 @@ from xml.etree.ElementTree import Element  # nosec B405
 from ..js_compat import js_trim
 from ..model.qgs_project import EditLock, WfsTransactionLayers
 from .custom_properties import is_true_value, read_custom_property
-from .project_properties import property_child, property_list, read_property_block
+from .project_properties import property_child, property_list, property_text, read_property_block
 from .xml_text import direct_child
+
+
+def parse_initial_active_layer_id(qgis_root: Element) -> Optional[str]:
+    """
+    The layer the QFieldSync plugin names as the one a project opens with as
+    the active layer: **Initial active layer** on the QField tab of Project
+    Properties, saved as `<properties><qfieldsync><initialActiveLayer>`, a
+    layer id. QFieldSync saves it blank until an author picks a layer, so a
+    saved id is an author's choice. None where the project names none.
+    """
+    block = read_property_block(qgis_root, 'qfieldsync')
+    return property_text(block, 'initialActiveLayer') if block is not None else None
 
 
 # The part of each lock's three keys that names the edit, as QFieldSync spells it.

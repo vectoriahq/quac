@@ -1,0 +1,60 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "trees_7d3b4f60",
+      "name": "Trees",
+      "wmsName": "Trees",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "inspections_a8e12b9c",
+      "name": "Inspections",
+      "wmsName": "Inspections",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "kerbs_4d6f0a11",
+      "name": "Kerbs",
+      "wmsName": null,
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "parcels_5c2e9a41",
+      "name": "Parcels",
+      "wmsName": "Parcels",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "parks_3e8b1c72",
+      "name": "Parks",
+      "wmsName": "Parks",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}
