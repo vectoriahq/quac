@@ -47,7 +47,8 @@ The folder rules:
   is not written either.
 - An Attachment widget's default folder (`default_root` in
   `quac:attachment`) that is not a path relative to the project, such as an
-  absolute path or a drive, is not written.
+  absolute path or a drive, which `generate_stac_catalogue` leaves out, is
+  named in a warning saying how to keep it.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
 """
@@ -66,7 +67,7 @@ from .quac_server.generate.normalized_project import build_stac_extent
 from .quac_server.js_compat import url_search_params
 from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
-from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue, wms_excluded_layer_ids
+from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue, is_project_relative_folder, wms_excluded_layer_ids
 from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
 from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from .quac_server.model.stac_href import encode_asset_path
@@ -119,7 +120,6 @@ _QUAC_SCHEMA = re.compile(r'^https://vectoriahq\.github\.io/quac/v[^/]+/schema\.
 _DRIVE = re.compile(r'^[A-Za-z]:([\\/]|\Z)')
 _SCHEME = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]+:')
 # A path that is not relative: from the root, a drive, a share or the home folder, or an address such as `file:`.
-_NOT_RELATIVE = re.compile(r'^([/\\~]|[A-Za-z]:|[A-Za-z][A-Za-z0-9+.-]+:)')
 # A QGIS expression's double-quoted field names, skipped, and its text literals, whose text is the first group.
 _EXPRESSION_TEXT = re.compile(r'"(?:""|[^"])*"|\'((?:\'\'|\\.|[^\'\\])*)\'', re.DOTALL)
 # The column settings holding an expression, and how a warning names each.
@@ -356,7 +356,7 @@ def plan_publication(
                     column = {key: value for key, value in column.items() if key != 'quac:value_relation'}
                     publication.dropped_choices.append(DroppedChoices(title, column['name'], titles.get(relation['collection'], relation['collection'])))
                 column = _without_unwritten_lookups(column, unwritten, title, publication)
-                column = _without_local_folder(column, title, publication)
+                _note_local_folder(column, layers_by_id.get(collection['id']), title, publication)
                 kept.append(with_field_type(column, types.get(column['name'])))
             collection['table:columns'] = kept
         if project_href is not None:
@@ -529,14 +529,12 @@ def _without_unwritten_lookups(column: dict[str, Any], unwritten: dict[str, str]
     return column
 
 
-def _without_local_folder(column: dict[str, Any], title: str, publication: Publication) -> dict[str, Any]:
-    """The column less its Attachment widget's `default_root` where that is not a path relative to the project, such as an absolute path."""
-    attachment = column.get('quac:attachment')
-    root = attachment.get('default_root') if isinstance(attachment, dict) else None
-    if not isinstance(root, str) or not _NOT_RELATIVE.match(root.strip()):
-        return column
-    publication.dropped_folders.append(DroppedFolder(title, column['name']))
-    return {**column, 'quac:attachment': {key: value for key, value in attachment.items() if key != 'default_root'}}
+def _note_local_folder(column: dict[str, Any], layer: Optional[LayerEntry], title: str, publication: Publication) -> None:
+    """Notes an Attachment widget whose default folder the catalogue leaves out, as `generate_stac_catalogue` does one not relative to the project, so the message bar says how to keep it."""
+    attachment = layer.field_attachments.get(column['name']) if layer is not None else None
+    root = attachment.default_root if attachment is not None else None
+    if root and not is_project_relative_folder(root):
+        publication.dropped_folders.append(DroppedFolder(title, column['name']))
 
 
 def _categorised_field(layer: Optional[LayerEntry], style_name: str) -> Optional[str]:

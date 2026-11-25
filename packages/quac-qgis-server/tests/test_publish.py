@@ -20,6 +20,8 @@ import zipfile
 from typing import Any, Iterator, Optional
 from xml.sax.saxutils import escape, quoteattr
 
+from quac_server.generate.stac_catalogue import is_project_relative_folder
+
 from .declared import FIXTURES
 from .installed_plugin import installed_module
 
@@ -542,6 +544,13 @@ class ProjectSettings(unittest.TestCase):
         project = with_parts(project_xml({'Recreation': [('parks_1', 'Parks')], 'Base maps': [('trails_3', 'Trails')]}, [parks, trails]), '<properties><WMSRestrictedLayers type="QStringList"><value>Trails</value></WMSRestrictedLayers></properties>')
         publication = plan(project)
         self.assertEqual(publication.dropped_settings, [publish.DroppedSetting('Parks', 'id', 'quac:default', 'Trails')])
+
+    def test_takes_an_attachment_folder_as_relative_as_the_javascript_does(self) -> None:
+        # The same cases as isProjectRelativeFolder's test in packages/quac/src/generate/stacCatalogue.test.ts.
+        for folder in ('photos', 'photos/parks', './photos', '../shared/photos', ' photos '):
+            self.assertTrue(is_project_relative_folder(folder), folder)
+        for folder in ('/srv/photos', 'C:\\Survey\\sketches', 'c:/survey', 'D:', '\\\\server\\share', '~/photos', 'file:///home/someone/photos', 'https://files.example.test/photos', ' /srv/photos'):
+            self.assertFalse(is_project_relative_folder(folder), folder)
 
     def test_writes_an_attachment_folder_only_where_it_is_relative_to_the_project(self) -> None:
         folders = {'id': '/work/Parks Project/photos', 'name': 'photos/parks'}

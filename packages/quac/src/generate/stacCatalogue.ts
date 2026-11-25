@@ -1048,14 +1048,26 @@ function defaultToJson(defaultValue: FieldDefaultValue): TableColumnDefault {
 }
 
 /**
+ * Whether an Attachment widget's default folder is a path relative to the
+ * project, and not a path on the computer that saved it, such as
+ * `/srv/photos`, `C:\\Survey` or `~/photos`, a network share or an address.
+ * QGIS's folder picker saves an absolute path, which would publish the
+ * computer's folder names.
+ */
+export function isProjectRelativeFolder(folder: string): boolean {
+  return !/^(?:[/\\~]|[A-Za-z][A-Za-z0-9+.-]*:)/.test(folder.trim())
+}
+
+/**
  * A field's Attachment widget as `quac:attachment` stores it. A member
- * the source said nothing about is left off rather than written null.
+ * the source said nothing about is left off rather than written null, and a
+ * default folder that is not relative to the project is left off.
  */
 function attachmentToJson(attachment: FieldAttachment): TableColumnAttachment {
   return {
     ...(attachment.viewer ? { viewer: attachment.viewer } : {}),
     ...(attachment.filter ? { filter: attachment.filter } : {}),
-    ...(attachment.defaultRoot ? { default_root: attachment.defaultRoot } : {}),
+    ...(attachment.defaultRoot && isProjectRelativeFolder(attachment.defaultRoot) ? { default_root: attachment.defaultRoot } : {}),
     relative_storage: attachment.relativeStorage
   }
 }

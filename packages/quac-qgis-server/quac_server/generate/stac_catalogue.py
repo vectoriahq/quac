@@ -20,6 +20,7 @@ from dataclasses import replace
 from typing import Any, Optional
 
 
+from ..js_compat import js_trim
 from ..model.qgs_project import (
     BoundingBox,
     EditLock,
@@ -675,14 +676,22 @@ def _json_value(value: FieldFixedValue) -> FieldFixedValue:
     return None if isinstance(value, float) and not math.isfinite(value) else value
 
 
+_NOT_PROJECT_RELATIVE = re.compile(r'^(?:[/\\~]|[A-Za-z][A-Za-z0-9+.-]*:)')
+
+
+def is_project_relative_folder(folder: str) -> bool:
+    """Whether an Attachment widget's default folder is a path relative to the project, and not a path on the computer that saved it, a network share or an address."""
+    return _NOT_PROJECT_RELATIVE.match(js_trim(folder)) is None
+
+
 def _attachment_to_json(attachment: FieldAttachment) -> dict[str, Any]:
-    """A field's Attachment widget as `quac:attachment` stores it: a member the source said nothing about is left off rather than written null."""
+    """A field's Attachment widget as `quac:attachment` stores it: a member the source said nothing about is left off rather than written null, and a default folder not relative to the project is left off."""
     out: dict[str, Any] = {}
     if attachment.viewer:
         out['viewer'] = attachment.viewer
     if attachment.filter:
         out['filter'] = attachment.filter
-    if attachment.default_root:
+    if attachment.default_root and is_project_relative_folder(attachment.default_root):
         out['default_root'] = attachment.default_root
     out['relative_storage'] = attachment.relative_storage
     return out

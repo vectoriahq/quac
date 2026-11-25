@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { QUAC_ACTIVE_COLLECTION_FIELD, QUAC_FILTERS_FIELD, QUAC_LOCKS_FIELD, readCatalogueActiveCollection, readCollectionFilters, readCollectionLocks, readCatalogueInitialView, readCollectionFieldAliases,
   readCollectionFieldComments, readCollectionOpacity } from './normalizedProject.ts'
-import { generateStacCatalogue, parseQgisStyleAssetHref, QUAC_GEOMETRY_FILTER, readCollectionGeometryFilter, wmsExcludedLayerIds } from './stacCatalogue.ts'
+import { generateStacCatalogue, isProjectRelativeFolder, parseQgisStyleAssetHref, QUAC_GEOMETRY_FILTER, readCollectionGeometryFilter, wmsExcludedLayerIds } from './stacCatalogue.ts'
 import { QUAC_DELIMITED_TEXT, readCollectionDelimitedText } from '../model/delimitedText.ts'
 import { QUAC_FEATURE_FILTER, readCollectionFeatureFilter } from '../model/featureFilter.ts'
 import { readCollectionDataPath } from '../model/stacHref.ts'
@@ -1103,5 +1103,14 @@ describe('generateStacCatalogue — layers left out of WMS', () => {
     expect(JSON.stringify(parcels)).not.toContain(zones.id)
     const zoneCode = (parcels['table:columns'] as TableColumn[]).find((column) => column.name === 'zone_code')!
     expect(zoneCode).not.toHaveProperty('quac:value_relation')
+  })
+})
+
+describe('isProjectRelativeFolder', () => {
+  it('takes a folder relative to the project, and no path on the computer, share or address', () => {
+    for (const folder of ['photos', 'photos/parks', './photos', '../shared/photos', ' photos ']) expect(isProjectRelativeFolder(folder), folder).toBe(true)
+    for (const folder of ['/srv/photos', 'C:\\Survey\\sketches', 'c:/survey', 'D:', '\\\\server\\share', '~/photos', 'file:///home/someone/photos', 'https://files.example.test/photos', ' /srv/photos']) {
+      expect(isProjectRelativeFolder(folder), folder).toBe(false)
+    }
   })
 })

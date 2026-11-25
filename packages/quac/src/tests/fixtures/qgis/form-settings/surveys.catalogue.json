@@ -251,7 +251,6 @@
           "quac:attachment": {
             "viewer": "image",
             "filter": "Images (*.jpg *.png)",
-            "default_root": "/srv/survey/photos",
             "relative_storage": "default-root"
           },
           "quac:visible_when": [
@@ -262,7 +261,6 @@
         {
           "name": "sketch",
           "quac:attachment": {
-            "default_root": "C:\\Survey\\sketches",
             "relative_storage": "absolute"
           },
           "quac:visible_when": [
