@@ -72,6 +72,20 @@ export {
 export type { StacStyle, StyleOverrideReference } from './model/stacStyles.ts'
 
 export { parseQgsXml } from './parse/parseQgsXml.ts'
+export { layoutLengthToMillimetres, parseQgsLayouts } from './parse/parseQgsLayouts.ts'
+export type {
+  LayoutAtlas,
+  LayoutBox,
+  LayoutItem,
+  LayoutItemKind,
+  LayoutLabel,
+  LayoutMap,
+  LayoutOtherItem,
+  LayoutPicture,
+  LayoutShape,
+  LayoutSize,
+  PrintLayout
+} from './model/PrintLayout.ts'
 export { measureFactorsOf } from './parse/parseMeasurement.ts'
 export type { MeasureFactors } from './parse/parseMeasurement.ts'
 export { readProjectXml } from './parse/readProjectFile.ts'
@@ -218,7 +232,9 @@ export type {
   WmsLayerGroup,
   WmsBoundingBox,
   WmsStyle,
-  WmsAttribute
+  WmsAttribute,
+  WmsPrintLayout,
+  WmsPrintLayoutMap
 } from './model/WmsProject.ts'
 export { parseGetProjectSettings } from './parse/parseGetProjectSettings.ts'
 export { generateStacCatalogueFromWms } from './generate/wmsStacCatalogue.ts'

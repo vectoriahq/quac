@@ -87,3 +87,53 @@ function leafByName(project: ReturnType<typeof parseGetProjectSettings>, name: s
   if (!leaf || leaf.kind !== 'layer') throw new Error(`No layer "${name}"`)
   return leaf
 }
+
+describe('parseGetProjectSettings — print layouts', () => {
+  // The shape QGIS Server writes in `getComposerTemplatesElement`
+  // (`src/server/services/wms/qgswmsgetcapabilities.cpp`, `qgis/QGIS@master`,
+  // read 2026-11-25).
+  const xml = `<WMS_Capabilities xmlns="http://www.opengis.net/wms" version="1.3.0">
+  <Service><Title>Layouts</Title></Service>
+  <Capability>
+    <ComposerTemplates>
+      <ComposerTemplate name="Site plan A4" width="297" height="210" atlasEnabled="1" atlasCoverageLayer="events">
+        <ComposerMap name="map0" itemName="Site map" width="200" height="175"/>
+        <ComposerMap name="map1" itemName="Overview" width="60" height="40"/>
+        <ComposerLabel name="Title"/>
+        <ComposerHtml name="Notes"/>
+      </ComposerTemplate>
+      <ComposerTemplate name="Plain A3" width="420" height="297"/>
+    </ComposerTemplates>
+  </Capability>
+</WMS_Capabilities>`
+
+  it('lists each layout with its page size, atlas, map items and labels', () => {
+    expect(parseGetProjectSettings(xml).printLayouts).toEqual([
+      {
+        name: 'Site plan A4',
+        width: 297,
+        height: 210,
+        isAtlasEnabled: true,
+        atlasCoverageLayer: 'events',
+        maps: [
+          { name: 'map0', itemName: 'Site map', width: 200, height: 175 },
+          { name: 'map1', itemName: 'Overview', width: 60, height: 40 }
+        ],
+        labelIds: ['Title']
+      },
+      {
+        name: 'Plain A3',
+        width: 420,
+        height: 297,
+        isAtlasEnabled: false,
+        atlasCoverageLayer: null,
+        maps: [],
+        labelIds: []
+      }
+    ])
+  })
+
+  it('lists no layouts for a project the server lists none for', () => {
+    expect(parseGetProjectSettings(fixtureXml).printLayouts).toEqual([])
+  })
+})
