@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec B405
 
 from ..js_compat import js_trim
 from ..model.qgs_project import EditLock, WfsTransactionLayers

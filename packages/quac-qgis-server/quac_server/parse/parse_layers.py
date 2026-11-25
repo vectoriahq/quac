@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 from typing import Optional
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec B405
 
 from ..js_compat import is_finite, js_number, js_trim, whole
 from ..model.qgs_project import BoundingBox, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields

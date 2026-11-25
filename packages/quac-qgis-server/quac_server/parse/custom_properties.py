@@ -11,7 +11,7 @@ all (`QFieldSync/action`).
 from __future__ import annotations
 
 from typing import Optional
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec B405
 
 from .xml_text import text_content
 

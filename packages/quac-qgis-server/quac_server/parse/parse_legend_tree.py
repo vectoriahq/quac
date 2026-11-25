@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import Element  # nosec B405
 
 from ..model.qgs_project import LayerGroup, LayerTreeLeaf, LayerTreeNode
 from .xml_text import first_descendant
