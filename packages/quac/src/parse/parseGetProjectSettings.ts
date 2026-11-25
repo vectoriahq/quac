@@ -7,6 +7,8 @@ import type {
   WmsLayer,
   WmsLayerGroup,
   WmsLayerTreeNode,
+  WmsPrintLayout,
+  WmsPrintLayoutMap,
   WmsProject,
   WmsStyle
 } from '../model/WmsProject.ts'
@@ -17,8 +19,9 @@ import type {
  *
  * The response is a WMS_Capabilities document with QGIS-specific extensions
  * for `displayField`, `geometryType`, `visibilityChecked`, `<Attributes>`
- * and `<WFSLayers>`. We capture what's useful for STAC + app-config
- * generation and ignore what isn't (e.g. GetMap / GetPrint format lists).
+ * `<WFSLayers>` and `<ComposerTemplates>`. We capture what's useful for STAC +
+ * app-config generation and for printing a layout, and ignore what isn't (e.g.
+ * GetMap / GetPrint format lists).
  *
  * Throws when the XML is unparseable or has the wrong root element.
  * Sub-elements that fail to parse log via devLog and yield null/empty
@@ -57,10 +60,14 @@ export function parseGetProjectSettings(xmlText: string): WmsProject {
     .map((node) => node.getAttribute('name'))
     .filter((name): name is string => Boolean(name))
 
+  const printLayouts = Array.from(capability?.querySelectorAll(':scope > ComposerTemplates > ComposerTemplate') ?? [])
+    .map(parsePrintLayout)
+
   devLog('qgs/parseGetProjectSettings', 'parsed WMS project', {
     title,
     rootLayerCount: layerTree.length,
-    wfsLayerCount: wfsLayerNames.length
+    wfsLayerCount: wfsLayerNames.length,
+    printLayoutCount: printLayouts.length
   })
 
   return {
@@ -69,7 +76,28 @@ export function parseGetProjectSettings(xmlText: string): WmsProject {
     bbox: projectBbox,
     layerTree,
     wfsLayerNames,
+    printLayouts,
     rawXml: xmlText
+  }
+}
+
+function parsePrintLayout(element: Element): WmsPrintLayout {
+  const maps: WmsPrintLayoutMap[] = Array.from(element.querySelectorAll(':scope > ComposerMap')).map((map) => ({
+    name: map.getAttribute('name') ?? '',
+    itemName: map.getAttribute('itemName') ?? '',
+    width: Number(map.getAttribute('width')) || 0,
+    height: Number(map.getAttribute('height')) || 0
+  }))
+  return {
+    name: element.getAttribute('name') ?? '',
+    width: Number(element.getAttribute('width')) || 0,
+    height: Number(element.getAttribute('height')) || 0,
+    isAtlasEnabled: element.getAttribute('atlasEnabled') === '1',
+    atlasCoverageLayer: element.getAttribute('atlasCoverageLayer') || null,
+    maps,
+    labelIds: Array.from(element.querySelectorAll(':scope > ComposerLabel'))
+      .map((label) => label.getAttribute('name') ?? '')
+      .filter(Boolean)
   }
 }
 

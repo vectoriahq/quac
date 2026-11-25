@@ -5,6 +5,7 @@ import { parseProjectLayers } from './parseLayers.ts'
 import { parseLegendTree } from './parseLegendTree.ts'
 import { parseProjectMeasurement } from './parseMeasurement.ts'
 import { parseMerginFilters } from './parseMergin.ts'
+import { parsePrintLayouts } from './parsePrintLayouts.ts'
 import { parseProjectVariables } from './parseProjectVariables.ts'
 import { parseInitialActiveLayerId, parseWfsTransactionLayers } from './parseQfieldSync.ts'
 import { parseProjectRelations } from './parseRelations.ts'
@@ -98,6 +99,7 @@ export function parseQgsXml(xmlText: string): QgsProject {
     wmsCrsList: parseWmsCrsList(qgisRoot),
     merginFilters,
     notes,
+    printLayouts: parsePrintLayouts(qgisRoot),
     rawXml: xmlText
   }
 }

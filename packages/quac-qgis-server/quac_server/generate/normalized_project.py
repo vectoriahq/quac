@@ -148,6 +148,8 @@ class NormalizedProject:
     initial_view: Optional[BoundingBox] = None
     # The id of the Collection the source names as the map's opening active layer, written only where the tree holds it.
     active_collection_id: Optional[str] = None
+    # Vendor-namespaced fields copied straight onto the top-level Catalog.
+    vendor_fields: dict[str, Any] = field(default_factory=dict)
 
 
 def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
@@ -170,6 +172,8 @@ def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
     if project.initial_view:
         view = project.initial_view
         catalog[_INITIAL_VIEW_FIELD] = [view.xmin, view.ymin, view.xmax, view.ymax]
+    for key, value in project.vendor_fields.items():
+        catalog[key] = value
     if collections:
         catalog['collections'] = collections
     if catalogs:

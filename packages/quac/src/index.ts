@@ -144,6 +144,7 @@ export {
   QUAC_PRIVATE_FIELD,
   readCatalogueActiveCollection,
   readCatalogueInitialView,
+  readCataloguePrintLayouts,
   readCollectionDisplayField,
   readCollectionEditable,
   readCollectionFieldAliases,
@@ -211,6 +212,7 @@ export {
 } from './sources/stacItems.ts'
 export { stripQgisServerQuery } from './sources/qgisServerUrl.ts'
 
+export type { PrintLayoutTemplate } from './model/QgsProject.ts'
 export type {
   WmsProject,
   WmsLayerTreeNode,
@@ -218,7 +220,9 @@ export type {
   WmsLayerGroup,
   WmsBoundingBox,
   WmsStyle,
-  WmsAttribute
+  WmsAttribute,
+  WmsPrintLayout,
+  WmsPrintLayoutMap
 } from './model/WmsProject.ts'
 export { parseGetProjectSettings } from './parse/parseGetProjectSettings.ts'
 export { generateStacCatalogueFromWms } from './generate/wmsStacCatalogue.ts'

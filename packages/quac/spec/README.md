@@ -98,6 +98,18 @@ From a QGIS project, the canvas extent `<mapcanvas><extent>`, which is in the ca
 
 Written by: QGIS project, ArcGIS (Web Map). Stable, name under review. Example: `[144.9, -37.9, 145.0, -37.8]`.
 
+### `quac:print_layouts`
+
+The source's print layouts, in the order the project holds them, each an object with the layout's `name` and its `template`: the layout's `<Layout>` element as XML text. That element is what QGIS saves as a layout template (`.qpt`), since `QgsLayout::saveAsTemplate` writes the same element as the file's only element (`src/core/layout/qgslayout.cpp`, `qgis/QGIS@master`, read 2026-11-25). So a reader can load a template into QGIS, or read the layout's pages and items from it.
+
+Written from a QGIS project's `<qgis><Layouts>`. A layout whose name the project lists under **Exclude layouts** (Project Properties → QGIS Server → WMS capabilities), saved as `WMSRestrictedComposers`, is not written, as its excluded layers are not. Reports are not written. Absent where the project has no print layout.
+
+**A template holds no data source and no absolute path.** QGIS writes a layer's data source and provider into a layout, on a map item's `<Layer>` and as an atlas's `coverageLayerSource`, and a source can hold a file path or a password. So the attributes named `source` or `provider`, and those whose names end in `Source` or `Provider`, are left out; a layer is still named by its id and name. An attribute whose value is a path on the computer that saved the project, from the root of a disk or a home folder (`~/`), a drive, a network share or a `file:` address, is written empty, such as a picture's `file` given from the root of the disk. A path relative to the project file is kept as the project holds it.
+
+**The text is written by one fixed rule**, so that every producer writes the same text for the same project: attributes in the order the project holds them; an element with no children closed as `<name/>`; text that is only white space, comments and processing instructions left out; `&`, `<` and `>` escaped everywhere, and `"`, tab, line feed and carriage return escaped in attribute values too.
+
+Written by: QGIS project. Experimental. Example: `[{ "name": "Park plan", "template": "<Layout name=\"Park plan\" units=\"mm\" printResolution=\"300\">…</Layout>" }]`.
+
 ### `quac:wfs_endpoint`, `quac:wfs_version` and `quac:wfs_output_formats`
 
 On a Catalog made from a WFS service: the service's address with no query, the WFS version it answered in, and the formats it can send features in.

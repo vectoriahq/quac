@@ -72,6 +72,7 @@ QUAC_GEOMETRY_FILTER = 'quac:geometry_filter'
 QUAC_LAYER_NAME = 'quac:layer_name'
 QUAC_DELIMITED_TEXT = 'quac:delimited_text'
 QUAC_FEATURE_FILTER = 'quac:feature_filter'
+QUAC_PRINT_LAYOUTS_FIELD = 'quac:print_layouts'
 
 # The key a style asset takes for the field its renderer classifies by, when that renderer is a categorised one.
 QUAC_CATEGORISED_FIELD = 'quac:categorised_field'
@@ -152,6 +153,7 @@ def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[st
         if project.initial_active_layer_id and project.initial_active_layer_id in layers_by_id
         else None,
         nodes=nodes,
+        vendor_fields={QUAC_PRINT_LAYOUTS_FIELD: [{'name': layout.name, 'template': layout.template} for layout in project.print_layouts]} if project.print_layouts else {},
     )
 
 

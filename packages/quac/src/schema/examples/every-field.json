@@ -10,6 +10,9 @@
   "quac:wfs_version": "2.0.0",
   "quac:wfs_output_formats": ["application/gml+xml; version=3.2", "application/json"],
   "quac:arcgis_item_id": "0123456789abcdef0123456789abcdef",
+  "quac:print_layouts": [
+    { "name": "Site plan A4", "template": "<Layout name=\"Site plan A4\" units=\"mm\" printResolution=\"300\"><PageCollection><LayoutItem type=\"65638\" position=\"0,0,mm\" size=\"297,210,mm\"/></PageCollection></Layout>" }
+  ],
   "collections": [
     {
       "type": "Collection",
