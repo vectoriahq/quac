@@ -1,12 +1,14 @@
 """Mirrors `packages/quac/src/generate/stacCatalogue.ts`, as far as the plugin's first-release fields need.
 
 `generate_stac_catalogue` is the project file's catalogue, which the server
-route starts from, written with the first-release fields and each layer's data
-asset: a file layer's relative path or online address, a WFS layer's
-GetFeature request or an ArcGIS layer's query, as `buildAssets` writes it. It
-writes no style asset, link or other field naming where a layer's own data
-comes from. The server route replaces or drops the data asset, so a served
-catalogue never names a data file.
+route starts from, written with the first-release fields, each layer's data
+asset and each web map layer's link: a file layer's relative path or online
+address, a WFS layer's GetFeature request or an ArcGIS layer's query, as
+`buildAssets` writes it, and a WMS, WMTS or XYZ layer's web-map-links link,
+or for an XYZ template addressed by `{quadkey}` its data asset. It writes no
+style asset, `via` link or other field naming where a layer's own data comes
+from. The server route replaces the links and replaces or drops the data
+asset, so a served catalogue never names a data file or another service.
 """
 
 from __future__ import annotations
@@ -18,6 +20,9 @@ from typing import Any, Optional
 from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, QgsProject, WfsTransactionLayers, WmsPublishing
 from ..model.stac_href import encode_asset_path
 from ..model.stac_projection import PROJ_CODE
+from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, build_wms_link
+from ..model.stac_wmts import build_wmts_link
+from ..model.stac_xyz import build_xyz_link
 from ..parse.geometry_siblings import find_geometry_siblings, read_sibling_shapes, sibling_collection_id
 from ..util.catalogue_file_formats import PROJECT_DATA_ROLES, declared_media_type_for_file, is_layer_file_of_format
 from .arcgis_stac_catalogue import arcgis_query_asset
@@ -39,9 +44,8 @@ QUAC_LAYER_NAME = 'quac:layer_name'
 QUAC_DELIMITED_TEXT = 'quac:delimited_text'
 QUAC_FEATURE_FILTER = 'quac:feature_filter'
 
-# The source kinds that are images: a layer of one has no features to edit. `image` is how
-# `parse_data_source` reads every source of the providers that read images.
-_IMAGE_KINDS = ('wms', 'wmts', 'xyz', 'image')
+# The source kinds that are images: a layer of one has no features to edit.
+_IMAGE_KINDS = ('wms', 'wmts', 'xyz')
 
 
 def generate_stac_catalogue(project: QgsProject, layer_wgs84_extents: Optional[dict[str, BoundingBox]] = None) -> dict[str, Any]:
@@ -241,6 +245,13 @@ def _geometry_filter_of(layer: LayerEntry) -> Optional[list[str]]:
 def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry_filter: Optional[list[str]]) -> NormalizedLayer:
     """A layer's Collection. `geometry_filter` is the shapes its data asset keeps: its own `|geometrytype=` (`_geometry_filter_of`), or a set of siblings'."""
     metadata = layer.resource_metadata
+    source = layer.data_source
+    web_map_link = (
+        build_wms_link(source) if source.kind == 'wms'
+        else build_wmts_link(source) if source.kind == 'wmts'
+        else build_xyz_link(source.url or '', source.tiles or 'image') if source.kind == 'xyz'
+        else None
+    )
     return NormalizedLayer(
         id=layer.id,
         title=layer.name,
@@ -265,6 +276,8 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry
         opacity=layer.opacity,
         locks=_combine_locks(layer.locks, _wfs_transaction_locks(layer.id, context.wfs_transaction_layers)),
         assets=_build_assets(layer, geometry_filter),
+        links=[web_map_link] if web_map_link else [],
+        extensions=[WEB_MAP_LINKS_EXTENSION] if web_map_link else [],
     )
 
 
@@ -282,12 +295,18 @@ def _build_assets(layer: LayerEntry, geometry_filter: Optional[list[str]]) -> di
     The layer's data asset, as the JavaScript's `buildAssets` writes it: for a
     file, the path the project gives, not just the file's name, or an online
     file's own address; for a WFS layer, its GetFeature request; for an ArcGIS
-    layer, its query. A source the catalogue cannot address, such as a
-    database, has none, and neither has an image layer: the JavaScript writes
-    one for an XYZ template addressed by `{quadkey}`, which this does not tell
-    apart from other images (`port-exemptions.json`, `departures`).
+    layer, its query; for an XYZ template addressed by `{quadkey}`, which no
+    `rel: "xyz"` link can hold, the template. A WMS or WMTS layer, and an XYZ
+    layer its link holds, has none, and neither has a source the catalogue
+    cannot address, such as a database.
     """
     source = layer.data_source
+    if source.kind in ('wms', 'wmts'):
+        return {}
+    if source.kind == 'xyz':
+        if build_xyz_link(source.url or ''):
+            return {}
+        return {'data': {'href': source.url, 'title': 'XYZ tile template', 'roles': ['data']}}
     if source.kind == 'file':
         filename = source.filename or ''
         asset: dict[str, Any] = {

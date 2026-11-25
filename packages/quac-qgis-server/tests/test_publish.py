@@ -55,6 +55,17 @@ def layer_xml(layer_id: str, name: str, source: str, provider: str = 'ogr', fiel
     </maplayer>'''
 
 
+def web_layer_xml(layer_id: str, name: str, source: str, provider: str = 'wms') -> str:
+    """One raster `<maplayer>` read from a web map service."""
+    return f'''
+    <maplayer type="raster" hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="100000000">
+      <id>{escape(layer_id)}</id>
+      <datasource>{escape(source)}</datasource>
+      <layername>{escape(name)}</layername>
+      <provider encoding="">{escape(provider)}</provider>
+    </maplayer>'''
+
+
 def project_xml(groups: dict[str, list[tuple[str, str]]], layers: list[str], top: tuple[tuple[str, str], ...] = ()) -> bytes:
     """A project: `groups` maps a group's name to its layers' ids and names, and `top` lists layers outside any group."""
     tree = ''.join(f'<layer-tree-layer id={quoteattr(layer_id)} name={quoteattr(name)} checked="Qt::Checked"/>' for layer_id, name in top)
@@ -286,6 +297,47 @@ class FolderRules(unittest.TestCase):
                 self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.HOLDS_CREDENTIALS)])
                 self.assertNotIn('secret', json.dumps(documents(publication)))
 
+    def test_keeps_each_web_map_layer_by_its_address(self) -> None:
+        layers = {
+            'wms_5': ('crs=EPSG:3857&format=image/png&layers=parcels&styles&url=https://maps.example.test/wms?SERVICE%3DWMS&version=1.3.0', 'wms', {'rel': 'wms', 'href': 'https://maps.example.test/wms', 'type': 'image/png', 'wms:layers': ['parcels'], 'wms:styles': [''], 'wms:transparent': True, 'wms:dimensions': {}, 'quac:wms_crs': 'EPSG:3857', 'quac:wms_version': '1.3.0'}),
+            'wmts_6': ('format=image/jpeg&layers=imagery&styles=natural&tileMatrixSet=WebMercatorQuad&url=https://tiles.example.test/wmts/1.0.0/WMTSCapabilities.xml', 'wms', {'rel': 'wmts', 'href': 'https://tiles.example.test/wmts/1.0.0/WMTSCapabilities.xml', 'type': 'application/xml', 'wmts:layer': 'imagery', 'wmts:encoding': 'rest', 'quac:wmts_tile_matrix_set': 'WebMercatorQuad', 'quac:wmts_style': 'natural'}),
+            'xyz_7': ('type=xyz&url=https://tiles.example.test/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0', 'wms', {'rel': 'xyz', 'href': 'https://tiles.example.test/{z}/{x}/{y}.png'}),
+            'vector_8': ('type=xyz&url=https://tiles.example.test/%7Bz%7D/%7Bx%7D/%7By%7D.pbf&zmax=14&zmin=0', 'xyzvectortiles', {'rel': 'xyz', 'href': 'https://tiles.example.test/{z}/{x}/{y}.pbf', 'type': 'application/vnd.mapbox-vector-tile'}),
+        }
+        project = project_xml({}, [web_layer_xml(layer_id, layer_id, source, provider) for layer_id, (source, provider, _link) in layers.items()], top=tuple((layer_id, layer_id) for layer_id in layers))
+        publication = publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PROJECT_FOLDER, {}, {}.get, posixpath)
+        self.assertEqual(publication.left_out, [])
+        for layer_id, (_source, _provider, link) in layers.items():
+            with self.subTest(layer=layer_id):
+                written = collection(publication, layer_id)[1]
+                self.assertEqual([item for item in written['links'] if item['rel'] not in ('self', 'parent', 'root')], [link, {'rel': 'via', 'href': '../../Parks.qgs', 'title': 'QGIS project'}])
+                self.assertIn('https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json', written['stac_extensions'])
+                self.assertEqual(written['assets'], {})
+                self.assertFalse(written['quac:editable'])
+
+    def test_keeps_an_xyz_template_addressed_by_quadkey_as_its_data_asset(self) -> None:
+        project = project_xml({}, [web_layer_xml('aerial_5', 'Aerial', 'type=xyz&url=https://tiles.example.test/a%7Bq%7D.jpeg&zmax=19&zmin=1')], top=(('aerial_5', 'Aerial'),))
+        written = collection(publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PROJECT_FOLDER, {}, {}.get, posixpath), 'aerial_5')[1]
+        self.assertEqual(written['assets']['data'], {'href': 'https://tiles.example.test/a{quadkey}.jpeg', 'title': 'XYZ tile template', 'roles': ['data']})
+        self.assertEqual([item['rel'] for item in written['links']], ['self', 'parent', 'root', 'via'])
+
+    def test_leaves_out_a_web_map_layer_whose_source_holds_credentials(self) -> None:
+        for source, provider in (
+            ('layers=parcels&styles&url=https://editor:secret@maps.example.test/wms', 'wms'),
+            ('layers=parcels&password=secret&styles&url=https://maps.example.test/wms&username=editor', 'wms'),
+            ('authcfg=ab12cd3&layers=parcels&styles&url=https://maps.example.test/wms', 'wms'),
+            ('layers=parcels&styles&url=https://maps.example.test/wms?password%3Dsecret', 'wms'),
+            ('layers=imagery&tileMatrixSet=WebMercatorQuad&url=https://editor:secret@tiles.example.test/wmts', 'wms'),
+            ('authcfg=ab12cd3&type=xyz&url=https://tiles.example.test/%7Bz%7D/%7Bx%7D/%7By%7D.png', 'wms'),
+            ('type=xyz&url=https://editor:secret@tiles.example.test/%7Bz%7D/%7Bx%7D/%7By%7D.pbf', 'xyzvectortiles'),
+        ):
+            with self.subTest(source=source):
+                publication = plan(parks_project(trails=web_layer_xml('trails_3', 'Trails', source, provider)))
+                self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.HOLDS_CREDENTIALS)])
+                text = json.dumps(documents(publication))
+                for word in ('secret', 'editor', 'ab12cd3', 'maps.example.test', 'tiles.example.test'):
+                    self.assertNotIn(word, text)
+
     def test_keeps_an_online_file_by_its_address(self) -> None:
         publication = plan(parks_project(trails=layer_xml('trails_3', 'Trails', '/vsicurl/https://data.example.test/trails.geojson')))
         self.assertEqual(collection(publication, 'trails_3')[1]['assets']['data']['href'], 'https://data.example.test/trails.geojson')
@@ -461,10 +513,15 @@ class NoPathOrPasswordIsWritten(unittest.TestCase):
             layer_xml('e_5', 'Here', '/home/someone/maps/e.geojson'),
             layer_xml('f_6', 'Windows', 'C:/Users/someone/f.geojson'),
             layer_xml('g_7', 'Lookup user', './g.geojson', value_relation=('name', 'a_1')),
-        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user')))
+            web_layer_xml('h_8', 'WMS user', 'layers=a&styles&url=https://editor:secret@maps.example.test/wms'),
+            web_layer_xml('i_9', 'WMS keys', 'layers=a&password=secret&styles&url=https://maps.example.test/wms&username=editor'),
+            web_layer_xml('j_10', 'WMS sign-in', 'authcfg=ab12cd3&layers=a&styles&url=https://maps.example.test/wms'),
+            web_layer_xml('k_11', 'WMS open', 'layers=a&styles&url=https://maps.example.test/wms'),
+        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user'), ('h_8', 'WMS user'), ('i_9', 'WMS keys'), ('j_10', 'WMS sign-in'), ('k_11', 'WMS open')))
         publication = publish.plan_publication('Parks.qgs', project, {}, {}, '/home/someone/maps', '/home/someone/maps', {}, {}.get, posixpath)
-        self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows'])
-        self.check(publication, ('someone', 'secret', 'editor'))
+        self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows', 'WMS user', 'WMS keys', 'WMS sign-in'])
+        self.assertIn('https://maps.example.test/wms', json.dumps(documents(publication)))
+        self.check(publication, ('someone', 'secret', 'editor', 'ab12cd3'))
 
 
 if __name__ == '__main__':

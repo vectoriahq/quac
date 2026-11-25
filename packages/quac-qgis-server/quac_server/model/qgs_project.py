@@ -75,12 +75,15 @@ class FieldValueRelation:
 class DataSource:
     """
     Where a layer's data comes from: its kind, the source as the project holds
-    it, and what a data asset says of it. For a file, its name, its path as the
-    project writes it, or the address of an online file, the GeoPackage table it
-    names, the shape its `|geometrytype=` keeps, its Delimited Text options and
-    its feature filter; for a WFS layer, its service address and feature type
-    and its feature filter; for an ArcGIS layer, its service layer's address
-    and filter. The server route writes none of them, and never writes `raw`.
+    it, and what a data asset or web map link says of it. For a file, its name,
+    its path as the project writes it, or the address of an online file, the
+    GeoPackage table it names, the shape its `|geometrytype=` keeps, its
+    Delimited Text options and its feature filter; for a WFS layer, its service
+    address and feature type and its feature filter; for an ArcGIS layer, its
+    service layer's address and filter; for a WMS, WMTS or XYZ layer, its
+    address and the settings its link carries; for a source of another kind,
+    the provider it names. The server route writes none of them, and never
+    writes `raw`.
     """
 
     kind: str
@@ -90,7 +93,8 @@ class DataSource:
     filename: Optional[str] = None
     # A file's path as the project writes it, each backslash made `/`, or an online file's address.
     rel_path: Optional[str] = None
-    # An online file's address, read through GDAL's `/vsicurl/` or given as `http` or `https`; a WFS service's; an ArcGIS service layer's.
+    # An online file's address, read through GDAL's `/vsicurl/` or given as `http` or `https`; a WFS service's; an ArcGIS service layer's;
+    # a WMS service's as the source gives it; a WMTS service's less its request parameters; an XYZ layer's tile template.
     url: Optional[str] = None
     layer_name: Optional[str] = None
     # `{'expression': ..., 'dialect': ...}`, as `quac:feature_filter` writes it.
@@ -100,6 +104,24 @@ class DataSource:
     type_name: Optional[str] = None
     # An ArcGIS layer's filter, sent to the service as its query's `where`.
     where: Optional[str] = None
+    # A WMS layer's layer names and style names, tile or image format, CRS, version, transparency and `TIME` or `ELEVATION` dimension.
+    layers: Optional[list[str]] = None
+    styles: Optional[list[str]] = None
+    format: Optional[str] = None
+    crs: Optional[str] = None
+    version: Optional[str] = None
+    transparent: Optional[bool] = None
+    # A WMS layer's dimensions, or a WMTS layer's `tileDimensions`, by name.
+    dimensions: Optional[dict[str, str]] = None
+    # A WMTS layer's layer, style (empty for the layer's default) and tile matrix set.
+    layer: Optional[str] = None
+    style: Optional[str] = None
+    tile_matrix_set: Optional[str] = None
+    # What an XYZ layer's tiles hold, `image` or `vector`, and the deepest zoom level QGIS requests (`zmax`).
+    tiles: Optional[str] = None
+    max_zoom: Optional[int] = None
+    # For a source of kind `unsupported`, the provider it names, or one guessed from its text.
+    hint: Optional[str] = None
 
 
 @dataclass

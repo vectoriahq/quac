@@ -1,0 +1,60 @@
+{
+  "useLayerIds": false,
+  "children": [
+    {
+      "kind": "layer",
+      "id": "parcels_wms",
+      "name": "Parcels",
+      "wmsName": "Parcels",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "imagery_wmts",
+      "name": "Imagery",
+      "wmsName": "Imagery",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "aerial_quadkey",
+      "name": "Aerial",
+      "wmsName": "Aerial",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "streets_xyz",
+      "name": "Streets",
+      "wmsName": "Streets",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    },
+    {
+      "kind": "layer",
+      "id": "private_wms",
+      "name": "Private",
+      "wmsName": "Private",
+      "wfsTypeName": null,
+      "hiddenFields": {
+        "wms": [],
+        "wfs": []
+      }
+    }
+  ]
+}

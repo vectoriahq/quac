@@ -9,8 +9,9 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
 
 1. with the option off, and checks nothing is written;
 2. with the option on and `publish/` chosen, and checks the documents, the
-   data hrefs, the QML styles and the message bar's one warning for a layer
-   whose data is outside the folder;
+   data hrefs, the QML styles, an XYZ layer's link to its tile address, and
+   the message bar's one warning for a layer whose data is outside the folder
+   and a WMS layer whose made-up server QGIS cannot reach, so cannot open;
 3. after removing a layer, and checks only that layer's document and style
    are removed;
 4. after a layer's data file is deleted and the project read again, and checks
@@ -43,7 +44,7 @@ sys.path.insert(0, str(PACKAGE))
 
 from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin  # noqa: E402
 
-from qgis.core import QgsApplication, QgsEditorWidgetSetup, QgsProject, QgsVectorLayer  # noqa: E402
+from qgis.core import QgsApplication, QgsEditorWidgetSetup, QgsProject, QgsRasterLayer, QgsVectorLayer  # noqa: E402
 
 FAILURES: list[str] = []
 
@@ -104,6 +105,18 @@ def layer(project: Any, path: Path, name: str, group: Any) -> QgsVectorLayer:
     return added
 
 
+# Made-up web map layers, as QGIS writes their sources. QGIS reaches neither host.
+XYZ_SOURCE = 'type=xyz&url=https://tiles.example.test/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0'
+WMS_SOURCE = 'crs=EPSG:3857&format=image/png&layers=parcels&styles&url=https://maps.example.test/wms'
+
+
+def web_layer(project: Any, source: str, name: str, group: Any) -> QgsRasterLayer:
+    added = QgsRasterLayer(source, name, 'wms')
+    project.addMapLayer(added, False)
+    group.addLayer(added)
+    return added
+
+
 def main() -> int:
     screenshot = sys.argv[1] if len(sys.argv) > 1 else None
     work = Path(tempfile.mkdtemp())
@@ -139,6 +152,10 @@ def main() -> int:
         layer(project, benches, 'Benches', recreation)
         layer(project, trails, 'Trails', base)
         kinds_layer = layer(project, kinds, 'Kinds', root)
+        streets_layer = web_layer(project, XYZ_SOURCE, 'Streets', root)
+        parcels_wms_layer = web_layer(project, WMS_SOURCE, 'Parcels WMS', root)
+        check(streets_layer.isValid(), 'QGIS opens the XYZ layer without reaching its host')
+        check(not parcels_wms_layer.isValid(), 'QGIS cannot open the WMS layer, whose host it cannot reach')
         parks_layer.setEditorWidgetSetup(parks_layer.fields().indexOf('kind'), QgsEditorWidgetSetup('ValueRelation', {
             'Layer': kinds_layer.id(), 'LayerName': 'Kinds', 'Key': 'code', 'Value': 'label',
             'AllowNull': False, 'AllowMulti': False, 'OrderByValue': False, 'FilterExpression': '',
@@ -157,14 +174,19 @@ def main() -> int:
         written = files_under(publish)
         root_document = json.loads((publish / 'Parks.stac.json').read_text(encoding='utf-8'))
         print('      written:', ', '.join(sorted(name for name in written if name.startswith('Parks.stac'))))
-        check(root_document['type'] == 'Catalog' and [link['title'] for link in root_document['links'] if link['rel'] == 'child'] == ['Recreation', 'Kinds'], 'the root links the Recreation group and Kinds; Base maps, left with no layer, is left out')
+        check(root_document['type'] == 'Catalog' and [link['title'] for link in root_document['links'] if link['rel'] == 'child'] == ['Recreation', 'Kinds', 'Streets'], 'the root links the Recreation group, Kinds and Streets; Base maps, left with no layer, is left out')
         collections = {}
         for name in written:
             if name.endswith('.json') and name.startswith('Parks.stac/'):
                 document = json.loads((publish / name).read_text(encoding='utf-8'))
                 if document['type'] == 'Collection':
                     collections[document['title']] = (name, document)
-        check(sorted(collections) == ['Benches', 'Kinds', 'Parks', 'Playgrounds'], 'a Collection for each layer in the folder, none for Trails')
+        check(sorted(collections) == ['Benches', 'Kinds', 'Parks', 'Playgrounds', 'Streets'], 'a Collection for each layer in the folder and for Streets, none for Trails or Parcels WMS')
+        streets_document = collections['Streets'][1]
+        web_links = [link for link in streets_document['links'] if link['rel'] in ('wms', 'wmts', 'xyz')]
+        check(web_links == [{'rel': 'xyz', 'href': 'https://tiles.example.test/{z}/{x}/{y}.png'}], f'Streets links its tile address: {web_links}')
+        check('https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json' in streets_document.get('stac_extensions', []), 'Streets lists the Web Map Links extension')
+        check('data' not in streets_document['assets'] and streets_document.get('quac:editable') is False, 'Streets has no data asset and is not editable')
         hrefs_resolve = True
         for name, document in collections.values():
             for key, asset in document['assets'].items():
@@ -187,6 +209,8 @@ def main() -> int:
         check(len(iface.bar.messages) == 1, 'one message bar entry')
         print('      message:', iface.bar.messages[-1][1])
         check('Trails (its data file is outside the chosen folder)' in iface.bar.messages[-1][1], 'the warning names Trails and why it was left out')
+        check('Parcels WMS (QGIS could not open its data)' in iface.bar.messages[-1][1], 'the warning names Parcels WMS as a layer QGIS could not open')
+        check('maps.example.test' not in all_text, 'no document names the WMS layer left out')
 
         # 3. A layer removed.
         before = files_under(publish)

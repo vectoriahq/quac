@@ -24,10 +24,16 @@ The folder rules:
   layer whose file is not in the chosen folder or below it is left out.
 - A layer read from a web address keeps it, unless the address holds a user
   name or password (`server_wms_endpoint` refuses it), and then it is left out.
+  So does a WMS, WMTS or XYZ layer, whose address is written as a web map link,
+  or for an XYZ template addressed by `{quadkey}` as its data asset. One whose
+  source holds a user name, a password or an `authcfg` is left out the same
+  way: the catalogue never names the source, and it carries no link for it.
 - A layer whose data is not in a file or at a web address, such as one held in
-  a database, is left out. A layer from a web map service is written without
-  an address, as the Python writes it today.
-- A layer QGIS could not open is left out.
+  a database, is left out.
+- A layer QGIS could not open is left out. QGIS opens a WMS or WMTS layer by
+  reading its server's capabilities, so one whose server it could not reach
+  when it opened the layer is left out this way. QGIS 3.34 opens an XYZ
+  layer without reaching its server.
 - A Value Relation reading its choices from a layer left out is not written.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
@@ -44,6 +50,7 @@ from typing import Any, Callable, Optional
 from urllib.parse import unquote
 
 from .quac_server.generate.normalized_project import build_stac_extent
+from .quac_server.js_compat import url_search_params
 from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
 from .quac_server.generate.stac_catalogue import generate_stac_catalogue
@@ -94,6 +101,8 @@ _QUAC_SCHEMA = re.compile(r'^https://vectoriahq\.github\.io/quac/v[^/]+/schema\.
 
 _DRIVE = re.compile(r'^[A-Za-z]:([\\/]|\Z)')
 _SCHEME = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]+:')
+# An address whose authority holds a user name or password.
+_USERINFO = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]*:[/\\\\]*[^/\\\\?#]*@')
 
 
 @dataclass(frozen=True)
@@ -336,8 +345,10 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
         return NOT_A_FILE
     source = layer.data_source
     data = (collection.get('assets') or {}).get('data')
-    if source.kind == 'image':
-        return None
+    if source.kind in ('wms', 'wmts', 'xyz'):
+        return None if source.url and server_wms_endpoint(source.url) else HOLDS_CREDENTIALS
+    if source.kind == 'unsupported' and _web_map_source_holds_credentials(source.raw, source.hint):
+        return HOLDS_CREDENTIALS
     if data is None:
         return NOT_A_FILE
     if source.kind in ('wfs', 'arcgis') or source.url is not None:
@@ -354,6 +365,20 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
         return OUTSIDE_FOLDER
     data['href'] = f'./{encode_asset_path(relative)}'
     return None
+
+
+def _web_map_source_holds_credentials(raw: str, provider: Optional[str]) -> bool:
+    """
+    Whether a `wms` or `xyzvectortiles` source names a user name, a password or
+    an `authcfg`, as its own keys or in its address, which `parse_data_source`
+    reads as `unsupported`.
+    """
+    if (provider or '').lower() not in ('wms', 'xyzvectortiles'):
+        return False
+    params = url_search_params(raw.strip())
+    if any(key in ('authcfg', 'username', 'password') and value.strip() for key, value in params):
+        return True
+    return any(key == 'url' and _USERINFO.match(value.strip()) for key, value in params)
 
 
 def _inside(target: str, folder: str, path: Any) -> Optional[str]:

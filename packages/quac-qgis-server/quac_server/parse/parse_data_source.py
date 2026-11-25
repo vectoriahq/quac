@@ -1,18 +1,15 @@
-"""Mirrors `packages/quac/src/parse/parseDataSource.ts`, as far as a catalogue's data asset reads a layer's source.
+"""Mirrors `packages/quac/src/parse/parseDataSource.ts`, as far as a catalogue's data asset and web map link read a layer's source.
 
 It reads a file source's path, or an online file's address, the GeoPackage
 table it names, the shape its `|geometrytype=` keeps, its Delimited Text
 options and its feature filter; a WFS source's address, feature type and
-filter; and an ArcGIS FeatureServer source's address and filter. The server
-route writes none of them, and never writes `raw`.
+filter; an ArcGIS FeatureServer source's address and filter; and a WMS, WMTS
+or XYZ source of the `wms` or `xyzvectortiles` provider. The server route
+writes none of them, and never writes `raw`.
 
-It departs from the JavaScript in two ways, recorded under `departures` in
-`port-exemptions.json`. A source the `wms` or `xyzvectortiles` provider reads
-is kind `image`, whatever its address: the JavaScript reads it as `wms`, `wmts`
-or `xyz`, or `unsupported` where its address is not one the `URL` class
-accepts. And an online file's address is written as the `URL` class writes
-it, by `_url_href`, for the addresses it covers, not every address the class
-accepts.
+An address is read as the `URL` class reads it by `js_compat.split_url`, for
+the addresses it covers, not every address the class accepts, a departure
+recorded under `departures` in `port-exemptions.json`.
 """
 
 from __future__ import annotations
@@ -21,23 +18,65 @@ import re
 from typing import Any, Optional
 from urllib.parse import unquote_to_bytes
 
-from ..js_compat import js_trim
+from ..js_compat import js_trim, split_url, url_search_params, url_to_string
 from ..model.qgs_project import DataSource
+from ..model.stac_wms import wms_endpoint
+from ..model.stac_wmts import wmts_endpoint
 
 
 def parse_data_source(raw: str, provider_hint: Optional[str] = None) -> DataSource:
-    """Parses a QGIS `<datasource>` string into its kind and what a data asset says of it, using the `<provider>` as a hint."""
+    """Parses a QGIS `<datasource>` string into its kind and what a data asset or web map link says of it, using the `<provider>` as a hint."""
     trimmed = js_trim(raw)
+    unsupported = DataSource(kind='unsupported', raw=raw, hint=provider_hint)
     if not trimmed:
-        return DataSource(kind='unsupported', raw=raw)
+        return unsupported
     hint = provider_hint.lower() if provider_hint else None
 
-    if hint in ('wms', 'xyzvectortiles'):
-        return DataSource(kind='image', raw=raw)
+    if hint == 'wms':
+        params = url_search_params(trimmed)
+        if _needs_credentials_or_headers(params):
+            return unsupported
+        if _get(params, 'type') == 'xyz':
+            return _parse_xyz_data_source(params, raw) or unsupported
+        if _has(params, 'tileMatrixSet'):
+            return _parse_wmts_data_source(params, raw) or unsupported
+        # Any other `type` is a tile format this does not read, such as a local MBTiles file.
+        if _has(params, 'type'):
+            return unsupported
+        url = _get(params, 'url')
+        layers = [name for value in _get_all(params, 'layers') for name in value.split(',')]
+        if url and wms_endpoint(url) and layers and all(js_trim(name) for name in layers):
+            version = _get(params, 'version')
+            if version and version not in ('1.1.1', '1.3.0'):
+                return unsupported
+            dimensions: dict[str, str] = {}
+            for key in ('time', 'elevation'):
+                value = _get(params, key)
+                if value:
+                    dimensions[key.upper()] = value
+            image_format = _get(params, 'format')
+            crs = _get(params, 'crs')
+            transparent = _get(params, 'transparent')
+            return DataSource(
+                kind='wms',
+                raw=raw,
+                url=url,
+                layers=layers,
+                styles=[name for value in _get_all(params, 'styles') for name in value.split(',')],
+                format=image_format if image_format is not None else 'image/png',
+                crs=crs if crs is not None else 'EPSG:3857',
+                version=version if version in ('1.1.1', '1.3.0') else None,
+                transparent=transparent is None or transparent.lower() != 'false',
+                dimensions=dimensions,
+            )
+        return unsupported
+
+    if hint == 'xyzvectortiles':
+        return _parse_vector_xyz_data_source(url_search_params(trimmed), raw) or unsupported
     if hint == 'arcgisfeatureserver':
-        return _parse_arcgis_feature_server_data_source(raw, trimmed) or DataSource(kind='unsupported', raw=raw)
+        return _parse_arcgis_feature_server_data_source(raw, trimmed) or unsupported
     if hint == 'delimitedtext':
-        return _parse_delimited_text_data_source(raw, trimmed) or DataSource(kind='unsupported', raw=raw)
+        return _parse_delimited_text_data_source(raw, trimmed) or unsupported
 
     if _looks_like_wfs(trimmed):
         source, sql = _split_off_wfs_sql(trimmed)
@@ -56,7 +95,97 @@ def parse_data_source(raw: str, provider_hint: Optional[str] = None) -> DataSour
 
     if _looks_like_file_path(trimmed) or provider_hint == 'ogr':
         return _parse_file_data_source(raw, trimmed)
-    return DataSource(kind='unsupported', raw=raw)
+    return DataSource(kind='unsupported', raw=raw, hint=provider_hint if provider_hint is not None else _sniff_provider_hint(trimmed))
+
+
+def _get(params: list[tuple[str, str]], key: str) -> Optional[str]:
+    """`URLSearchParams.get`: the first value of `key`, or None."""
+    return next((value for name, value in params if name == key), None)
+
+
+def _get_all(params: list[tuple[str, str]], key: str) -> list[str]:
+    """`URLSearchParams.getAll`."""
+    return [value for name, value in params if name == key]
+
+
+def _has(params: list[tuple[str, str]], key: str) -> bool:
+    """`URLSearchParams.has`."""
+    return any(name == key for name, _value in params)
+
+
+def _needs_credentials_or_headers(params: list[tuple[str, str]]) -> bool:
+    """
+    Whether a wms-provider source names credentials or a header to send. QGIS
+    writes some of these keys with no value on sources needing neither, such as
+    `http-header:referer=`, so only a key with a value counts.
+    """
+    return any(
+        js_trim(value) and (key in ('authcfg', 'username', 'password', 'referer') or key.startswith('http-header:'))
+        for key, value in params
+    )
+
+
+_XYZ_ZOOM_OR_QUADKEY = re.compile(r'\{(z|quadkey)\}')
+_DIGITS = re.compile(r'^\d+\Z', re.ASCII)
+
+
+def _parse_xyz_data_source(params: list[tuple[str, str]], raw: str) -> Optional[DataSource]:
+    """
+    An XYZ tile layer. QGIS's `{q}` is Bing's quadkey, written as the `{quadkey}`
+    the tile layer fills in. None for a template that is not an absolute
+    `http` or `https` address holding `{z}` or a quadkey.
+    """
+    url = _get(params, 'url')
+    url = url.replace('{q}', '{quadkey}') if url is not None else None
+    if not url or not _XYZ_ZOOM_OR_QUADKEY.search(url):
+        return None
+    parsed = split_url(url)
+    if parsed is None or parsed['userinfo']:
+        return None
+    zmax = _get(params, 'zmax')
+    return DataSource(kind='xyz', raw=raw, tiles='image', url=url, max_zoom=int(zmax) if zmax and _DIGITS.match(zmax) else None)
+
+
+def _parse_vector_xyz_data_source(params: list[tuple[str, str]], raw: str) -> Optional[DataSource]:
+    """
+    An XYZ vector tile layer. None for any other `type`, such as a local
+    MBTiles file, for a source needing credentials or headers, and for a
+    template without `{z}`, `{x}` and `{y}`.
+    """
+    if _get(params, 'type') != 'xyz' or _needs_credentials_or_headers(params):
+        return None
+    parsed = _parse_xyz_data_source(params, raw)
+    if parsed is None or parsed.kind != 'xyz' or not all(placeholder in (parsed.url or '') for placeholder in ('{z}', '{x}', '{y}')):
+        return None
+    parsed.tiles = 'vector'
+    return parsed
+
+
+def _parse_wmts_data_source(params: list[tuple[str, str]], raw: str) -> Optional[DataSource]:
+    """A WMTS layer. QGIS names one layer, one style and one tile matrix set; its `tileDimensions` are `name=value` pairs separated by `;`."""
+    url = wmts_endpoint(_get(params, 'url') or '')
+    layer = _get(params, 'layers')
+    layer = js_trim(layer) if layer is not None else None
+    tile_matrix_set = _get(params, 'tileMatrixSet')
+    tile_matrix_set = js_trim(tile_matrix_set) if tile_matrix_set is not None else None
+    if not url or not layer or not tile_matrix_set:
+        return None
+    dimensions: dict[str, str] = {}
+    for pair in (_get(params, 'tileDimensions') or '').split(';'):
+        separator = pair.find('=')
+        if separator > 0:
+            dimensions[pair[:separator]] = pair[separator + 1:]
+    style = _get(params, 'styles')
+    return DataSource(
+        kind='wmts',
+        raw=raw,
+        url=url,
+        layer=layer,
+        tile_matrix_set=tile_matrix_set,
+        style=style if style is not None else '',
+        format=_get(params, 'format') or 'image/png',
+        dimensions=dimensions,
+    )
 
 
 _WFS_URL = re.compile(r'\burl\s*=\s*[\'"]', re.ASCII)
@@ -313,7 +442,7 @@ def _parse_arcgis_feature_server_data_source(raw: str, trimmed: str) -> Optional
     url = params.get('url')
     if not url or not _SERVICE_LAYER.search(url):
         return None
-    parts = _split_url(url)
+    parts = split_url(url)
     if parts is None or parts['scheme'] not in ('http', 'https') or parts['userinfo'] or parts['query']:
         return None
     where = js_trim(sql) if sql is not None and js_trim(sql) else None
@@ -324,94 +453,29 @@ _HTTP_HEADER = re.compile(r'''(?:^|\s)http-header:[\w-]+\s*=\s*(['"])(?!\1)''', 
 
 _SERVICE_LAYER = re.compile(r'/(FeatureServer|MapServer)/\d+/?\Z', re.ASCII)
 
-# An `http` or `https` address: its scheme, then any slashes, then its authority, path, query and fragment.
-_HTTP_URL = re.compile(r'^([a-zA-Z][a-zA-Z0-9+.-]*):[/\\]*([^/\\?#]*)([^?#]*)(?:\?([^#]*))?(?:#(.*))?\Z', re.DOTALL)
+_POSTGRES_HINT = re.compile(r'\bdbname\s*=', re.ASCII)
+_WMS_HINT = re.compile(r'\bservice\s*=\s*[\'"]?(wms|wmts)', re.ASCII | re.IGNORECASE)
 
 
-def _split_url(address: str) -> Optional[dict[str, Any]]:
-    """
-    An `http` or `https` address taken apart as the `URL` class takes it, its
-    scheme and host in lower case, its port without a default one. None where
-    the class would refuse it, or it is no `http` or `https` address.
-    """
-    address = re.sub(r'[\t\n\r]', '', js_trim(address))
-    match = _HTTP_URL.match(address)
-    if match is None or match.group(1).lower() not in ('http', 'https'):
-        return None
-    scheme = match.group(1).lower()
-    authority = match.group(2)
-    userinfo, _, host_port = authority.rpartition('@')
-    host, colon, port = host_port.partition(':') if not host_port.startswith('[') else (host_port, '', '')
-    if not host or (colon and port and not port.isdigit()):
-        return None
-    try:
-        host = host.encode('ascii').decode('ascii').lower() if host.isascii() else host.encode('idna').decode('ascii').lower()
-    except UnicodeError:
-        return None
-    port_number = int(port) if colon and port else None
-    if port_number is not None and port_number > 65535:
-        return None
-    if port_number == {'http': 80, 'https': 443}[scheme]:
-        port_number = None
-    return {
-        'scheme': scheme,
-        'userinfo': userinfo,
-        'host': host,
-        'port': port_number,
-        'path': match.group(3).replace('\\', '/'),
-        'query': match.group(4),
-        'fragment': match.group(5),
-    }
+def _sniff_provider_hint(raw: str) -> Optional[str]:
+    if _POSTGRES_HINT.search(raw):
+        return 'postgres'
+    if _WMS_HINT.search(raw):
+        return 'wms'
+    return None
 
 
 def _url_href(address: str) -> Optional[str]:
     """
-    An `http` or `https` address as the `URL` class writes its `href`: scheme
-    and host in lower case, a default port left off, `.` and `..` taken out of
-    the path, and each character the class escapes in the path, query and
-    fragment percent-encoded. None where the class would refuse it, and for an
-    address holding a user name or password.
+    An `http` or `https` address as the `URL` class writes its `href`. None
+    where the class would refuse it, and for an address holding a user name or
+    password.
     """
-    parts = _split_url(address)
-    if parts is None or parts['userinfo']:
-        return None
-    href = f"{parts['scheme']}://{parts['host']}{'' if parts['port'] is None else ':' + str(parts['port'])}{_url_path(parts['path'])}"
-    if parts['query'] is not None:
-        href += '?' + _percent_encode(parts['query'], ' "#<>\'')
-    if parts['fragment'] is not None:
-        href += '#' + _percent_encode(parts['fragment'], ' "<>`')
-    return href
-
-
-def _url_path(path: str) -> str:
-    """A special URL's path as the `URL` class writes it: `/` where empty, its dot segments taken out, and escaped."""
-    segments: list[str] = []
-    parts = path.split('/')[1:] if path else ['']
-    for index, part in enumerate(parts):
-        last = index == len(parts) - 1
-        lowered = part.lower()
-        if lowered in ('..', '.%2e', '%2e.', '%2e%2e'):
-            if segments:
-                segments.pop()
-            if last:
-                segments.append('')
-        elif lowered in ('.', '%2e'):
-            if last:
-                segments.append('')
-        else:
-            segments.append(_percent_encode(part, ' "#<>?^`{}'))
-    return '/' + '/'.join(segments)
-
-
-def _percent_encode(text: str, also: str) -> str:
-    """Each control character, each character outside ASCII and each of `also` percent-encoded as UTF-8; a `%` is kept as written."""
-    return ''.join(
-        ''.join(f'%{byte:02X}' for byte in char.encode('utf-8')) if ord(char) < 0x20 or ord(char) > 0x7E or char in also else char
-        for char in text
-    )
+    parts = split_url(address)
+    return None if parts is None or parts['userinfo'] else url_to_string(parts)
 
 
 def _url_pathname(url: str) -> str:
     """The path of an address `_url_href` wrote."""
-    parts = _split_url(url)
+    parts = split_url(url)
     return parts['path'] if parts else ''
