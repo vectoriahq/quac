@@ -1,6 +1,6 @@
 """Mirrors `packages/quac/src/parse/parseLayers.ts`, as far as the plugin's first-release fields read a layer.
 
-It reads a layer's id, names, geometry, WGS84 extent, source kind, display
+It reads a layer's id, names, geometry, WGS84 extent, coordinate system, data source, display
 field, identifiable and read-only flags, opacity, scale range, field names and
 aliases, Value Map lists and Value Relations, abstract, licence and temporal extent, QFieldSync
 locks, and the fields it hides from QGIS Server. Styles, forms, other widgets
@@ -56,6 +56,7 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         geometry_type=maplayer.get('geometry') or None,
         wkb_type=maplayer.get('wkbType') or None,
         wgs84_extent=_parse_bounding_box(maplayer, 'wgs84extent'),
+        crs=_parse_crs(maplayer),
         data_source=parse_data_source(datasource_text, provider_hint),
         display_field=_parse_display_field(maplayer),
         queryable=_parse_queryable(maplayer),
@@ -69,6 +70,15 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         scale_range=_parse_scale_range(maplayer),
         locks=parse_qfield_sync_locks(maplayer),
     )
+
+
+def _parse_crs(maplayer: Element) -> Optional[str]:
+    """The layer's coordinate system, the first `<authid>` inside a `<spatialrefsys>` inside an `<srs>`, as `querySelector('srs spatialrefsys authid')` finds it."""
+    for srs in maplayer.iter('srs'):
+        for spatial_ref_sys in srs.iter('spatialrefsys'):
+            for authid in spatial_ref_sys.iter('authid'):
+                return js_trim(text_content(authid)) or None
+    return None
 
 
 def _server_hidden_fields_of(maplayer: Element) -> Optional[ServerHiddenFields]:

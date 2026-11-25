@@ -13,6 +13,7 @@ from typing import Any, Optional, Union
 
 from ..model.qgs_project import BoundingBox, EditLock, LayerScaleRange
 from ..model.quac_extension import declare_quac_extension
+from ..model.stac_projection import PROJ_CODE, PROJECTION_EXTENSION
 
 STAC_VERSION = '1.1.0'
 
@@ -154,6 +155,8 @@ def _build_collection(layer: NormalizedLayer, folder: str) -> dict[str, Any]:
     vector_geometry_types = _geojson_geometry_types(layer.wkb_types)
     if vector_geometry_types:
         stac_extensions.append(VECTOR_EXTENSION)
+    if any(isinstance(asset.get(PROJ_CODE), str) for asset in layer.assets.values()):
+        stac_extensions.append(PROJECTION_EXTENSION)
 
     collection: dict[str, Any] = {
         'type': 'Collection',

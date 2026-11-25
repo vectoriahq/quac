@@ -16,15 +16,13 @@
     "parse/qtDateFormat.ts": "Qt date patterns, for quac:date_format and for evaluating expressions, neither in the first release.",
     "parse/qtRegex.ts": "Qt regular expressions, for evaluating expressions, which the first release does not do.",
     "parse/sqlFeatureFilter.ts": "Evaluates a GDAL SQL feature filter against features, for an application that hands a layer's data to the public itself. QGIS Server applies a layer's filter when it serves the layer.",
-    "generate/arcgisStacCatalogue.ts": "The ArcGIS producer: another kind of source.",
     "generate/externalStacCatalogue.ts": "Reads a STAC catalogue from somewhere else: another kind of source.",
     "generate/fileLayerCollection.ts": "The Collection for a single data file: another kind of source.",
     "generate/folderStacCatalogue.ts": "The folder of data files producer: another kind of source.",
     "generate/ogcFeaturesStacCatalogue.ts": "The OGC API Features producer: another kind of source.",
     "generate/publishLayer.ts": "Publishes a layer's features as QGIS Server would, for an application that hands a layer's data to the public itself. The plugin's catalogue points at QGIS Server, which publishes the features.",
     "generate/qmlForLayer.ts": "Rebuilds a layer's QML style. The plugin's first release serves no style.",
-    "generate/validateNewFeature.ts": "Checks a new feature against a layer's field rules, for an application that adds features to a layer from a form it does not draw itself. The plugin's catalogue points at QGIS Server, which takes WFS transactions itself.",
-    "generate/wfsStacCatalogue.ts": "The WFS producer: another kind of source."
+    "generate/validateNewFeature.ts": "Checks a new feature against a layer's field rules, for an application that adds features to a layer from a form it does not draw itself. The plugin's catalogue points at QGIS Server, which takes WFS transactions itself."
   },
   "functions": {
     "parse/geometrySiblings.ts": {
@@ -74,9 +72,19 @@
     },
     "generate/wmsStacCatalogue.ts": {
       "generateStacCatalogueFromWms": "The GetProjectSettings producer, the other QGIS Server route. The plugin reads the project's text."
+    },
+    "generate/arcgisStacCatalogue.ts": {
+      "generateStacCatalogueFromArcgisLayers": "The ArcGIS producer: another kind of source. Only the data asset a QGIS project's ArcGIS layer takes is ported.",
+      "readArcgisCatalogueItemId": "A reader of a catalogue, for an application, not a producer.",
+      "resolveArcgisCollectionSource": "A reader of a catalogue, for an application, not a producer.",
+      "readArcgisNotShownReason": "A reader of a catalogue, for an application, not a producer."
+    },
+    "generate/wfsStacCatalogue.ts": {
+      "generateStacCatalogueFromWfsCapabilities": "The WFS producer: another kind of source. Only the data asset a QGIS project's WFS layer takes is ported."
     }
   },
   "departures": {
-    "parse/parseDataSource.ts": "parse_data_source reads every source of the wms and xyzvectortiles providers as kind image, whatever its address; the JavaScript reads it as wms, wmts or xyz, or unsupported where the URL class refuses its address. In a served catalogue the kind decides only whether a layer is editable, and a layer of either provider is an image, which QGIS Server does not publish for WFS, so the server route makes it read-only either way. Vectoria chose this on 2026-11-07 over copying the URL class's rules into Python."
+    "generate/stacCatalogue.ts": "generate_stac_catalogue writes each layer's data asset as buildAssets does for a file, WFS or ArcGIS layer, but writes no style asset, no via link to the project, no WMS, WMTS or XYZ link, and no quac:wfs_*, quac:arcgis_* or quac:max_zoom field. The style asset the JavaScript writes points into the project file (./<project>.qgs#<id>/<style>), and a catalogue written beside a QGIS project is to link QML files written beside it instead (vectoriahq/quac#69). An XYZ layer whose template uses {quadkey}, which the JavaScript writes as a data asset, gets none, since parse_data_source reads every source of the wms provider as kind image.",
+    "parse/parseDataSource.ts": "parse_data_source reads every source of the wms and xyzvectortiles providers as kind image, whatever its address; the JavaScript reads it as wms, wmts or xyz, or unsupported where the URL class refuses its address. In a served catalogue the kind decides only whether a layer is editable, and a layer of either provider is an image, which QGIS Server does not publish for WFS, so the server route makes it read-only either way. Vectoria chose this on 2026-11-07 over copying the URL class's rules into Python. An online file's address is written as the URL class writes its href by _url_href, which covers lower-casing the scheme and host, leaving off a default port, taking dot segments out of the path and percent-encoding what the class escapes; a host outside ASCII is converted with Python's IDNA 2003 codec, where the URL class uses UTS 46, so such a host can be written differently."
   }
 }
