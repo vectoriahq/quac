@@ -477,7 +477,7 @@ class ProjectSettings(unittest.TestCase):
         publication = plan(with_parts(parks_project(), properties))
         self.assertEqual(collection(publication, 'parks_1')[1]['quac:filters'], [{'field': 'kind', 'name': 'Kind'}])
 
-    def test_drops_an_icon_whose_address_holds_a_user_name_or_password_and_says_so(self) -> None:
+    def test_writes_no_icon_whose_address_holds_a_user_name_or_password(self) -> None:
         parks = with_layer_parts(PARKS, layer_variables(quac_icon='https://editor:secret@icons.example.test/park.svg', quac_icon_kind='https://editor@icons.example.test/kind.svg', quac_icon_name='tabler:tag'))
         kinds = with_layer_parts(KINDS, layer_variables(quac_icon='https://icons.example.test/kinds.svg'))
         publication = plan(project_xml({'Recreation': [('parks_1', 'Parks')]}, [parks, kinds], top=(('kinds_4', 'Kinds'),)))
@@ -485,10 +485,6 @@ class ProjectSettings(unittest.TestCase):
         self.assertNotIn('quac:icon', written)
         self.assertEqual({column['name']: column.get('quac:icon') for column in written['table:columns']}, {'id': None, 'name': 'https://cdn.jsdelivr.net/npm/@tabler/icons@3/icons/outline/tag.svg', 'kind': None})
         self.assertEqual(collection(publication, 'kinds_4')[1]['quac:icon'], 'https://icons.example.test/kinds.svg')
-        self.assertEqual(publication.dropped_icons, [publish.DroppedIcon('Parks'), publish.DroppedIcon('Parks', 'kind')])
-        level, text = publish.message(publication)
-        self.assertEqual(level, 'warning')
-        self.assertIn('Icons whose web address holds a user name or password were left out: Parks, Parks, field kind. To include an icon, give it an address without a user name or password.', text)
         self.assertNotIn('secret', json.dumps(documents(publication)))
 
     def test_writes_the_categorised_field_of_the_style_it_writes(self) -> None:

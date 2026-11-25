@@ -42,7 +42,6 @@ The folder rules:
 - A Value Relation reading its choices from a layer left out is not written,
   nor is a relation whose parent layer is left out, nor the initial active
   layer (`quac:active_collection`) where it is left out.
-- An icon whose web address holds a user name or password is not written.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
 """
@@ -148,14 +147,6 @@ class DroppedRelation:
     parent: str
 
 
-@dataclass(frozen=True)
-class DroppedIcon:
-    """An icon not written because its web address holds a user name or password: the layer's, or with `field` set, a field's."""
-
-    layer: str
-    field: Optional[str] = None
-
-
 @dataclass
 class Publication:
     root_file_name: str
@@ -167,7 +158,6 @@ class Publication:
     left_out: list[LeftOutLayer] = field(default_factory=list)
     dropped_choices: list[DroppedChoices] = field(default_factory=list)
     dropped_relations: list[DroppedRelation] = field(default_factory=list)
-    dropped_icons: list[DroppedIcon] = field(default_factory=list)
     # Layers whose style was not written because its QML names a folder on this computer.
     skipped_styles: list[str] = field(default_factory=list)
     # Why nothing is written, where nothing is.
@@ -185,17 +175,8 @@ class Publication:
             sentences.append(f'The choices for {dropped.layer}, field {dropped.field}, were left out, because they come from {dropped.lookup}, which was left out. {step}')
         for relation in self.dropped_relations:
             sentences.append(f'The relation {relation.relation} of {relation.layer} was left out, because its parent layer, {relation.parent}, was left out.')
-        for icon in self.dropped_icons:
-            sentences.append(f'The icon of {_icon_owner(icon)} was left out, because its web address holds a user name or password. {_ICON_STEP}')
         sentences += [f"The style of {name} was not written, because it names a folder on this computer." for name in self.skipped_styles]
         return sentences
-
-
-_ICON_STEP = 'To include an icon, give it an address without a user name or password.'
-
-
-def _icon_owner(icon: DroppedIcon) -> str:
-    return icon.layer if icon.field is None else f'{icon.layer}, field {icon.field}'
 
 
 def catalogue_names(project_file_name: str) -> tuple[str, str]:
@@ -318,9 +299,6 @@ def plan_publication(
                 collection['quac:related_to'] = kept_relations
             else:
                 del collection['quac:related_to']
-        if _holds_userinfo(collection.get('quac:icon')):
-            del collection['quac:icon']
-            publication.dropped_icons.append(DroppedIcon(title))
         columns = collection.get('table:columns')
         if isinstance(columns, list):
             types = field_types.get(collection['id'], {})
@@ -330,9 +308,6 @@ def plan_publication(
                 if isinstance(relation, dict) and relation.get('collection') in left_out_ids:
                     column = {key: value for key, value in column.items() if key != 'quac:value_relation'}
                     publication.dropped_choices.append(DroppedChoices(title, column['name'], titles.get(relation['collection'], relation['collection'])))
-                if _holds_userinfo(column.get('quac:icon')):
-                    column = {key: value for key, value in column.items() if key != 'quac:icon'}
-                    publication.dropped_icons.append(DroppedIcon(title, column['name']))
                 kept.append(with_field_type(column, types.get(column['name'])))
             collection['table:columns'] = kept
         if project_href is not None:
@@ -395,7 +370,7 @@ def message(publication: Publication) -> tuple[str, str]:
     """
     if publication.refusal:
         return 'warning', publication.refusal
-    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_icons or publication.skipped_styles):
+    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.skipped_styles):
         return 'info', f'Wrote the STAC catalogue {publication.root_file_name}.'
     sentences = [f'Wrote the STAC catalogue {publication.root_file_name}.']
     if publication.left_out:
@@ -408,20 +383,10 @@ def message(publication: Publication) -> tuple[str, str]:
     if publication.dropped_relations:
         listed = ', '.join(f'{relation.layer} ({relation.relation}, to {relation.parent})' for relation in publication.dropped_relations)
         sentences.append(f'Relations to a layer left out were left out too: {listed}.')
-    if publication.dropped_icons:
-        listed = ', '.join(_icon_owner(icon) for icon in publication.dropped_icons)
-        sentences.append(f'Icons whose web address holds a user name or password were left out: {listed}.')
     if publication.skipped_styles:
         sentences.append(f"The style of {', '.join(publication.skipped_styles)} was not written, because it names a folder on this computer.")
     sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
-    if publication.dropped_icons:
-        sentences.append(_ICON_STEP)
     return 'warning', ' '.join(sentences)
-
-
-def _holds_userinfo(address: Any) -> bool:
-    """Whether a written address, such as an icon's, holds a user name or password."""
-    return isinstance(address, str) and _USERINFO.match(address) is not None
 
 
 def _categorised_field(layer: Optional[LayerEntry], style_name: str) -> Optional[str]:

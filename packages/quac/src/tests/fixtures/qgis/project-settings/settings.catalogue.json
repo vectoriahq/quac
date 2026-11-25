@@ -269,7 +269,6 @@
           ]
         }
       ],
-      "quac:icon": "https://inspector:example-secret@icons.example.test/clipboard.svg",
       "stac_extensions": [
         "https://stac-extensions.github.io/table/v1.3.0/schema.json",
         "https://vectoriahq.github.io/quac/v0.3.0/schema.json"

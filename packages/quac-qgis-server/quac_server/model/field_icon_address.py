@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
-from ..js_compat import _percent_encode, js_trim, split_url, url_to_string
+from ..js_compat import js_trim, split_url, url_to_string
 
 JSDELIVR_NPM = 'https://cdn.jsdelivr.net/npm/'
 
@@ -97,25 +97,16 @@ def is_icon_library_address(url: str) -> bool:
 
 
 # The characters the `URL` class percent-encodes in a user name or password, beyond control characters and those outside ASCII.
-_USERINFO_ENCODED = ' "#<>?`{}/:;=@[\\]^|'
-
-
 def read_https_address(value: Any) -> Optional[str]:
     """
     The address as the `URL` class writes its `href`, or None where it is not
-    an `https://` address. It is read as `js_compat.split_url` reads an
-    address, with the departures recorded for `parseDataSource.ts`. A user name
-    and password are written as the class writes them.
+    an `https://` address or holds a user name or password, which a catalogue
+    would otherwise publish. It is read as `js_compat.split_url` reads an
+    address, with the departures recorded for `parseDataSource.ts`.
     """
     if not isinstance(value, str):
         return None
     parts = split_url(js_trim(value))
-    if parts is None or parts['scheme'] != 'https':
+    if parts is None or parts['scheme'] != 'https' or parts['userinfo']:
         return None
-    href = url_to_string(parts)
-    userinfo = parts['userinfo']
-    if not userinfo:
-        return href
-    user, colon, password = userinfo.partition(':')
-    credentials = _percent_encode(user, _USERINFO_ENCODED) + (f':{_percent_encode(password, _USERINFO_ENCODED)}' if colon and password else '')
-    return href.replace('https://', f'https://{credentials}@', 1) if credentials else href
+    return url_to_string(parts)

@@ -301,7 +301,7 @@ Written by: QGIS project. Stable. Example: `"data:image/png;base64,iVBORw0KGgoâ€
 
 The `https://` address of an icon drawn before the layer's name. A reader takes the address as it stands. From a QGIS layer variable named `quac_icon`, set in **Layer Properties â€º Variables**, whose value is one of:
 
-- an `https://` address, written as it stands;
+- an `https://` address, written as it stands, unless it holds a user name or password, when nothing is written;
 - `prefix:name`, an icon named as Iconify names it, from one of the libraries below, such as `lucide:tree-pine`;
 - a bare name, such as `tree`, read as a Tabler icon.
 
