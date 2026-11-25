@@ -79,6 +79,8 @@ class NormalizedProject:
     description: str
     bbox: Optional[BoundingBox]
     nodes: list[NormalizedNode]
+    # Vendor-namespaced fields copied straight onto the top-level Catalog.
+    vendor_fields: dict[str, Any] = field(default_factory=dict)
 
 
 def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
@@ -98,6 +100,8 @@ def generate_stac_from_normalized(project: NormalizedProject) -> dict[str, Any]:
     }
     if project.bbox:
         catalog['extent'] = build_stac_extent(project.bbox)
+    for key, value in project.vendor_fields.items():
+        catalog[key] = value
     if collections:
         catalog['collections'] = collections
     if catalogs:

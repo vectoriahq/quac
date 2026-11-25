@@ -1,0 +1,7 @@
+{
+  "fields": [
+    "quac:print_layouts"
+  ],
+  "source": "qgis-project",
+  "input": "project.qgs"
+}

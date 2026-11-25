@@ -197,6 +197,14 @@ class ProjectMetadata:
 
 
 @dataclass
+class PrintLayoutTemplate:
+    """A print layout as its name and its `<Layout>` element, which is a QGIS layout template."""
+
+    name: str
+    template: str
+
+
+@dataclass
 class QgsProject:
     layers: list[LayerEntry]
     layer_tree: LayerGroup
@@ -207,3 +215,4 @@ class QgsProject:
     project_crs: Optional[str] = None
     metadata: ProjectMetadata = field(default_factory=ProjectMetadata)
     wms_crs_list: list[str] = field(default_factory=list)
+    print_layouts: list[PrintLayoutTemplate] = field(default_factory=list)

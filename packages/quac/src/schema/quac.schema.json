@@ -79,6 +79,20 @@
           "maxItems": 4,
           "items": { "type": "number" }
         },
+        "quac:print_layouts": {
+          "description": "On the top-level Catalog: the source's print layouts, in its order, each as its name and its QGIS layout template, the <Layout> element that QGIS saves in a .qpt file. Written from a QGIS project's Layout Manager, less any layout that its QGIS Server settings exclude.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "template"],
+            "properties": {
+              "name": { "type": "string" },
+              "template": { "type": "string", "pattern": "^<Layout[ />]" }
+            },
+            "additionalProperties": false
+          }
+        },
         "quac:visibility_checked": {
           "description": "On a group: whether the group opens switched on. In a catalogue of basemaps, true marks the basemap that is shown first, and false keeps a group hidden.",
           "type": "boolean"

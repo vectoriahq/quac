@@ -72,20 +72,6 @@ export {
 export type { StacStyle, StyleOverrideReference } from './model/stacStyles.ts'
 
 export { parseQgsXml } from './parse/parseQgsXml.ts'
-export { layoutLengthToMillimetres, parseQgsLayouts } from './parse/parseQgsLayouts.ts'
-export type {
-  LayoutAtlas,
-  LayoutBox,
-  LayoutItem,
-  LayoutItemKind,
-  LayoutLabel,
-  LayoutMap,
-  LayoutOtherItem,
-  LayoutPicture,
-  LayoutShape,
-  LayoutSize,
-  PrintLayout
-} from './model/PrintLayout.ts'
 export { measureFactorsOf } from './parse/parseMeasurement.ts'
 export type { MeasureFactors } from './parse/parseMeasurement.ts'
 export { readProjectXml } from './parse/readProjectFile.ts'
@@ -158,6 +144,7 @@ export {
   QUAC_PRIVATE_FIELD,
   readCatalogueActiveCollection,
   readCatalogueInitialView,
+  readCataloguePrintLayouts,
   readCollectionDisplayField,
   readCollectionEditable,
   readCollectionFieldAliases,
@@ -225,6 +212,7 @@ export {
 } from './sources/stacItems.ts'
 export { stripQgisServerQuery } from './sources/qgisServerUrl.ts'
 
+export type { PrintLayoutTemplate } from './model/QgsProject.ts'
 export type {
   WmsProject,
   WmsLayerTreeNode,

@@ -1,6 +1,7 @@
 import { arcgisQueryAsset } from './arcgisStacCatalogue.ts'
 import {
   QUAC_MEASUREMENT_FIELD,
+  QUAC_PRINT_LAYOUTS_FIELD,
   slugify,
   generateStacFromNormalized,
   unionBboxes,
@@ -220,6 +221,9 @@ function qgsProjectToNormalized(
     activeCollectionId: project.initialActiveLayerId && layersById.has(project.initialActiveLayerId)
       ? collectionIdOf(project.initialActiveLayerId)
       : null,
+    vendorFields: project.printLayouts && project.printLayouts.length > 0
+      ? { [QUAC_PRINT_LAYOUTS_FIELD]: project.printLayouts.map(({ name, template }) => ({ name, template })) }
+      : undefined,
     nodes
   }
 }

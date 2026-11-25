@@ -5,7 +5,7 @@ import { PROJ_CODE, PROJECTION_EXTENSION } from '../model/stacProjection.ts'
 import { collectCatalogueCollections } from '../model/stacTreeWalk.ts'
 import { readNonBlank } from '../util/nonBlankText.ts'
 
-import type { EditLock, LayerLocks, LockedEdit, FieldAttachment, FieldCheckbox, FieldConstraintExpression, FieldDefaultExpression, FieldDefaultValue, FieldEditRule, FieldFixedValue, FieldRange, FormLayoutField, LayerFormLayout, LayerScaleRange, ProjectMeasurement } from '../model/QgsProject.ts'
+import type { EditLock, LayerLocks, PrintLayoutTemplate, LockedEdit, FieldAttachment, FieldCheckbox, FieldConstraintExpression, FieldDefaultExpression, FieldDefaultValue, FieldEditRule, FieldFixedValue, FieldRange, FormLayoutField, LayerFormLayout, LayerScaleRange, ProjectMeasurement } from '../model/QgsProject.ts'
 import type { StacAsset, StacCatalog, StacCollection, StacExtent, StacLink, StacProvider, TableColumn, TableColumnAttachment, TableColumnDataType, TableColumnType, TableColumnValue, TableColumnValueRelation } from '../model/Stac.ts'
 
 /**
@@ -106,6 +106,8 @@ const INITIAL_VIEW_FIELD = 'quac:initial_view'
  * names as the one the map opens with as the active layer.
  */
 export const QUAC_ACTIVE_COLLECTION_FIELD = 'quac:active_collection'
+/** The project's print layouts, on the top-level Catalog: each as its name and its QGIS layout template. */
+export const QUAC_PRINT_LAYOUTS_FIELD = 'quac:print_layouts'
 
 /**
  * One relation a Collection declares in `quac:related_to`: the parent
@@ -564,6 +566,21 @@ export function readCatalogueActiveCollection(catalog: StacCatalog): string | nu
  * about where to open", so a caller frames the map its own way rather than
  * reading a missing field as an instruction.
  */
+/**
+ * Reads `quac:print_layouts` back off a Catalog: each print layout's name and
+ * template, in its order. An entry without a string name, or whose template is
+ * not a `<Layout>` element, is not read. Empty where the Catalog lists none.
+ */
+export function readCataloguePrintLayouts(catalog: StacCatalog): PrintLayoutTemplate[] {
+  const value: unknown = catalog[QUAC_PRINT_LAYOUTS_FIELD]
+  if (!Array.isArray(value)) return []
+  return value.flatMap((entry: unknown) => {
+    if (!entry || typeof entry !== 'object') return []
+    const { name, template } = entry as Record<string, unknown>
+    return typeof name === 'string' && typeof template === 'string' && /^<Layout[\s/>]/.test(template) ? [{ name, template }] : []
+  })
+}
+
 export function readCatalogueInitialView(catalog: StacCatalog): NormalizedBbox | null {
   const value: unknown = catalog[INITIAL_VIEW_FIELD]
   if (!Array.isArray(value) || value.length !== 4) return null

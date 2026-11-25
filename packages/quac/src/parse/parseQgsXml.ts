@@ -5,11 +5,11 @@ import { parseProjectLayers } from './parseLayers.ts'
 import { parseLegendTree } from './parseLegendTree.ts'
 import { parseProjectMeasurement } from './parseMeasurement.ts'
 import { parseMerginFilters } from './parseMergin.ts'
+import { parsePrintLayouts } from './parsePrintLayouts.ts'
 import { parseProjectVariables } from './parseProjectVariables.ts'
 import { parseInitialActiveLayerId, parseWfsTransactionLayers } from './parseQfieldSync.ts'
 import { parseProjectRelations } from './parseRelations.ts'
 import { crossLayerNotes } from './projectNotes.ts'
-import { readQgisRoot } from './readQgisRoot.ts'
 import { parseWmsCrsList, parseWmsPublishing } from './parseWmsPublishing.ts'
 import { devLog } from '../util/devLog.ts'
 
@@ -20,9 +20,9 @@ import type { PresetFilter, ProjectMetadata, ProjectNote, QgsProject } from '../
  * QgsProject.
  *
  * Parsing strategy:
- *   1. `readQgisRoot` parses the XML and finds the root <qgis> element
- *      (jsdom in tests, the real DOM in a browser).
- *   2. Each sub-parser handles one concern and isolates its own failures —
+ *   1. DOMParser → DOM tree (jsdom in tests, real DOM in browser).
+ *   2. Locate the root <qgis> element.
+ *   3. Each sub-parser handles one concern and isolates its own failures —
  *      a malformed legend tree shouldn't take down the layer list, etc.
  *
  * Throws only when `XMLSerializer` is missing, or the XML itself is
@@ -36,7 +36,19 @@ export function parseQgsXml(xmlText: string): QgsProject {
   if (typeof XMLSerializer === 'undefined') {
     throw new Error('parseQgsXml needs XMLSerializer as well as DOMParser. A browser provides both; in Node, supply both from one library, such as jsdom.')
   }
-  const qgisRoot = readQgisRoot(xmlText)
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(xmlText, 'text/xml')
+
+  // DOMParser surfaces XML errors as a <parsererror> node in the document.
+  const parserError = doc.querySelector('parsererror')
+  if (parserError) {
+    throw new Error(`Failed to parse QGS XML: ${parserError.textContent?.slice(0, 200) ?? 'unknown error'}`)
+  }
+
+  const qgisRoot = doc.documentElement
+  if (!qgisRoot || qgisRoot.tagName !== 'qgis') {
+    throw new Error(`Expected <qgis> root element, got <${qgisRoot?.tagName ?? 'nothing'}>`)
+  }
 
   const qgisVersion = qgisRoot.getAttribute('version') || null
   const title = qgisRoot.querySelector(':scope > title')?.textContent?.trim() ?? ''
@@ -87,6 +99,7 @@ export function parseQgsXml(xmlText: string): QgsProject {
     wmsCrsList: parseWmsCrsList(qgisRoot),
     merginFilters,
     notes,
+    printLayouts: parsePrintLayouts(qgisRoot),
     rawXml: xmlText
   }
 }

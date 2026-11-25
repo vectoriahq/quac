@@ -43,6 +43,7 @@ QUAC_GEOMETRY_FILTER = 'quac:geometry_filter'
 QUAC_LAYER_NAME = 'quac:layer_name'
 QUAC_DELIMITED_TEXT = 'quac:delimited_text'
 QUAC_FEATURE_FILTER = 'quac:feature_filter'
+QUAC_PRINT_LAYOUTS_FIELD = 'quac:print_layouts'
 
 # The source kinds that are images: a layer of one has no features to edit.
 _IMAGE_KINDS = ('wms', 'wmts', 'xyz')
@@ -102,6 +103,7 @@ def _qgs_project_to_normalized(project: QgsProject, layer_wgs84_extents: dict[st
         else (f'STAC catalogue generated from QGIS project "{title}".' if title else 'STAC catalogue generated from a QGIS project.'),
         bbox=union_bboxes([effective_wgs84_bbox(layer, layer_wgs84_extents) for layer in project.layers]),
         nodes=nodes,
+        vendor_fields={QUAC_PRINT_LAYOUTS_FIELD: [{'name': layout.name, 'template': layout.template} for layout in project.print_layouts]} if project.print_layouts else {},
     )
 
 

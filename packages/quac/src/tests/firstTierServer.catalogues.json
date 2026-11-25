@@ -1138,6 +1138,38 @@
       }
     ]
   },
+  "print-layouts": {
+    "type": "Catalog",
+    "id": "print-layouts",
+    "quac:print_layouts": [
+      {
+        "name": "Park plan",
+        "template": "<Layout name=\"Park plan\" units=\"mm\" printResolution=\"300\"><PageCollection><LayoutItem type=\"65638\" id=\"\" referencePoint=\"0\" position=\"0,0,mm\" size=\"297,210,mm\" zValue=\"0\" visibility=\"1\"/></PageCollection><LayoutItem type=\"65639\" id=\"Map\" referencePoint=\"0\" position=\"10,20,mm\" size=\"200,180,mm\" zValue=\"1\" visibility=\"1\" keepLayerSet=\"true\"><Extent xmin=\"144.9\" ymin=\"-37.9\" xmax=\"145.0\" ymax=\"-37.8\"/><LayerSet><Layer name=\"Parks\">parks_1</Layer></LayerSet></LayoutItem><LayoutItem type=\"65641\" id=\"Title\" referencePoint=\"0\" position=\"10,5,mm\" size=\"200,10,mm\" zValue=\"2\" visibility=\"1\" labelText=\"[% &quot;name&quot; %]\" htmlState=\"0\"/><LayoutItem type=\"65640\" id=\"Logo\" referencePoint=\"0\" position=\"250,5,mm\" size=\"40,15,mm\" zValue=\"3\" visibility=\"1\" file=\"\"/><Atlas enabled=\"1\" coverageLayer=\"parks_1\" coverageLayerName=\"Parks\" hideCoverage=\"0\" filterFeatures=\"0\"/></Layout>"
+      }
+    ],
+    "collections": [
+      {
+        "type": "Collection",
+        "id": "Parks",
+        "quac:visibility_checked": true,
+        "quac:editable": false,
+        "quac:identifiable": true,
+        "quac:opacity": 1,
+        "quac:qgis_server_wms_name": "Parks",
+        "summaries": {
+          "quac:geometry_type": [
+            "Polygon"
+          ]
+        },
+        "links": [
+          {
+            "rel": "wms",
+            "quac:wms_crs": "EPSG:3857"
+          }
+        ]
+      }
+    ]
+  },
   "private": {
     "type": "Catalog",
     "id": "private-layer",

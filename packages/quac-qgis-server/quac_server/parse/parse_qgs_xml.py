@@ -12,6 +12,7 @@ from ..model.qgs_project import ProjectMetadata, QgsProject
 from .collect_layer_visibility import collect_layer_visibility
 from .parse_layers import parse_project_layers
 from .parse_legend_tree import parse_legend_tree
+from .parse_print_layouts import parse_print_layouts
 from .parse_qfield_sync import parse_wfs_transaction_layers
 from .parse_wms_publishing import parse_wms_crs_list, parse_wms_publishing
 from .xml_text import direct_child, direct_child_text, first_descendant, text_content
@@ -50,6 +51,7 @@ def parse_qgs_xml(xml_text: str) -> QgsProject:
         wfs_transaction_layers=parse_wfs_transaction_layers(qgis_root),
         wms_publishing=parse_wms_publishing(qgis_root),
         wms_crs_list=parse_wms_crs_list(qgis_root),
+        print_layouts=parse_print_layouts(qgis_root),
     )
 
 

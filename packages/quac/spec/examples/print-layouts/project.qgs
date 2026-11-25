@@ -1,0 +1,51 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Print layouts" version="3.44.8-Solothurn">
+  <title>Print layouts</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:4326</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <layer-tree-layer id="parks_1" name="Parks" checked="Qt::Checked" expanded="1"/>
+  </layer-tree-group>
+  <properties>
+    <WMSRestrictedComposers type="QStringList">
+      <value>Internal check</value>
+    </WMSRestrictedComposers>
+  </properties>
+  <projectlayers>
+    <maplayer type="vector" geometry="Polygon" wkbType="Polygon" readOnly="0">
+      <id>parks_1</id>
+      <datasource>./parks.geojson</datasource>
+      <layername>Parks</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+    </maplayer>
+  </projectlayers>
+  <Layouts>
+    <Layout name="Park plan" units="mm" printResolution="300">
+      <PageCollection>
+        <LayoutItem type="65638" id="" referencePoint="0" position="0,0,mm" size="297,210,mm" zValue="0" visibility="1"/>
+      </PageCollection>
+      <LayoutItem type="65639" id="Map" referencePoint="0" position="10,20,mm" size="200,180,mm" zValue="1" visibility="1" keepLayerSet="true">
+        <Extent xmin="144.9" ymin="-37.9" xmax="145.0" ymax="-37.8"/>
+        <LayerSet>
+          <Layer name="Parks" source="./parks.geojson" provider="ogr">parks_1</Layer>
+        </LayerSet>
+      </LayoutItem>
+      <LayoutItem type="65641" id="Title" referencePoint="0" position="10,5,mm" size="200,10,mm" zValue="2" visibility="1" labelText="[% &quot;name&quot; %]" htmlState="0"/>
+      <LayoutItem type="65640" id="Logo" referencePoint="0" position="250,5,mm" size="40,15,mm" zValue="3" visibility="1" file="/home/someone/logos/council.svg"/>
+      <Atlas enabled="1" coverageLayer="parks_1" coverageLayerName="Parks" coverageLayerSource="./parks.geojson" coverageLayerProvider="ogr" hideCoverage="0" filterFeatures="0"/>
+    </Layout>
+    <Layout name="Internal check" units="mm" printResolution="300">
+      <PageCollection>
+        <LayoutItem type="65638" id="" referencePoint="0" position="0,0,mm" size="210,297,mm" zValue="0" visibility="1"/>
+      </PageCollection>
+    </Layout>
+  </Layouts>
+</qgis>
