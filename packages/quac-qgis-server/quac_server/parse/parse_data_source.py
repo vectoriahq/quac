@@ -18,7 +18,7 @@ import re
 from typing import Any, Optional
 from urllib.parse import unquote_to_bytes
 
-from ..js_compat import js_trim, split_url, url_search_params, url_to_string
+from ..js_compat import JS_SPACE, js_trim, split_url, url_search_params, url_to_string
 from ..model.qgs_project import DataSource
 from ..model.stac_wms import wms_endpoint
 from ..model.stac_wmts import wmts_endpoint
@@ -84,6 +84,8 @@ def parse_data_source(raw: str, provider_hint: Optional[str] = None) -> DataSour
         url = params.get('url')
         type_name = params['typename'] if 'typename' in params else params.get('typeName')
         if url and type_name:
+            if _wfs_source_signs_in(params):
+                return DataSource(kind='unsupported', raw=raw, hint=provider_hint if provider_hint is not None else 'WFS')
             # QGIS sends the server a `SELECT` statement where the source has one, and the `filter` otherwise.
             wfs_filter = params.get('filter') if js_trim(params.get('filter') or '') else None
             feature_filter: Optional[dict[str, str]] = None
@@ -124,6 +126,21 @@ def _needs_credentials_or_headers(params: list[tuple[str, str]]) -> bool:
         js_trim(value) and (key in ('authcfg', 'username', 'password', 'referer') or key.startswith('http-header:'))
         for key, value in params
     )
+
+
+def _wfs_source_signs_in(params: dict[str, str]) -> bool:
+    """
+    Whether a WFS source signs in to its server: QGIS reads its login from
+    `authcfg`, or a user name from `user` or `username` and a `password`
+    (`QgsDataSourceUri`, QGIS 3.34).
+    """
+    return any(js_trim(params.get(key) or '') for key in ('authcfg', 'user', 'username', 'password'))
+
+
+def wfs_source_signs_in(raw: str) -> bool:
+    """Whether a WFS source, as the project writes it, signs in to its server: the reader's own check, for the Desktop part's warning."""
+    source, _sql = _split_off_wfs_sql(js_trim(raw))
+    return _wfs_source_signs_in(_parse_space_separated_key_values(source))
 
 
 _XYZ_ZOOM_OR_QUADKEY = re.compile(r'\{(z|quadkey)\}')
@@ -307,14 +324,19 @@ _GEOMETRY_TYPE_FILTERS = {
     'MultiSurfaceZ': 'Polygon',
 }
 
-_KEY_VALUE = re.compile(r'(\w+)\s*=\s*(?:\'((?:\\.|[^\'\\])*)\'|"((?:\\.|[^"\\])*)")', re.ASCII)
+# A bare value, which is how QGIS writes `authcfg` (`QgsDataSourceUri::uri`, QGIS 3.34), starts
+# straight after `=`, so a key written with no value never takes the next pair.
+_KEY_VALUE = re.compile(r'(\w+)\s*(?:=\s*\'((?:\\.|[^\'\\])*)\'|=\s*"((?:\\.|[^"\\])*)"|=([^' + JS_SPACE + r'\'"]+))', re.ASCII)
 _ESCAPE = re.compile(r'\\(.)')
 
 
 def _parse_space_separated_key_values(raw: str) -> dict[str, str]:
-    """QGIS's WFS-style URI: space-separated `key='value'` or `key="value"` pairs, a backslash escaping the next character."""
+    """QGIS's WFS-style URI: space-separated `key='value'`, `key="value"` or bare `key=value` pairs, a backslash escaping the next character in a quoted value."""
     out: dict[str, str] = {}
     for match in _KEY_VALUE.finditer(raw):
+        if match.group(4) is not None:
+            out[match.group(1)] = match.group(4)
+            continue
         value = match.group(2) if match.group(2) is not None else (match.group(3) or '')
         out[match.group(1)] = _ESCAPE.sub(r'\1', value)
     return out

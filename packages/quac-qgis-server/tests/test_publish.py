@@ -362,15 +362,19 @@ class FolderRules(unittest.TestCase):
         open_wfs = "typename='parks:trails' url='https://maps.example.test/wfs' version='auto'"
         locked_wfs = "typename='parks:trails' url='https://editor:secret@maps.example.test/wfs' version='auto'"
         query_wfs = "typename='parks:trails' url='https://maps.example.test/wfs?password=secret' version='auto'"
+        login_wfs = "authcfg=ab12cd3 typename='parks:trails' url='https://maps.example.test/wfs' version='auto'"
+        user_wfs = "password='secret' typename='parks:trails' url='https://maps.example.test/wfs' user='editor' version='auto'"
         online = 'https://editor:secret@data.example.test/trails.geojson'
         publication = plan(parks_project(trails=layer_xml('trails_3', 'Trails', open_wfs, provider='WFS')))
         self.assertEqual(publication.left_out, [])
         self.assertTrue(collection(publication, 'trails_3')[1]['assets']['data']['href'].startswith('https://maps.example.test/wfs?'))
-        for source, provider in ((locked_wfs, 'WFS'), (query_wfs, 'WFS'), (online, 'ogr')):
+        for source, provider in ((locked_wfs, 'WFS'), (query_wfs, 'WFS'), (login_wfs, 'WFS'), (user_wfs, 'WFS'), (online, 'ogr')):
             with self.subTest(source=source):
                 publication = plan(parks_project(trails=layer_xml('trails_3', 'Trails', source, provider=provider)))
                 self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.HOLDS_CREDENTIALS)])
-                self.assertNotIn('secret', json.dumps(documents(publication)))
+                text = json.dumps(documents(publication))
+                for word in ('secret', 'editor', 'ab12cd3'):
+                    self.assertNotIn(word, text)
 
     def test_keeps_each_web_map_layer_by_its_address(self) -> None:
         layers = {
@@ -757,7 +761,7 @@ class NoPathOrPasswordIsWritten(unittest.TestCase):
             '</Layout>'
         ))
         publication = publish.plan_publication('Parks.qgs', project, {}, {}, '/home/someone/maps', '/home/someone/maps', {}, {}.get, posixpath)
-        self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows', 'WMS user', 'WMS keys', 'WMS sign-in'])
+        self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows', 'WMS user', 'WMS keys', 'WMS sign-in', 'WFS layer'])
         self.assertIn('https://maps.example.test/wms', json.dumps(documents(publication)))
         self.assertEqual([dropped.field for dropped in publication.dropped_folders], ['a', 'b', 'c', 'd', 'e'])
         self.assertIn('Plan', json.dumps(documents(publication)))

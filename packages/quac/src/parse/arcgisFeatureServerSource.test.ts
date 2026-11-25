@@ -30,6 +30,7 @@ describe('a QGIS layer read through the arcgisfeatureserver provider', () => {
 
   it.each([
     ['a sign-in', `authcfg='abc1234' url='${KINDERS_URL}'`],
+    ['a sign-in written bare, as QGIS writes it', `authcfg=abc1234 url='${KINDERS_URL}'`],
     ['a referer', `referer='https://example.org' url='${KINDERS_URL}'`],
     ['an HTTP header', `http-header:referer='https://example.org' url='${KINDERS_URL}'`],
     ['a URL prefix', `urlprefix='https://proxy.example.org/?' url='${KINDERS_URL}'`],
