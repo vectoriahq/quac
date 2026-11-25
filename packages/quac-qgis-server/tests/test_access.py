@@ -82,6 +82,16 @@ class APersonsCatalogue(unittest.TestCase):
         self.assertNotIn('quac:display_field', parcels)
         self.assertEqual(parcels['quac:locks']['delete'], True)
 
+    def test_drops_the_primary_key_where_a_field_of_it_is_hidden(self) -> None:
+        catalogue = by_id(self.catalogue)
+        catalogue['Parcels']['quac:primary_key'] = [column['name'] for column in catalogue['Parcels']['table:columns']][:1] + ['zone_code']
+        fields = {column['name'] for column in catalogue['Parcels']['table:columns']} - {'zone_code'}
+        theirs, answers = self.person(Parcels=LayerAnswer(fields=frozenset(fields)))
+        self.assertNotIn('quac:primary_key', by_id(theirs)['Parcels'])
+        self.assertEqual(leak_failures(theirs, self.text, SERVER_ADDRESS, answers), [])
+        kept = by_id(apply_access(self.catalogue, allow_all(self.catalogue)))['Parcels']
+        self.assertEqual(kept['quac:primary_key'], catalogue['Parcels']['quac:primary_key'])
+
     def test_locks_each_edit_they_may_not_make(self) -> None:
         theirs, answers = self.person(Parcels=LayerAnswer(insert=False, delete=False))
         parcels = by_id(theirs)['Parcels']

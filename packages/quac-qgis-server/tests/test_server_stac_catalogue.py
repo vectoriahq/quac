@@ -75,6 +75,25 @@ class InputsFromQgisServer(unittest.TestCase):
         descriptions = {column['name']: column.get('description') for column in trees['table:columns']}
         self.assertEqual(descriptions, {'tree_id': 'The tree register number', 'species': 'From the project', 'planted': None})
 
+    def test_writes_field_sizes_filling_by_data_and_the_primary_key_as_the_javascript_does(self) -> None:
+        field_types = {TREES_ID: {
+            'tree_id': {'type': 'qlonglong', 'typeName': 'Integer64', 'length': 10, 'precision': 0, 'filledByData': True, 'primaryKey': True},
+            'species': {'type': 'QString', 'typeName': 'String', 'length': 50, 'precision': -1},
+            'planted': {'type': 'QDate', 'typeName': 'Date', 'length': 10},
+        }}
+        trees = _collections(generate_server_stac_catalogue(parse_qgs_xml(_published(self.xml)), SERVER, field_types=field_types))['Street trees']
+        columns = {column['name']: column for column in trees['table:columns']}
+        self.assertEqual((columns['tree_id'].get('quac:length'), columns['tree_id'].get('quac:filled_by_data')), (10, True))
+        self.assertNotIn('quac:precision', columns['tree_id'])
+        self.assertEqual(columns['species'].get('quac:length'), 50)
+        self.assertNotIn('quac:length', columns['planted'])
+        self.assertEqual(trees['quac:primary_key'], ['tree_id'])
+
+    def test_writes_no_primary_key_where_a_field_of_it_is_not_among_the_columns(self) -> None:
+        field_types = {TREES_ID: {'tree_id': {'type': 'qlonglong', 'typeName': 'Integer64', 'primaryKey': True}, 'register': {'type': 'QString', 'typeName': 'String', 'primaryKey': True}}}
+        trees = _collections(generate_server_stac_catalogue(parse_qgs_xml(_published(self.xml)), SERVER, field_types=field_types))['Street trees']
+        self.assertNotIn('quac:primary_key', trees)
+
     def test_takes_a_missing_box_from_qgis_server_and_covers_only_served_layers(self) -> None:
         from quac_server.model.qgs_project import BoundingBox
         project = parse_qgs_xml(_published(self.xml, restricted=('Inspections',)))

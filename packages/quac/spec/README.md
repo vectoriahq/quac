@@ -77,6 +77,7 @@ A field that names another Collection, such as `quac:related_to`, `quac:value_re
 - **STAC**: a catalogue fetched from somewhere else, which keeps every field the source declared.
 - **A folder of data files**, with no project file, and **a single data file**.
 - **Hand-written**: a field no producer writes, which a catalogue's author writes by hand.
+- **The QUAC plugin for QGIS**: a QGIS project as QGIS Desktop or QGIS Server opens it, with what QGIS gives about the layers' data beyond the project's text. It writes the fields the QGIS project producer writes, and the fields named here as written by it.
 
 In this first stage the WFS, ArcGIS and OGC API Features producers take an application's parsed form of the service's description, not the service's own document. The QGIS project and QGIS Server producers take the documents themselves.
 
@@ -230,6 +231,14 @@ A layer read from ArcGIS:
 A QGIS project writes the first two for a layer read through QGIS's `arcgisfeatureserver` provider, with `quac:editable: false`. A source needing a sign-in or a header, or limited to a box, gets neither.
 
 Written by: ArcGIS; the first two also by QGIS project. `quac:arcgis_not_shown` is experimental, because its values are an application's reasons for not loading a layer, not ArcGIS's; the others are stable. Examples: `"https://services.arcgis.com/example/arcgis/rest/services/Species/FeatureServer/0"`, `"status = 'native'"`, `"not-a-feature-layer"`.
+
+#### `quac:primary_key`
+
+The names of the fields whose values identify a feature in the layer's data, its primary key, in the columns' order. A key of more than one field lists each. Absent where the data names none, such as a GeoJSON layer, or where a field of the key is not among the columns, such as one hidden: part of a key identifies nothing.
+
+From the primary key QGIS gives the layer (`QgsVectorLayer::primaryKeyAttributes`, `src/core/vector/qgsvectorlayer.cpp`), which QGIS Server lists in GetProjectSettings as `<PrimaryKey><PrimaryKeyAttribute>` (`qgswmsgetcapabilities.cpp`). A GeoPackage layer's key is its feature id column, such as `fid` (`QgsOgrProvider`, `src/core/providers/ogr/qgsogrprovider.cpp`); all three read at `qgis/QGIS@master` on 2026-11-25.
+
+Written by: QGIS Server, the QUAC plugin for QGIS. Experimental. Example: `["fid"]`.
 
 ### Relations between layers
 
@@ -528,6 +537,22 @@ Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"h
 How the edit form draws the field's list of choices: `buttons` or `dropdown`. From a layer variable named `quac_control_` followed by the field's name, held in the same lists as `quac:icon`'s, compared without regard to case or surrounding spaces; any other value writes nothing. QGIS's own form has no such setting: a Value Map is always a combo box (`src/ui/editorwidgets/qgsvaluemapconfigdlgbase.ui`, read 2026-10-26).
 
 Written by: QGIS project. Experimental: the variable is QUAC's own. Example: `"buttons"`.
+
+### `quac:length` and `quac:precision`
+
+The most characters a text field holds, or the most digits a number field holds, as the field's data defines it, such as `50` for a PostgreSQL `varchar(50)`; and the most digits after the decimal point a decimal number field holds, such as `2` for a `numeric(10,2)`. Each is a whole number above nothing, written only for those types: `quac:length` for a column whose `type` is `string`, `int`, `long` or `double`, and `quac:precision` for a `double`. Absent where the data defines none, such as for a GeoJSON field.
+
+From the length and precision QGIS gives a field (`QgsField::length` and `QgsField::precision`), which QGIS Server writes as an attribute's `length` and `precision` in GetProjectSettings. QGIS gives 0 or -1 where the data defines none, and a length for other types too, such as 1 for a GeoPackage boolean.
+
+Written by: QGIS Server, the QUAC plugin for QGIS. Experimental. Examples: `50`, `2`.
+
+### `quac:filled_by_data`
+
+Written only as `true`: the field's data gives the field a value of its own when a new feature leaves it empty, such as the next number of a sequence or the time of the save. A reader leaves such a field empty on a new feature, so the data fills it, even where `quac:constraints` refuses a blank: a GeoPackage's feature id is both. A `quac:default` the project sets fills the field first, as QGIS fills a new feature (`QgsVectorLayerUtils::createFeatures`, `src/core/vector/qgsvectorlayerutils.cpp`).
+
+From the default QGIS gives a field from its data source (`QgsVectorDataProvider::defaultValueClause`, `src/core/vector/qgsvectordataprovider.cpp`): any default the source states writes `true`. Its text is not written, because it is the source's own, such as an SQL expression from PostgreSQL, or a word QGIS shows in its form in the user's language, such as `Autogenerate` for a GeoPackage's feature id (`QgsOgrProvider`, `src/core/providers/ogr/qgsogrprovider.cpp`, `qgis/QGIS@master`, read 2026-11-25). QGIS Server does not report it.
+
+Written by: the QUAC plugin for QGIS. Experimental. Example: `true`.
 
 ### `quac:label_on_top`
 

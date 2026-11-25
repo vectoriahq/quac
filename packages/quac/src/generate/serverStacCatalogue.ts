@@ -1,4 +1,4 @@
-import { buildStacExtent, unionBboxes, withDataType } from './normalizedProject.ts'
+import { buildStacExtent, unionBboxes, withDataType, withFieldSize } from './normalizedProject.ts'
 import { serverLayerTree, wmsPublishedLayerIds } from './serverLayerTree.ts'
 import { generateStacCatalogue, QUAC_CATEGORISED_FIELD } from './stacCatalogue.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
@@ -135,14 +135,23 @@ export function serverWmsEndpoint(serverAddress: string): string | null {
 }
 
 /**
- * A field as GetProjectSettings reports it: its Qt type name, such as
- * `qlonglong`, its provider's type name, and the comment its data holds, such
- * as a PostgreSQL column comment (`QgsField::comment`).
+ * A field as QGIS gives it. GetProjectSettings reports its Qt type name, such
+ * as `qlonglong`, its provider's type name, the comment its data holds, such
+ * as a PostgreSQL column comment (`QgsField::comment`), its length and
+ * precision (`QgsField::length`, `QgsField::precision`), and whether it is
+ * part of the layer's primary key (`QgsVectorLayer::primaryKeyAttributes`).
+ * `filledByData` is whether the data gives it a value of its own when a new
+ * feature leaves it empty (`QgsVectorDataProvider::defaultValueClause`), which
+ * QGIS Server does not report.
  */
 export interface QgisFieldType {
   type: string
   typeName: string
   comment?: string
+  length?: number
+  precision?: number
+  filledByData?: boolean
+  primaryKey?: boolean
 }
 
 export interface ServerCatalogueOptions {
@@ -328,10 +337,29 @@ function serveColumns(collection: StacCollection, hidden: Set<string>, context: 
   else delete collection['table:columns']
 }
 
-/** Each column with the `type` and the comment QGIS Server reports for its field (`withFieldType`). */
+/**
+ * Each column with what QGIS gives for its field (`withFieldType`), and the
+ * Collection with its primary key (`primaryKeyOf`).
+ */
 function serveFieldTypes(collection: StacCollection, fieldTypes: Record<string, QgisFieldType>, projectComments: Record<string, string>): void {
   const columns = collection['table:columns']
-  if (Array.isArray(columns)) collection['table:columns'] = (columns as TableColumn[]).map((column) => withFieldType(column, fieldTypes[column.name], projectComments))
+  if (!Array.isArray(columns)) return
+  const typed = (columns as TableColumn[]).map((column) => withFieldType(column, fieldTypes[column.name], projectComments))
+  collection['table:columns'] = typed
+  const primaryKey = primaryKeyOf(typed, fieldTypes)
+  if (primaryKey) collection['quac:primary_key'] = primaryKey
+}
+
+/**
+ * The names of the fields QGIS gives as the layer's primary key, in the
+ * columns' order, or null where it gives none or where a key field is not
+ * among the columns, such as one hidden: part of a key identifies nothing.
+ */
+function primaryKeyOf(columns: TableColumn[], fieldTypes: Record<string, QgisFieldType>): string[] | null {
+  const keys = Object.entries(fieldTypes).filter(([, fieldType]) => fieldType.primaryKey).map(([name]) => name)
+  const names = new Set(columns.map((column) => column.name))
+  if (keys.length === 0 || keys.some((name) => !names.has(name))) return null
+  return columns.filter((column) => keys.includes(column.name)).map((column) => column.name)
 }
 
 /** A style asset's categorised field, dropped where the layer hides it. */
@@ -355,13 +383,19 @@ function serveStyleFields(collection: StacCollection, hidden: Set<string>): void
  * own for the field, `projectComments` holding those, a blank one included:
  * QGIS's form shows the project's comment, hides the data's behind a blank
  * one, and shows the data's otherwise (`QgsAttributeForm`,
- * `src/gui/qgsattributeform.cpp`, `qgis/QGIS@master`, read 2026-11-25).
+ * `src/gui/qgsattributeform.cpp`, `qgis/QGIS@master`, read 2026-11-25). It
+ * takes `quac:length` and `quac:precision` (`withFieldSize`), and
+ * `quac:filled_by_data` where the data fills the field.
  */
 function withFieldType(column: TableColumn, fieldType: QgisFieldType | undefined, projectComments: Record<string, string>): TableColumn {
-  const type = fieldType ? mapQtTypeToStacTableType(fieldType.type, fieldType.typeName) : undefined
-  const typed = type ? withDataType({ ...column, type }) : column
-  const comment = fieldType?.comment?.trim()
-  return comment && !Object.hasOwn(projectComments, column.name) ? { ...typed, description: comment } : typed
+  if (!fieldType) return column
+  const type = mapQtTypeToStacTableType(fieldType.type, fieldType.typeName)
+  const typed: TableColumn = type ? withDataType({ ...column, type }) : { ...column }
+  const comment = fieldType.comment?.trim()
+  if (comment && !Object.hasOwn(projectComments, column.name)) typed.description = comment
+  const sized = withFieldSize(typed, fieldType.length, fieldType.precision)
+  if (fieldType.filledByData) sized['quac:filled_by_data'] = true
+  return sized
 }
 
 function serveColumn(source: TableColumn, hidden: Set<string>, context: HiddenFieldContext): TableColumn {

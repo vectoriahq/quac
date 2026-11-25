@@ -1,6 +1,7 @@
 import {
   slugify,
-  generateStacFromNormalized
+  generateStacFromNormalized,
+  withFieldSize
 } from './normalizedProject.ts'
 import { wfsGetFeatureAsset } from './wfsStacCatalogue.ts'
 import { chooseWmsCrs, WEB_MAP_LINKS_EXTENSION, wmsEndpoint } from '../model/stacWms.ts'
@@ -156,7 +157,7 @@ function wmsLayerToNormalized(
     identifiable: layer.queryable,
     scaleRange: layer.scaleRange,
     opacity: layer.opacity,
-    vendorFields: buildVendorFields(wfsSource)
+    vendorFields: { ...buildVendorFields(wfsSource), ...primaryKeyField(layer) }
   }
 }
 
@@ -224,6 +225,16 @@ function buildVendorFields(wfsSource: ReturnType<WfsSourceResolver>): Record<str
   return fields
 }
 
+/**
+ * The layer's `quac:primary_key`, where QGIS Server lists one and every field
+ * of it is among the layer's attributes: part of a key identifies nothing.
+ */
+function primaryKeyField(layer: WmsLayer): Record<string, unknown> {
+  const names = new Set(layer.attributes.map((attribute) => attribute.name))
+  if (layer.primaryKey.length === 0 || layer.primaryKey.some((name) => !names.has(name))) return {}
+  return { 'quac:primary_key': layer.attributes.filter((attribute) => layer.primaryKey.includes(attribute.name)).map((attribute) => attribute.name) }
+}
+
 function wmsBboxToNormalized(bbox: WmsBoundingBox): NormalizedBbox {
   return {
     xmin: bbox.westBoundLongitude,
@@ -252,7 +263,7 @@ function deriveTableColumnsFromAttributes(attributes: WmsAttribute[]): TableColu
     if (comment) column.description = comment
     const stacType = mapQtTypeToStacTableType(attr.type, attr.typeName)
     if (stacType) column.type = stacType
-    return column
+    return withFieldSize(column, attr.length, attr.precision)
   })
 }
 

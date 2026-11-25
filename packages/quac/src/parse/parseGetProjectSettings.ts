@@ -168,6 +168,11 @@ function parseLeafLayer(
     comment: attrEl.getAttribute('comment') ?? ''
   })).filter((a) => a.name)
 
+  // QGIS Server lists the key's fields by name, the ones it leaves out of `<Attributes>` among them (`qgswmsgetcapabilities.cpp`, `qgis/QGIS@master`, read 2026-11-25).
+  const primaryKey = Array.from(layerEl.querySelectorAll(':scope > PrimaryKey > PrimaryKeyAttribute'))
+    .map((node) => node.textContent?.trim() ?? '')
+    .filter(Boolean)
+
   const crsList = Array.from(layerEl.querySelectorAll(':scope > CRS'))
     .map((node) => node.textContent?.trim() ?? '')
     .filter(Boolean)
@@ -186,6 +191,7 @@ function parseLeafLayer(
     crsList,
     styles,
     attributes,
+    primaryKey,
     treeName
   }
 }

@@ -7,6 +7,7 @@ import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalog
 import { stacErrors } from './stacSchemas.ts'
 import schemaJson from '../schema/quac.schema.json?raw'
 
+import type { QgisFieldType } from '../generate/serverStacCatalogue.ts'
 import type { ArcgisLayerSet } from '../model/arcgis.ts'
 import type { StacCatalog, StacCollection } from '../model/Stac.ts'
 import type { WfsCapabilities } from '../model/wfs.ts'
@@ -36,6 +37,8 @@ interface ExampleManifest {
   endpoint?: string
   /** For a QGIS project whose canvas is in WGS84: pass its extent as the initial view, the conversion a caller does being none. */
   canvasAsInitialView?: boolean
+  /** For a QGIS Server: what QGIS gives for each field beyond the project's text, by layer id and field name. */
+  fieldTypes?: Record<string, Record<string, QgisFieldType>>
 }
 
 const FILES = import.meta.glob(['../../spec/examples/*/*.{json,qgs}'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>
@@ -87,7 +90,7 @@ function generate(manifest: ExampleManifest, input: string): StacCatalog {
       return generateStacCatalogue(project, [], { initialView })
     }
     case 'qgis-server':
-      return generateServerStacCatalogue(parseQgsXml(input), { serverAddress: manifest.endpoint! })
+      return generateServerStacCatalogue(parseQgsXml(input), { serverAddress: manifest.endpoint!, ...(manifest.fieldTypes ? { fieldTypes: manifest.fieldTypes } : {}) })
     case 'wfs':
       return generateStacCatalogueFromWfsCapabilities(manifest.endpoint!, JSON.parse(input) as WfsCapabilities)
     case 'arcgis':
@@ -128,7 +131,7 @@ describe('the server route on the first tier', () => {
       const manifest = JSON.parse(FILES[path]!) as ExampleManifest
       if (manifest.source !== 'qgis-project' && manifest.source !== 'qgis-server') continue
       const input = FILES[`${folderOf(path)}/${manifest.input}`]!
-      const catalogue = generateServerStacCatalogue(parseQgsXml(input), { serverAddress: manifest.endpoint ?? SERVER_ADDRESS })
+      const catalogue = generateServerStacCatalogue(parseQgsXml(input), { serverAddress: manifest.endpoint ?? SERVER_ADDRESS, ...(manifest.fieldTypes ? { fieldTypes: manifest.fieldTypes } : {}) })
       expect(stacErrors(catalogue), folderOf(path)).toEqual([])
       served[folderOf(path).split('/').pop()!] = essentials(JSON.parse(JSON.stringify(catalogue)) as StacCatalog)
     }

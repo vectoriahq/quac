@@ -339,6 +339,30 @@ def with_data_type(column: dict[str, Any]) -> dict[str, Any]:
     return column
 
 
+# The column types a length applies to: text and numbers.
+_SIZED_COLUMN_TYPES = {'string', 'int', 'long', 'double'}
+
+
+def with_field_size(column: dict[str, Any], length: Any, precision: Any) -> dict[str, Any]:
+    """
+    The column with `quac:length` and `quac:precision` as its data defines the
+    field, as the JavaScript's `withFieldSize` writes them: a length for a text
+    or number column, a precision for a `double` one, each where it is a whole
+    number above nothing.
+    """
+    sized = dict(column)
+    column_type = column.get('type') or ''
+    if column_type in _SIZED_COLUMN_TYPES and _is_whole_above_nothing(length):
+        sized['quac:length'] = length
+    if column_type == 'double' and _is_whole_above_nothing(precision):
+        sized['quac:precision'] = precision
+    return sized
+
+
+def _is_whole_above_nothing(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 0 < value <= 9007199254740991
+
+
 # The geometry types GeoJSON defines, the only values `vector:geometry_types` takes.
 _GEOJSON_GEOMETRY_TYPES = {'Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon', 'GeometryCollection'}
 

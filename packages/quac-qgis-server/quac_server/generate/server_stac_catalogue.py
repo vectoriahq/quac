@@ -46,7 +46,7 @@ from ..model.stac_projection import PROJECTION_EXTENSION
 from ..model.stac_tree_walk import catalogue_folder
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS, choose_wms_crs
 from .server_layer_tree import server_layer_tree, wms_published_layer_ids
-from .normalized_project import build_stac_extent, union_bboxes, with_data_type
+from .normalized_project import build_stac_extent, union_bboxes, with_data_type, with_field_size
 from .stac_catalogue import effective_wgs84_bbox, generate_stac_catalogue
 from .wfs_stac_catalogue import wfs_get_feature_asset
 from .wms_stac_catalogue import map_qt_type_to_stac_table_type
@@ -293,19 +293,43 @@ def _serve_locks(collection: dict[str, Any], hidden: set[str]) -> None:
     }
 
 
-def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]], project_comments: dict[str, str]) -> dict[str, Any]:
+def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, Any]], project_comments: dict[str, str]) -> dict[str, Any]:
     """
-    The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ..., 'comment': ...}`
-    as `field_types` holds it, and the `data_type` beside it, where QGIS reports one.
-    Its `description` is the comment the field's data holds where the project
+    The column with what QGIS gives for its field, as `field_types` holds it
+    (`{'type', 'typeName', 'comment', 'length', 'precision', 'filledByData', 'primaryKey'}`,
+    each but the first two optional), as the JavaScript's `withFieldType` writes it:
+    the `type` and the `data_type` beside it, where QGIS reports one; the
+    comment the field's data holds as its `description`, where the project
     saves no comment of its own for the field, `project_comments` holding
-    those, a blank one included, as the JavaScript's `withFieldType` does.
-    The plugin's QGIS Desktop catalogue (`quac/publish.py`) gives its columns their types and comments by it too.
+    those, a blank one included; `quac:length` and `quac:precision`
+    (`with_field_size`); and `quac:filled_by_data` where the data fills the field.
+    The plugin's QGIS Desktop catalogue (`quac/publish.py`) gives its columns all of these by it too.
     """
-    column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', '')) if field_type else None
-    typed = with_data_type({**column, 'type': column_type}) if column_type else column
-    comment = js_trim(field_type.get('comment') or '') if field_type else ''
-    return {**typed, 'description': comment} if comment and column['name'] not in project_comments else typed
+    if not field_type:
+        return column
+    column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', ''))
+    typed = with_data_type({**column, 'type': column_type}) if column_type else dict(column)
+    comment = js_trim(field_type.get('comment') or '')
+    if comment and column['name'] not in project_comments:
+        typed['description'] = comment
+    sized = with_field_size(typed, field_type.get('length'), field_type.get('precision'))
+    if field_type.get('filledByData'):
+        sized['quac:filled_by_data'] = True
+    return sized
+
+
+def primary_key_of(columns: list[dict[str, Any]], field_types: dict[str, dict[str, Any]]) -> Optional[list[str]]:
+    """
+    The names of the fields QGIS gives as the layer's primary key, in the
+    columns' order, or None where it gives none or where a key field is not
+    among the columns, such as one hidden: part of a key identifies nothing.
+    The JavaScript's `primaryKeyOf` gives the same.
+    """
+    keys = [name for name, field_type in field_types.items() if field_type.get('primaryKey')]
+    names = {column['name'] for column in columns}
+    if not keys or any(name not in names for name in keys):
+        return None
+    return [column['name'] for column in columns if column['name'] in keys]
 
 
 def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _ServeContext, layer_id: str) -> None:
@@ -320,3 +344,6 @@ def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _Serve
         collection['table:columns'] = kept
     else:
         collection.pop('table:columns', None)
+    primary_key = primary_key_of(kept, field_types)
+    if primary_key:
+        collection['quac:primary_key'] = primary_key

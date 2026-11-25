@@ -193,6 +193,13 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | `quac_control_<field>`, buttons or a dropdown | `quac:control` | [control](packages/quac/spec/examples/control/) |
 | `quac_added_message`, the message once a feature is added | `quac:added_message` | [added-message](packages/quac/spec/examples/added-message/) |
 
+**The layer's data**, as QGIS opens it, which the project file does not hold. The QUAC plugin writes these, and QGIS Server's GetProjectSettings reports all but a field's default:
+
+| What the data defines | QUAC field | Example |
+|---|---|---|
+| A field's comment, such as a PostgreSQL column comment | the column's `description` | |
+| The layer's primary key, a field's length and precision, and a default the data source states for a field | `quac:primary_key`, `quac:length`, `quac:precision` and `quac:filled_by_data` | [field-facts](packages/quac/spec/examples/field-facts/) |
+
 The [field reference](packages/quac/spec/README.md) gives each field's full shape, and the fields that other sources, such as WFS and ArcGIS, write.
 
 ## Try it

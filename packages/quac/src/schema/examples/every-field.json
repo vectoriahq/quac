@@ -38,7 +38,13 @@
       "quac:locks": { "add": { "expression": "\"status\" = 'surveyed'" }, "delete": true },
       "quac:added_message": "<h2>Thank you</h2><p>Your tree is on the map.</p>",
       "quac:form_order": ["tree_id", "species", "status", "label", "heritage", "photo", "removal_reason"],
+      "quac:primary_key": ["fid"],
       "table:columns": [
+        {
+          "name": "fid",
+          "type": "long",
+          "quac:filled_by_data": true
+        },
         {
           "name": "tree_id",
           "quac:editable": false,
@@ -61,6 +67,8 @@
         {
           "name": "height",
           "type": "double",
+          "quac:length": 5,
+          "quac:precision": 2,
           "quac:range": { "min": 0, "max": 80, "step": 0.5, "precision": 1, "suffix": " m" },
           "quac:constraints": {
             "not_null": "warn",

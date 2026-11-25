@@ -115,6 +115,8 @@ export interface WmsLayer {
   styles: WmsStyle[]
   /** Attribute schema (vector layers; empty for raster). */
   attributes: WmsAttribute[]
+  /** The names of the fields of the layer's primary key, as `<PrimaryKey>` lists them; empty where it lists none. */
+  primaryKey: string[]
   /** Display name in the layer panel. */
   treeName: string
 }

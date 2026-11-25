@@ -145,6 +145,9 @@ def _apply_to_collection(collection: dict[str, Any], answer: LayerAnswer) -> dic
                 collection.pop('table:columns', None)
             if collection.get('quac:display_field') in hidden:
                 del collection['quac:display_field']
+            # Part of a key identifies nothing, so a key with a field they may not see is left out whole.
+            if any(name in hidden for name in collection.get('quac:primary_key') or []):
+                del collection['quac:primary_key']
             locks = collection.get('quac:locks')
             if isinstance(locks, dict):
                 collection['quac:locks'] = {edit: True if isinstance(lock, dict) and _mentions_any(lock.get('expression'), hidden) else lock for edit, lock in locks.items()}

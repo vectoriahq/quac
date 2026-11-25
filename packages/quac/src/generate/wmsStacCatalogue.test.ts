@@ -323,3 +323,23 @@ describe('generateStacCatalogueFromWms — field comments', () => {
     expect(columns.filter((column) => 'description' in column).map((column) => column.name)).toEqual(['tagger_moniker'])
   })
 })
+
+describe('generateStacCatalogueFromWms — field sizes and the primary key', () => {
+  function graffiti(xml: string) {
+    return collectCatalogueCollections(generateStacCatalogueFromWms(parseGetProjectSettings(xml))).find((entry) => entry.title === 'Graffiti Reports')!
+  }
+
+  it("writes a text field's length, and none for a field GetProjectSettings gives 0 or a yes/no field", () => {
+    const xml = fixtureXml.replace('length="0" comment="" typeName="String" editType="TextEdit" precision="0" name="incident_uid"', 'length="36" comment="" typeName="String" editType="TextEdit" precision="0" name="incident_uid"')
+    expect(xml).not.toBe(fixtureXml)
+    const columns = graffiti(xml)['table:columns'] as Array<{ name: string, 'quac:length'?: number }>
+    expect(columns.filter((column) => 'quac:length' in column).map((column) => [column.name, column['quac:length']])).toEqual([['incident_uid', 36]])
+  })
+
+  it('writes the primary key GetProjectSettings lists, and none where a field of it is not among the attributes', () => {
+    const withKey = (names: string[]) => fixtureXml.replace('</Attributes>', `</Attributes><PrimaryKey>${names.map((name) => `<PrimaryKeyAttribute>${name}</PrimaryKeyAttribute>`).join('')}</PrimaryKey>`)
+    expect(graffiti(withKey(['incident_uid']))['quac:primary_key']).toEqual(['incident_uid'])
+    expect(graffiti(withKey(['incident_uid', 'fid']))).not.toHaveProperty('quac:primary_key')
+    expect(graffiti(fixtureXml)).not.toHaveProperty('quac:primary_key')
+  })
+})

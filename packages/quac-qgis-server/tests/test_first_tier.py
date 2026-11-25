@@ -12,7 +12,7 @@ import json
 import unittest
 from typing import Any
 
-from quac_server import read_server_catalogue
+from quac_server import generate_server_stac_catalogue, parse_qgs_xml, read_project_xml
 
 from .declared import DECLARED, QUAC_PACKAGE
 
@@ -65,7 +65,8 @@ class FirstTierMatchesTheJavaScript(unittest.TestCase):
             with self.subTest(example=name):
                 manifest = json.loads((EXAMPLES / name / 'example.json').read_text(encoding='utf-8'))
                 path = EXAMPLES / name / manifest['input']
-                catalogue = read_server_catalogue(path.name, path.read_bytes(), manifest.get('endpoint', SERVER_ADDRESS))
+                project = parse_qgs_xml(read_project_xml(path.name, path.read_bytes()))
+                catalogue = generate_server_stac_catalogue(project, manifest.get('endpoint', SERVER_ADDRESS), field_types=manifest.get('fieldTypes'))
                 self.assertEqual(essentials(catalogue), essentials(saved))
 
 

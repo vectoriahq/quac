@@ -550,6 +550,28 @@ export function withDataType(column: TableColumn): TableColumn {
   return { ...column, data_type: DATA_TYPE_BY_COLUMN_TYPE[type as TableColumnType] }
 }
 
+/** The column types a length applies to: text and numbers. */
+const SIZED_COLUMN_TYPES: ReadonlySet<string> = new Set(['string', 'int', 'long', 'double'])
+
+/**
+ * The column with `quac:length` and `quac:precision` as its data defines the
+ * field: a length for a text or number column, a precision for a `double`
+ * one, each where it is a whole number above nothing. QGIS gives 0 or -1
+ * where the data defines none, and a length for other types too, such as 1
+ * for a GeoPackage boolean, which says nothing about the values it holds.
+ */
+export function withFieldSize(column: TableColumn, length: number | undefined, precision: number | undefined): TableColumn {
+  const sized: TableColumn = { ...column }
+  const type = column.type ?? ''
+  if (SIZED_COLUMN_TYPES.has(type) && isWholeAboveNothing(length)) sized['quac:length'] = length
+  if (type === 'double' && isWholeAboveNothing(precision)) sized['quac:precision'] = precision
+  return sized
+}
+
+function isWholeAboveNothing(value: number | undefined): value is number {
+  return Number.isSafeInteger(value) && (value as number) > 0
+}
+
 /**
  * Reads `quac:active_collection` back off a Catalog: the id of the Collection
  * the map opens with as the active layer, or null where the source names none.
