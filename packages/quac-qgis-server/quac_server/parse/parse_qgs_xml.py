@@ -15,6 +15,7 @@ from .parse_layers import parse_project_layers
 from .parse_legend_tree import parse_legend_tree
 from .parse_measurement import parse_project_measurement
 from .parse_mergin import parse_mergin_filters
+from .parse_print_layouts import parse_print_layouts
 from .parse_qfield_sync import parse_initial_active_layer_id, parse_wfs_transaction_layers
 from .parse_relations import parse_project_relations
 from .parse_wms_publishing import parse_wms_crs_list, parse_wms_publishing
@@ -61,6 +62,7 @@ def parse_qgs_xml(xml_text: str) -> QgsProject:
         wms_publishing=parse_wms_publishing(qgis_root),
         wms_crs_list=parse_wms_crs_list(qgis_root),
         mergin_filters=parse_mergin_filters(qgis_root),
+        print_layouts=parse_print_layouts(qgis_root),
     )
 
 

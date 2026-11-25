@@ -18,6 +18,7 @@ import re
 import unittest
 import zipfile
 from typing import Any, Iterator, Optional
+from xml.etree import ElementTree  # nosec B405
 from xml.sax.saxutils import escape, quoteattr
 
 from quac_server.generate.stac_catalogue import is_project_relative_folder
@@ -69,8 +70,8 @@ def web_layer_xml(layer_id: str, name: str, source: str, provider: str = 'wms') 
     </maplayer>'''
 
 
-def project_xml(groups: dict[str, list[tuple[str, str]]], layers: list[str], top: tuple[tuple[str, str], ...] = ()) -> bytes:
-    """A project: `groups` maps a group's name to its layers' ids and names, and `top` lists layers outside any group."""
+def project_xml(groups: dict[str, list[tuple[str, str]]], layers: list[str], top: tuple[tuple[str, str], ...] = (), layouts: str = '') -> bytes:
+    """A project: `groups` maps a group's name to its layers' ids and names, `top` lists layers outside any group, and `layouts` is its `<Layouts>` element's content."""
     tree = ''.join(f'<layer-tree-layer id={quoteattr(layer_id)} name={quoteattr(name)} checked="Qt::Checked"/>' for layer_id, name in top)
     for group, members in groups.items():
         inner = ''.join(f'<layer-tree-layer id={quoteattr(layer_id)} name={quoteattr(name)} checked="Qt::Checked"/>' for layer_id, name in members)
@@ -80,6 +81,7 @@ def project_xml(groups: dict[str, list[tuple[str, str]]], layers: list[str], top
   <title>Parks</title>
   <layer-tree-group>{tree}</layer-tree-group>
   <projectlayers>{''.join(layers)}</projectlayers>
+  <Layouts>{layouts}</Layouts>
 </qgis>
 '''.encode('utf-8')
 
@@ -183,7 +185,17 @@ def resolve(document_path: str, href: str) -> str:
 
 
 def strings(value: Any) -> Iterator[str]:
-    if isinstance(value, str):
+    """Every string in a document, with a print layout's template read as the names, values and text it holds."""
+    if isinstance(value, str) and value.startswith('<Layout'):
+        for element in ElementTree.fromstring(value).iter():  # nosec B314
+            yield element.tag
+            for name, attribute in element.attrib.items():
+                yield name
+                yield attribute
+            for text in (element.text, element.tail):
+                if text and text.strip():
+                    yield text
+    elif isinstance(value, str):
         yield value
     elif isinstance(value, list):
         for item in value:
@@ -734,11 +746,21 @@ class NoPathOrPasswordIsWritten(unittest.TestCase):
             with_attachment(with_attachment(with_attachment(with_attachment(with_attachment(
                 layer_xml('n_14', 'Attachments', './n.geojson', fields=('a', 'b', 'c', 'd', 'e')),
                 'a', '/home/someone/maps/photos'), 'b', 'C:\\Users\\someone\\photos'), 'c', '\\\\server\\someone'), 'd', 'file:///home/someone/photos'), 'e', '~/photos'),
-        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user'), ('h_8', 'WMS user'), ('i_9', 'WMS keys'), ('j_10', 'WMS sign-in'), ('k_11', 'WMS open'), ('l_12', 'Icons'), ('m_13', 'WFS layer'), ('n_14', 'Attachments')))
+        ], top=(('a_1', 'Database'), ('b_2', 'Web'), ('c_3', 'Online'), ('d_4', 'Elsewhere'), ('e_5', 'Here'), ('f_6', 'Windows'), ('g_7', 'Lookup user'), ('h_8', 'WMS user'), ('i_9', 'WMS keys'), ('j_10', 'WMS sign-in'), ('k_11', 'WMS open'), ('l_12', 'Icons'), ('m_13', 'WFS layer'), ('n_14', 'Attachments')), layouts=(
+            '<Layout name="Plan" units="mm">'
+            '<LayoutItem type="65640" file="/home/someone/maps/logo.png"/>'
+            '<LayoutItem type="65640" file="C:/Users/someone/logo.png"/>'
+            '<LayoutItem type="65639"><LayerSet>'
+            '<Layer name="Database" source="dbname=\'parks\' user=\'editor\' password=\'secret\'" provider="postgres">a_1</Layer>'
+            '</LayerSet></LayoutItem>'
+            '<Atlas enabled="1" coverageLayer="a_1" coverageLayerName="Database" coverageLayerSource="dbname=\'parks\' user=\'editor\' password=\'secret\'" coverageLayerProvider="postgres"/>'
+            '</Layout>'
+        ))
         publication = publish.plan_publication('Parks.qgs', project, {}, {}, '/home/someone/maps', '/home/someone/maps', {}, {}.get, posixpath)
         self.assertEqual([layer.name for layer in publication.left_out], ['Database', 'Web', 'Online', 'Elsewhere', 'Windows', 'WMS user', 'WMS keys', 'WMS sign-in'])
         self.assertIn('https://maps.example.test/wms', json.dumps(documents(publication)))
         self.assertEqual([dropped.field for dropped in publication.dropped_folders], ['a', 'b', 'c', 'd', 'e'])
+        self.assertIn('Plan', json.dumps(documents(publication)))
         self.check(publication, ('someone', 'secret', 'editor', 'ab12cd3'))
 
 

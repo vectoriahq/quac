@@ -24,8 +24,41 @@ export interface WmsProject {
   layerTree: WmsLayerTreeNode[]
   /** Names of layers exposed via WFS (subset of the layer tree). */
   wfsLayerNames: string[]
+  /** The print layouts the server can print with GetPrint, in the order it lists them. */
+  printLayouts: WmsPrintLayout[]
   /** Full source XML, retained so future enhancements can re-mine. */
   rawXml: string | null
+}
+
+/**
+ * A print layout as GetProjectSettings lists it, in `<ComposerTemplates>`
+ * (`getComposerTemplatesElement`, `src/server/services/wms/qgswmsgetcapabilities.cpp`,
+ * `qgis/QGIS@master`, read 2026-11-25). Sizes are in millimetres.
+ */
+export interface WmsPrintLayout {
+  /** The layout's name: GetPrint's `TEMPLATE`. */
+  name: string
+  /** The first page's width. */
+  width: number
+  /** The first page's height. */
+  height: number
+  /** Whether the layout's atlas is on: GetPrint's `ATLAS_PK` then prints chosen features. */
+  isAtlasEnabled: boolean
+  /** The atlas's coverage layer, by the name GetPrint's `LAYERS` uses; null when none is listed. */
+  atlasCoverageLayer: string | null
+  /** The layout's map items. */
+  maps: WmsPrintLayoutMap[]
+  /** The IDs of the layout's labels; a label with no ID is not listed. */
+  labelIds: string[]
+}
+
+export interface WmsPrintLayoutMap {
+  /** The map item's name in GetPrint parameters, such as `map0` in `map0:EXTENT`. */
+  name: string
+  /** The map item's name in the layout, as QGIS shows it. */
+  itemName: string
+  width: number
+  height: number
 }
 
 export interface WmsBoundingBox {

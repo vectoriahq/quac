@@ -393,6 +393,14 @@ class ProjectMetadata:
 
 
 @dataclass
+class PrintLayoutTemplate:
+    """A print layout as its name and its `<Layout>` element, which is a QGIS layout template."""
+
+    name: str
+    template: str
+
+
+@dataclass
 class QgsProject:
     layers: list[LayerEntry]
     layer_tree: LayerGroup
@@ -410,3 +418,4 @@ class QgsProject:
     mergin_filters: list[PresetFilter] = field(default_factory=list)
     # The project's area and distance units, None where it saves neither.
     measurement: Optional[ProjectMeasurement] = None
+    print_layouts: list[PrintLayoutTemplate] = field(default_factory=list)

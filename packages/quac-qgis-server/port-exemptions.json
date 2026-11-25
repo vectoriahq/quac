@@ -23,6 +23,7 @@
       "withSelfLink": "The server route writes no self address of its own.",
       "readCatalogueActiveCollection": "A reader of a catalogue, for an application, not a producer.",
       "readCatalogueInitialView": "A reader of a catalogue, for an application, not a producer.",
+      "readCataloguePrintLayouts": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionDisplayField": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldAliases": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionFieldComments": "A reader of a catalogue, for an application, not a producer.",

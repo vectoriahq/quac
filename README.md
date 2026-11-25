@@ -174,6 +174,7 @@ Each setting below has an example under [`packages/quac/spec/examples/`](package
 | The map view saved with the project | `quac:initial_view` | [initial-view](packages/quac/spec/examples/initial-view/) |
 | QGIS Server: a layer's published names | `quac:qgis_server_wms_name` and `quac:qgis_server_wfs_type_name` | [server-names](packages/quac/spec/examples/server-names/) |
 | QGIS Server: WMS CRS restrictions | `quac:wms_crs` | [server-wms-crs](packages/quac/spec/examples/server-wms-crs/) |
+| Layout Manager: the print layouts, less those under QGIS Server's Exclude layouts | `quac:print_layouts` | [print-layouts](packages/quac/spec/examples/print-layouts/) |
 
 **The field apps' QGIS plugins**, which save their settings in the project:
 

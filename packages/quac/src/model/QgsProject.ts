@@ -69,8 +69,19 @@ export interface QgsProject {
    * notes are not written into the catalogue.
    */
   notes?: ProjectNote[]
+  /**
+   * The project's print layouts, in its order (`parsePrintLayouts`); absent or
+   * empty where it has none.
+   */
+  printLayouts?: PrintLayoutTemplate[]
   /** Original full QGS XML, retained so future parsers can re-mine without re-loading. */
   rawXml: string | null
+}
+
+/** A print layout as its name and its `<Layout>` element, which is a QGIS layout template. */
+export interface PrintLayoutTemplate {
+  name: string
+  template: string
 }
 
 /**
