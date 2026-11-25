@@ -8,4 +8,4 @@ A made-up project holding the project- and layer-level settings a catalogue carr
 - an ArcGIS FeatureServer layer with a `sql=` filter, and a WFS layer whose `srsname` is blank;
 - Mergin Maps filters: two kept, one `Text` filter, one on a field the layer does not have, one with a blank `sql_expression`, and one on the left-out layer.
 
-The data files it names are not here: the fixture is read from its text alone. Tests read the files saved beside it; change them only when the tested parser or catalogue contract changes.
+The data files it names are not here: the fixture is read from its text alone. Its layer ids have the shape QGIS writes, a name and a long suffix: QGIS Server 3.44 and 4.2 left this fixture's layers out of GetCapabilities while their ids were as short as `trees_1`, and QGIS Server 3.34 does the same to a layer whose data file is missing when its id is shorter than 11 characters. Tests read the files saved beside it; change them only when the tested parser or catalogue contract changes.

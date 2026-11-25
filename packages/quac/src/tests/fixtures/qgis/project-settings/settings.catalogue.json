@@ -15,25 +15,25 @@
     },
     {
       "rel": "child",
-      "href": "./collections/trees_1.json",
+      "href": "./collections/trees_7d3b4f60.json",
       "type": "application/json",
       "title": "Trees"
     },
     {
       "rel": "child",
-      "href": "./collections/inspections_1.json",
+      "href": "./collections/inspections_a8e12b9c.json",
       "type": "application/json",
       "title": "Inspections"
     },
     {
       "rel": "child",
-      "href": "./collections/parcels_1.json",
+      "href": "./collections/parcels_5c2e9a41.json",
       "type": "application/json",
       "title": "Parcels"
     },
     {
       "rel": "child",
-      "href": "./collections/parks_1.json",
+      "href": "./collections/parks_3e8b1c72.json",
       "type": "application/json",
       "title": "Parks"
     }
@@ -42,7 +42,7 @@
     {
       "type": "Collection",
       "stac_version": "1.1.0",
-      "id": "trees_1",
+      "id": "trees_7d3b4f60",
       "title": "Trees",
       "description": "Layer \"Trees\" from the QGIS project.",
       "license": "other",
@@ -82,7 +82,7 @@
           "proj:code": "EPSG:4326"
         },
         "By species": {
-          "href": "./settings.qgs#trees_1/By%20species",
+          "href": "./settings.qgs#trees_7d3b4f60/By%20species",
           "type": "application/x-qgis-qml+xml",
           "title": "By species",
           "roles": [
@@ -92,7 +92,7 @@
           "quac:categorised_field": "species"
         },
         "By age": {
-          "href": "./settings.qgs#trees_1/By%20age",
+          "href": "./settings.qgs#trees_7d3b4f60/By%20age",
           "type": "application/x-qgis-qml+xml",
           "title": "By age",
           "roles": [
@@ -101,7 +101,7 @@
           "quac:categorised_field": "age"
         },
         "Plain": {
-          "href": "./settings.qgs#trees_1/Plain",
+          "href": "./settings.qgs#trees_7d3b4f60/Plain",
           "type": "application/x-qgis-qml+xml",
           "title": "Plain",
           "roles": [
@@ -112,7 +112,7 @@
       "links": [
         {
           "rel": "self",
-          "href": "./collections/trees_1.json"
+          "href": "./collections/trees_7d3b4f60.json"
         },
         {
           "rel": "parent",
@@ -180,7 +180,7 @@
     {
       "type": "Collection",
       "stac_version": "1.1.0",
-      "id": "inspections_1",
+      "id": "inspections_a8e12b9c",
       "title": "Inspections",
       "description": "Layer \"Inspections\" from the QGIS project.",
       "license": "other",
@@ -222,7 +222,7 @@
       "links": [
         {
           "rel": "self",
-          "href": "./collections/inspections_1.json"
+          "href": "./collections/inspections_a8e12b9c.json"
         },
         {
           "rel": "parent",
@@ -246,7 +246,7 @@
         {
           "id": "tree_inspections",
           "name": "Inspections",
-          "parent_collection_id": "trees_1",
+          "parent_collection_id": "trees_7d3b4f60",
           "fields": [
             {
               "parent": "tree_id",
@@ -260,7 +260,7 @@
         },
         {
           "id": "parcel_inspections",
-          "parent_collection_id": "parcels_1",
+          "parent_collection_id": "parcels_5c2e9a41",
           "fields": [
             {
               "parent": "parcel_id",
@@ -298,7 +298,7 @@
     {
       "type": "Collection",
       "stac_version": "1.1.0",
-      "id": "parcels_1",
+      "id": "parcels_5c2e9a41",
       "title": "Parcels",
       "description": "Layer \"Parcels\" from the QGIS project.",
       "license": "other",
@@ -341,7 +341,7 @@
       "links": [
         {
           "rel": "self",
-          "href": "./collections/parcels_1.json"
+          "href": "./collections/parcels_5c2e9a41.json"
         },
         {
           "rel": "parent",
@@ -391,7 +391,7 @@
     {
       "type": "Collection",
       "stac_version": "1.1.0",
-      "id": "parks_1",
+      "id": "parks_3e8b1c72",
       "title": "Parks",
       "description": "Layer \"Parks\" from the QGIS project.",
       "license": "other",
@@ -433,7 +433,7 @@
       "links": [
         {
           "rel": "self",
-          "href": "./collections/parks_1.json"
+          "href": "./collections/parks_3e8b1c72.json"
         },
         {
           "rel": "parent",
