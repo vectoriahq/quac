@@ -198,6 +198,12 @@ export interface TableColumn {
   'quac:editable_when'?: string
   /** The `https://` address of the icon drawn beside the column's name. */
   'quac:icon'?: string
+  /** The most characters a text column holds, or the most digits a number column holds, as its data defines the field. */
+  'quac:length'?: number
+  /** The most digits after the decimal point a number column holds, as its data defines the field. */
+  'quac:precision'?: number
+  /** Written only as `true`: the data gives the column a value of its own when a new feature leaves it empty. */
+  'quac:filled_by_data'?: true
   /** The control the source asks the edit form to draw the column's choices with. */
   'quac:control'?: 'buttons' | 'dropdown'
   /** Written only as `true`: the source's form puts the column's name above its value. */

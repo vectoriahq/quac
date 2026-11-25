@@ -40,6 +40,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+from typing import Any
 from xml.etree import ElementTree
 
 PACKAGE = Path(__file__).resolve().parents[2]
@@ -84,8 +85,13 @@ def catalogue_request(base: str, map_value: str, headers: dict[str, str] | None 
     return status, body, received.get('x-quac-cache', ''), elapsed
 
 
-def reported_field_types(base: str, map_value: str, project_text: str, **params: str) -> dict[str, dict[str, dict[str, str]]]:
-    """Each layer's field types and comments as GetProjectSettings reports them, by layer id, as the server route takes them."""
+def reported_field_types(base: str, map_value: str, project_text: str, **params: str) -> dict[str, dict[str, dict[str, Any]]]:
+    """
+    What GetProjectSettings reports for each layer's fields, by layer id, as
+    the server route takes it: each field's type, comment, length and
+    precision, and whether it is part of the layer's primary key. It does not
+    report whether the data fills a field (`filledByData`).
+    """
     status, body, _, _ = request(base, map_value, SERVICE='WMS', VERSION='1.3.0', REQUEST='GetProjectSettings', **params)
     if status != 200:
         return {}
@@ -96,16 +102,46 @@ def reported_field_types(base: str, map_value: str, project_text: str, **params:
         name = next((child.text or '' for child in children(layer, 'Name')), None)
         if name is None:
             continue
+        key = {(item.text or '').strip() for block in children(layer, 'PrimaryKey') for item in children(block, 'PrimaryKeyAttribute')}
         by_name[name] = {
-            attribute.get('name'): {'type': attribute.get('type') or '', 'typeName': attribute.get('typeName') or '', 'comment': attribute.get('comment') or ''}
+            attribute.get('name'): {
+                'type': attribute.get('type') or '',
+                'typeName': attribute.get('typeName') or '',
+                'comment': attribute.get('comment') or '',
+                'length': whole_number(attribute.get('length')),
+                'precision': whole_number(attribute.get('precision')),
+                'primaryKey': attribute.get('name') in key,
+            }
             for block in children(layer, 'Attributes') for attribute in children(block, 'Attribute') if attribute.get('name')
         }
+        # GetProjectSettings lists every field of the key, a field it leaves out of the attributes among them, as QGIS gives the plugin.
+        for missing in key - set(by_name[name]):
+            by_name[name][missing] = {'type': '', 'typeName': '', 'primaryKey': True}
     tree = server_layer_tree(parse_qgs_xml(project_text))
     types = {}
     for node in walk(tree['children']):
         if node['kind'] == 'layer' and node['wmsName'] in by_name:
             types[node['id']] = by_name[node['wmsName']]
     return types
+
+
+def whole_number(text: str | None) -> int:
+    """An attribute's whole number, or 0 where it holds none."""
+    try:
+        return int(text or '0')
+    except ValueError:
+        return 0
+
+
+def without_filled_by_data(catalogue: dict) -> tuple[dict, int]:
+    """The catalogue less each column's `quac:filled_by_data`, which GetProjectSettings does not report, and how many columns carried it."""
+    served = json.loads(json.dumps(catalogue))
+    count = 0
+    for collection in collections(served):
+        for column in collection.get('table:columns', []):
+            if column.pop('quac:filled_by_data', None) is not None:
+                count += 1
+    return served, count
 
 
 def walk(nodes: list[dict]):
@@ -163,9 +199,10 @@ def check_catalogue(base: str, map_value: str, project_text: str, label: str, ne
             field_types=reported_field_types(base, map_value, project_text),
             layer_wgs84_extents=served_boxes(catalogue, project_text),
         )
-        entry['matchesPython'] = catalogue == expected
+        comparable, entry['filledByData'] = without_filled_by_data(catalogue)
+        entry['matchesPython'] = comparable == expected
         if not entry['matchesPython']:
-            failures.append(f'{label}: the served catalogue differs from the one the Python builds from the same text: {first_difference(expected, catalogue)}')
+            failures.append(f'{label}: the served catalogue differs from the one the Python builds from the same text: {first_difference(expected, comparable)}')
         entry['typedColumns'] = sum(1 for collection in collections(catalogue) for column in collection.get('table:columns', []) if 'type' in column)
         leaks = leak_failures(catalogue, project_text, address)
         entry['leaks'] = leaks

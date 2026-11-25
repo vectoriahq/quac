@@ -240,6 +240,29 @@ describe('generateServerStacCatalogue', () => {
     expect(description('planted')).toBeUndefined()
   })
 
+  it("writes each field's length, precision and filling by its data, and the layer's primary key, as QGIS gives them", () => {
+    const fieldTypes = {
+      [TREES_ID]: {
+        tree_id: { type: 'qlonglong', typeName: 'Integer64', length: 10, precision: 0, filledByData: true, primaryKey: true },
+        species: { type: 'QString', typeName: 'String', length: 50, precision: -1 },
+        planted: { type: 'QDate', typeName: 'Date', length: 10 }
+      }
+    }
+    const trees = byId(JSON.parse(JSON.stringify(generateServerStacCatalogue(parseQgsXml(project()), { serverAddress: SERVER, fieldTypes }))) as StacCatalog).get('Street trees')!
+    const columns = new Map((trees['table:columns'] as TableColumn[]).map((column) => [column.name, column]))
+    expect(columns.get('tree_id')).toMatchObject({ 'quac:length': 10, 'quac:filled_by_data': true })
+    expect(columns.get('tree_id')).not.toHaveProperty('quac:precision')
+    expect(columns.get('species')).toMatchObject({ 'quac:length': 50 })
+    expect(columns.get('planted')).not.toHaveProperty('quac:length')
+    expect(trees['quac:primary_key']).toEqual(['tree_id'])
+  })
+
+  it('writes no primary key where a field of it is not among the columns', () => {
+    const fieldTypes = { [TREES_ID]: { tree_id: { type: 'qlonglong', typeName: 'Integer64', primaryKey: true }, register: { type: 'QString', typeName: 'String', primaryKey: true } } }
+    const trees = byId(JSON.parse(JSON.stringify(generateServerStacCatalogue(parseQgsXml(project()), { serverAddress: SERVER, fieldTypes }))) as StacCatalog).get('Street trees')!
+    expect(trees).not.toHaveProperty('quac:primary_key')
+  })
+
   it('takes the box of a layer whose project saves none from QGIS Server, and covers only the served layers at the top', () => {
     const box = { xmin: 115.8, ymin: -32.0, xmax: 115.9, ymax: -31.9 }
     const away = { xmin: 0, ymin: 0, xmax: 1, ymax: 1 }

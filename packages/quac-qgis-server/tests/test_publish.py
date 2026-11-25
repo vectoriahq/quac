@@ -309,6 +309,18 @@ class FieldTypes(unittest.TestCase):
         self.assertNotIn('description', columns['id'])
 
 
+    def test_writes_field_sizes_filling_by_data_and_the_primary_key_qgis_gives(self) -> None:
+        publication = plan(parks_project(), field_types={'parks_1': {
+            'id': {'type': 'qlonglong', 'typeName': 'Integer64', 'filledByData': True, 'primaryKey': True},
+            'name': {'type': 'QString', 'typeName': 'String', 'length': 80},
+        }})
+        _name, parks = collection(publication, 'parks_1')
+        columns = {column['name']: column for column in parks['table:columns']}
+        self.assertEqual(parks['quac:primary_key'], ['id'])
+        self.assertIs(columns['id']['quac:filled_by_data'], True)
+        self.assertEqual(columns['name']['quac:length'], 80)
+
+
 class DataFiles(unittest.TestCase):
     FILES = {
         f'{PROJECT_FOLDER}/publish/vector/parks.geojson': publish.DataFile(2048, '2026-11-20T01:02:03Z'),

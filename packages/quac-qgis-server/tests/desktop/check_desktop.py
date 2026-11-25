@@ -25,7 +25,9 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
 6. through the Processing algorithm, on two made-up project files one after
    the other, as batch mode runs them, and on a file that is not a project,
    checking the project on screen is untouched;
-7. after `unload`, and checks nothing more is written, the menu action and the
+7. a project of its own holding a GeoPackage layer, and checks its primary
+   key, its feature id filled by the data, and a text field's length;
+8. after `unload`, and checks nothing more is written, the menu action and the
    Processing provider are gone.
 
 It also draws the QUAC page of Project Properties and, given a path, saves it
@@ -66,12 +68,16 @@ from qgis.core import (  # noqa: E402
     QgsEditFormConfig,
     QgsEditorWidgetSetup,
     QgsExpression,
+    QgsFeature,
+    QgsGeometry,
     QgsOptionalExpression,
+    QgsPointXY,
     QgsProcessingException,
     QgsProcessingFeedback,
     QgsProject,
     QgsRasterLayer,
     QgsRectangle,
+    QgsVectorFileWriter,
     QgsVectorLayer,
 )
 from qgis.gui import QgsMapCanvas  # noqa: E402
@@ -180,6 +186,42 @@ class Feedback(QgsProcessingFeedback):
 
     def pushInfo(self, text: str) -> None:  # noqa: N802 - QGIS's name
         self.infos.append(text)
+
+
+def check_field_facts(home: Path) -> None:
+    """
+    Saves a made-up project holding one GeoPackage layer, with a text field of
+    at most 20 characters, writes its catalogue, and checks what QGIS gives
+    about the layer's data beyond the project's text: the feature id column as
+    the primary key, filled by the data, and the text field's length.
+    """
+    from quac.desktop import write_catalogue
+
+    home.mkdir(parents=True)
+    data = home / 'sites.gpkg'
+    source = QgsVectorLayer('Point?crs=EPSG:4326&field=name:string(20)', 'sites', 'memory')
+    feature = QgsFeature(source.fields())
+    feature.setAttributes(['Site A'])
+    feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(115.85, -31.95)))
+    source.dataProvider().addFeatures([feature])
+    options = QgsVectorFileWriter.SaveVectorOptions()
+    options.driverName = 'GPKG'
+    options.layerName = 'sites'
+    written = QgsVectorFileWriter.writeAsVectorFormatV3(source, str(data), QgsProject.instance().transformContext(), options)
+    sites = QgsVectorLayer(f'{data}|layername=sites', 'Sites', 'ogr')
+    check(sites.isValid(), f'QGIS writes and opens the made-up GeoPackage: {written}')
+    project = QgsProject()
+    project.addMapLayer(sites)
+    project.setFileName(str(home / 'Sites.qgs'))
+    check(project.write(), 'the GeoPackage project saves')
+    _folder, publication = write_catalogue(project, str(home))
+    documents = [json.loads(content) for name, content in publication.files if name.endswith('.json')]
+    collection = next((document for document in documents if document.get('type') == 'Collection'), {})
+    columns = {column['name']: column for column in collection.get('table:columns', [])}
+    check(collection.get('quac:primary_key') == ['fid'], f"the GeoPackage layer's primary key is its feature id: {collection.get('quac:primary_key')}")
+    check(columns.get('fid', {}).get('quac:filled_by_data') is True, f"the feature id is filled by the data: {columns.get('fid')}")
+    check(columns.get('name', {}).get('quac:length') == 20, f"the text field holds at most 20 characters: {columns.get('name')}")
+    project.clear()
 
 
 def start_processing() -> Any:
@@ -463,7 +505,10 @@ def main() -> int:
             missing_error = str(error)
         check('its folder does not exist' in missing_error and 'not-made' in missing_error, f"Beta, with no folder given, names its own chosen folder, which does not exist: {missing_error}")
 
-        # 7. After unload.
+        # 7. A GeoPackage layer, in a project of its own.
+        check_field_facts(work / 'Sites Project')
+
+        # 8. After unload.
         project.writeEntry('quac', 'catalogue/write_on_save', True)
         plugin.unload()
         check(iface.factories == [], 'unload unregisters the page')

@@ -109,6 +109,7 @@ def leak_failures(catalogue: dict[str, Any], project_text: str, server_address: 
                 failures.append(f'the hidden field {column["name"]!r} is a column of {name!r}')
         if collection.get('quac:display_field') in hidden:
             failures.append(f'the hidden field {collection["quac:display_field"]!r} is the display field of {name!r}')
+        failures += [f'the hidden field {field!r} is in the primary key of {name!r}' for field in collection.get('quac:primary_key') or [] if field in hidden]
         for text in _strings(collection.get('quac:locks', {})):
             failures += [f'a lock of {name!r} names the hidden field {field!r}' for field in hidden if _mentions(text, field)]
         served_ids = {served['id'] for served in _collections(catalogue)}
@@ -159,6 +160,10 @@ def _access_failures(catalogue: dict[str, Any], access: dict[str, Any], every_st
             display = collection.get('quac:display_field')
             if display is not None and display not in answer.fields:
                 failures.append(f'the field {display!r}, which the person may not see, is the display field of {collection["id"]!r}')
+            failures += [
+                f'the field {field!r}, which the person may not see, is in the primary key of {collection["id"]!r}'
+                for field in collection.get('quac:primary_key') or [] if field not in answer.fields
+            ]
         for column, relation in _value_relations(collection):
             lookup_answer = access.get(relation.get('collection'))
             if lookup_answer is None or not lookup_answer.read:

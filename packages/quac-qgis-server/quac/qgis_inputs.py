@@ -1,4 +1,4 @@
-"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, each field's type and its data's comment, each layer's WGS84 box, and the map canvas extent in WGS84."""
+"""What the plugin reads from QGIS rather than from the project's text: the stored text itself, what QGIS gives for each field, each layer's WGS84 box, and the map canvas extent in WGS84."""
 
 from __future__ import annotations
 
@@ -53,18 +53,38 @@ def qt_type_name(field: Any) -> str:
     return name.decode() if isinstance(name, bytes) else str(name)
 
 
-def field_types(project: Any) -> dict[str, dict[str, dict[str, str]]]:
+def field_types(project: Any) -> dict[str, dict[str, dict[str, Any]]]:
     """
-    Each valid vector layer's fields' types, with the comment the field's data
-    holds, such as a PostgreSQL column comment (`QgsField.comment`), by layer
-    id and field name, as the server route takes them and as GetProjectSettings
-    reports them.
+    What QGIS gives for each field of each valid vector layer, by layer id and
+    field name, as the server route takes it (`with_field_type`): the field's
+    type, the comment its data holds, such as a PostgreSQL column comment, its
+    length and precision, and whether it is part of the layer's primary key,
+    as GetProjectSettings reports them; and whether its data source states a
+    default for it (`QgsVectorDataProvider.defaultValueClause`, asked by the
+    field's index in the provider), which GetProjectSettings does not report.
     """
-    types: dict[str, dict[str, dict[str, str]]] = {}
+    types: dict[str, dict[str, dict[str, Any]]] = {}
     for layer in project.mapLayers().values():
         if not isinstance(layer, QgsVectorLayer) or not layer.isValid():
             continue
-        types[layer.id()] = {field.name(): {'type': qt_type_name(field), 'typeName': field.typeName(), 'comment': field.comment() or ''} for field in layer.fields()}
+        provider = layer.dataProvider()
+        provider_fields = provider.fields() if provider is not None else None
+        key = set(layer.primaryKeyAttributes())
+        layer_types: dict[str, dict[str, Any]] = {}
+        for index, field in enumerate(layer.fields()):
+            # The data source's own field of that name: a field a join or an expression adds has no default of the source's.
+            provider_index = provider_fields.lookupField(field.name()) if provider_fields is not None else -1
+            clause = provider.defaultValueClause(provider_index) if provider_index >= 0 else ''
+            layer_types[field.name()] = {
+                'type': qt_type_name(field),
+                'typeName': field.typeName(),
+                'comment': field.comment() or '',
+                'length': field.length(),
+                'precision': field.precision(),
+                'filledByData': bool(clause),
+                'primaryKey': index in key,
+            }
+        types[layer.id()] = layer_types
     return types
 
 

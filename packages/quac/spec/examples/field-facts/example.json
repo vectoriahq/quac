@@ -1,0 +1,18 @@
+{
+  "fields": [
+    "quac:primary_key",
+    "quac:length",
+    "quac:precision",
+    "quac:filled_by_data"
+  ],
+  "source": "qgis-server",
+  "input": "project.qgs",
+  "endpoint": "https://qgis.example.com/ows",
+  "fieldTypes": {
+    "sites_1": {
+      "fid": { "type": "qlonglong", "typeName": "Integer64", "length": 0, "precision": 0, "filledByData": true, "primaryKey": true },
+      "name": { "type": "QString", "typeName": "String", "length": 50, "precision": 0 },
+      "height": { "type": "double", "typeName": "Real", "length": 6, "precision": 2 }
+    }
+  }
+}

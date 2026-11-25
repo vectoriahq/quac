@@ -6,7 +6,7 @@ Each folder holds:
 
 - `README.md`: the setting, in the source's own words, what the source file holds, and what the catalogue says;
 - the source: a QGIS project (`project.qgs`), read as a project file or, where `example.json` says `qgis-server`, as the catalogue a QGIS Server serves for it, a WFS service's capabilities as an application parsed them (`capabilities.json`), an ArcGIS item's layers as an application read them (`layers.json`), or, for a field no producer writes, a hand-written catalogue (`catalogue.json`);
-- `example.json`: which fields the example shows and which kind of source it is;
+- `example.json`: which fields the example shows and which kind of source it is, and, for a QGIS Server example, any of what QGIS gives for each field beyond the project's text, under `fieldTypes`;
 - `expected.json`: the catalogue cut down to its tree, each Catalog's and Collection's id, and its `quac:` fields wherever they sit, on the Collection, in its summaries, on an asset, on a link or on a column.
 
 A QGIS layer always carries some fields, such as `quac:editable` and `quac:opacity`, because QGIS saves those settings on every layer. They appear in every QGIS example, and have examples of their own.

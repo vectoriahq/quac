@@ -13,8 +13,9 @@ read a data file's size and last change (`read_data_file`).
 It returns a `Publication`: the files to write, each by its path relative to
 the chosen folder, the files to remove, and what was left out and why.
 
-The catalogue is the project file's (`generate_stac_catalogue`), with each
-column's type from QGIS, and less the names QGIS Server would give a layer. It
+The catalogue is the project file's (`generate_stac_catalogue`), with what
+QGIS gives for each column (`with_field_type`) and the layer's primary key
+(`primary_key_of`), and less the names QGIS Server would give a layer. It
 is written as separate documents (`split_catalogue`): the root Catalog as
 `<project>.stac.json` in the chosen folder, every other document under
 `<project>.stac/`, and each layer's style as
@@ -71,7 +72,7 @@ from urllib.parse import unquote
 
 from .quac_server.generate.normalized_project import build_stac_extent
 from .quac_server.js_compat import url_search_params
-from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
+from .quac_server.generate.server_stac_catalogue import primary_key_of, server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
 from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generate_stac_catalogue, is_project_relative_folder, wms_excluded_layer_ids
 from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
@@ -372,6 +373,9 @@ def plan_publication(
                 _note_local_folder(column, layers_by_id.get(collection['id']), title, publication)
                 kept.append(with_field_type(column, types.get(column['name']), project_comments))
             collection['table:columns'] = kept
+            primary_key = primary_key_of(kept, types)
+            if primary_key:
+                collection['quac:primary_key'] = primary_key
         if project_href is not None:
             collection['links'] = [*collection['links'], {'rel': 'via', 'href': f'./{encode_asset_path(project_href)}', 'title': QGIS_PROJECT_LINK_TITLE}]
     publication.layer_count = sum(1 for _ in _collections(catalogue))
