@@ -85,7 +85,7 @@ def catalogue_request(base: str, map_value: str, headers: dict[str, str] | None 
 
 
 def reported_field_types(base: str, map_value: str, project_text: str, **params: str) -> dict[str, dict[str, dict[str, str]]]:
-    """Each layer's field types as GetProjectSettings reports them, by layer id, as the server route takes them."""
+    """Each layer's field types and comments as GetProjectSettings reports them, by layer id, as the server route takes them."""
     status, body, _, _ = request(base, map_value, SERVICE='WMS', VERSION='1.3.0', REQUEST='GetProjectSettings', **params)
     if status != 200:
         return {}
@@ -97,7 +97,7 @@ def reported_field_types(base: str, map_value: str, project_text: str, **params:
         if name is None:
             continue
         by_name[name] = {
-            attribute.get('name'): {'type': attribute.get('type') or '', 'typeName': attribute.get('typeName') or ''}
+            attribute.get('name'): {'type': attribute.get('type') or '', 'typeName': attribute.get('typeName') or '', 'comment': attribute.get('comment') or ''}
             for block in children(layer, 'Attributes') for attribute in children(block, 'Attribute') if attribute.get('name')
         }
     tree = server_layer_tree(parse_qgs_xml(project_text))

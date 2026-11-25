@@ -39,7 +39,7 @@ import re
 from pathlib import Path
 from typing import Any, Optional
 
-from ..js_compat import encode_uri_component
+from ..js_compat import encode_uri_component, js_trim
 from ..model.qgs_project import BoundingBox, LayerEntry, QgsProject
 from ..model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from ..model.stac_projection import PROJECTION_EXTENSION
@@ -70,8 +70,9 @@ def generate_server_stac_catalogue(
     """
     The catalogue a QGIS Server would serve for `project` from `server_address`.
 
-    `field_types` holds each layer's fields' types as GetProjectSettings reports
-    them, `{'type': ..., 'typeName': ...}` by layer id and field name, and
+    `field_types` holds each layer's fields' types and comments as
+    GetProjectSettings reports them, `{'type': ..., 'typeName': ..., 'comment': ...}`
+    by layer id and field name, the comment optional, and
     `layer_wgs84_extents` the WGS84 box of a layer whose project saves no
     `<wgs84extent>`, by layer id: the two inputs the plugin takes from QGIS
     rather than the project's text, as the JavaScript's `fieldTypes` and
@@ -292,14 +293,19 @@ def _serve_locks(collection: dict[str, Any], hidden: set[str]) -> None:
     }
 
 
-def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]) -> dict[str, Any]:
+def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]], project_comments: dict[str, str]) -> dict[str, Any]:
     """
-    The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ...}`
+    The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ..., 'comment': ...}`
     as `field_types` holds it, and the `data_type` beside it, where QGIS reports one.
-    The plugin's QGIS Desktop catalogue (`quac/publish.py`) gives its columns their types by it too.
+    Its `description` is the comment the field's data holds where the project
+    saves no comment of its own for the field, `project_comments` holding
+    those, a blank one included, as the JavaScript's `withFieldType` does.
+    The plugin's QGIS Desktop catalogue (`quac/publish.py`) gives its columns their types and comments by it too.
     """
     column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', '')) if field_type else None
-    return with_data_type({**column, 'type': column_type}) if column_type else column
+    typed = with_data_type({**column, 'type': column_type}) if column_type else column
+    comment = js_trim(field_type.get('comment') or '') if field_type else ''
+    return {**typed, 'description': comment} if comment and column['name'] not in project_comments else typed
 
 
 def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _ServeContext, layer_id: str) -> None:
@@ -307,7 +313,9 @@ def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _Serve
     if not isinstance(columns, list):
         return
     field_types = context.field_types.get(layer_id, {})
-    kept = [with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
+    layer = context.layers_by_id.get(layer_id)
+    project_comments = layer.field_comments if layer is not None else {}
+    kept = [with_field_type(_serve_column(column, hidden, context), field_types.get(column['name']), project_comments) for column in columns if column['name'] not in hidden]
     if kept:
         collection['table:columns'] = kept
     else:

@@ -9,7 +9,8 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
 
 1. with the option off, and checks nothing is written;
 2. with the option on and `publish/` chosen, and checks the documents, the
-   data hrefs, the QML styles and a categorised one's field, the map
+   data hrefs and the size and last change of Parks's data file, the QML styles
+   and a categorised one's field, the map
    canvas's extent in WGS84 as the initial view, a default and the form's
    order and conditions, a condition reading a layer left out not being
    written, the web map links of an XYZ
@@ -41,6 +42,7 @@ import posixpath
 import shutil
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote
@@ -316,6 +318,10 @@ def main() -> int:
         check(hrefs_resolve, 'every data and style href resolves to a file inside publish/')
         parks_name, parks_document = collections['Parks']
         check(parks_document['assets']['data']['href'] == '../../../../vector/parks.geojson', f"Parks's data href is relative to its document: {parks_document['assets']['data']['href']}")
+        parks_status = parks.stat()
+        parks_changed = datetime.fromtimestamp(parks_status.st_mtime, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+        parks_data = parks_document['assets']['data']
+        check((parks_data.get('file:size'), parks_data.get('updated')) == (parks_status.st_size, parks_changed), f"Parks's data carries its file's size and last change: {parks_data.get('file:size')}, {parks_data.get('updated')}")
         style = parks_document['assets'].get('default', {})
         check(style.get('roles') == ['style', 'default'] and style.get('type') == 'application/x-qgis-qml+xml', 'Parks has a QML style asset with the style and default roles')
         check(style.get('quac:categorised_field') == 'kind', f"Parks's categorised style names the field it classifies by: {style}")

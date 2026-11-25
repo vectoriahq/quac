@@ -134,16 +134,21 @@ export function serverWmsEndpoint(serverAddress: string): string | null {
   return `${scheme.toLowerCase()}://${authority}${path}${kept.length > 0 ? `?${kept.join('&')}` : ''}`
 }
 
-/** A field's type as GetProjectSettings reports it: its Qt type name, such as `qlonglong`, and its provider's type name. */
+/**
+ * A field as GetProjectSettings reports it: its Qt type name, such as
+ * `qlonglong`, its provider's type name, and the comment its data holds, such
+ * as a PostgreSQL column comment (`QgsField::comment`).
+ */
 export interface QgisFieldType {
   type: string
   typeName: string
+  comment?: string
 }
 
 export interface ServerCatalogueOptions {
   /** The address QGIS Server serves the project from, as its own `wmsServiceUrl` gives it. */
   serverAddress: string
-  /** Each layer's field types, by layer id and then field name. */
+  /** Each layer's field types and comments, by layer id and then field name. */
   fieldTypes?: Record<string, Record<string, QgisFieldType>>
   /** The WGS84 box of a layer whose project saves no `<wgs84extent>`, by layer id. */
   layerWgs84Extents?: Record<string, BoundingBox>
@@ -237,7 +242,7 @@ function serveCollection(source: StacCollection, context: ServeContext): StacCol
     hiddenOf: (id) => hiddenFieldsOf(context.layersById.get(id)),
     servedId: (id) => context.servedIds.get(id) ?? null
   })
-  serveFieldTypes(shown, context.fieldTypes[layerId] ?? {})
+  serveFieldTypes(shown, context.fieldTypes[layerId] ?? {}, context.layersById.get(layerId)?.fieldComments ?? {})
   return shown
 }
 
@@ -323,10 +328,10 @@ function serveColumns(collection: StacCollection, hidden: Set<string>, context: 
   else delete collection['table:columns']
 }
 
-/** Each column with the `type` QGIS Server reports for its field (`withFieldType`). */
-function serveFieldTypes(collection: StacCollection, fieldTypes: Record<string, QgisFieldType>): void {
+/** Each column with the `type` and the comment QGIS Server reports for its field (`withFieldType`). */
+function serveFieldTypes(collection: StacCollection, fieldTypes: Record<string, QgisFieldType>, projectComments: Record<string, string>): void {
   const columns = collection['table:columns']
-  if (Array.isArray(columns)) collection['table:columns'] = (columns as TableColumn[]).map((column) => withFieldType(column, fieldTypes[column.name]))
+  if (Array.isArray(columns)) collection['table:columns'] = (columns as TableColumn[]).map((column) => withFieldType(column, fieldTypes[column.name], projectComments))
 }
 
 /** A style asset's categorised field, dropped where the layer hides it. */
@@ -343,10 +348,20 @@ function serveStyleFields(collection: StacCollection, hidden: Set<string>): void
   collection.assets = assets
 }
 
-/** The column with the `type` QGIS Server reports for its field, and the `data_type` beside it, where QGIS Server reports one. */
-function withFieldType(column: TableColumn, fieldType: QgisFieldType | undefined): TableColumn {
+/**
+ * The column with the `type` QGIS Server reports for its field, and the
+ * `data_type` beside it, where QGIS Server reports one. Its `description` is
+ * the comment the field's data holds where the project saves no comment of its
+ * own for the field, `projectComments` holding those, a blank one included:
+ * QGIS's form shows the project's comment, hides the data's behind a blank
+ * one, and shows the data's otherwise (`QgsAttributeForm`,
+ * `src/gui/qgsattributeform.cpp`, `qgis/QGIS@master`, read 2026-11-25).
+ */
+function withFieldType(column: TableColumn, fieldType: QgisFieldType | undefined, projectComments: Record<string, string>): TableColumn {
   const type = fieldType ? mapQtTypeToStacTableType(fieldType.type, fieldType.typeName) : undefined
-  return type ? withDataType({ ...column, type }) : column
+  const typed = type ? withDataType({ ...column, type }) : column
+  const comment = fieldType?.comment?.trim()
+  return comment && !Object.hasOwn(projectComments, column.name) ? { ...typed, description: comment } : typed
 }
 
 function serveColumn(source: TableColumn, hidden: Set<string>, context: HiddenFieldContext): TableColumn {
