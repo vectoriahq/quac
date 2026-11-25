@@ -111,6 +111,7 @@ export function parseDataSource(raw: string, providerHint: string | null = null)
     const url = params.url
     const typeName = params.typename ?? params.typeName
     if (url && typeName) {
+      if (wfsSourceSignsIn(params)) return { kind: 'unsupported', raw, hint: providerHint ?? 'WFS' }
       // QGIS sends the server a `SELECT` statement where the source has one, and the `filter`
       // otherwise (`QgsWFSProvider::QgsWFSProvider`, `src/providers/wfs/qgswfsprovider.cpp`,
       // `qgis/QGIS@master`, read 2026-10-26).
@@ -153,6 +154,15 @@ function needsCredentialsOrHeaders(params: URLSearchParams): boolean {
     if (['authcfg', 'username', 'password', 'referer'].includes(key) || key.startsWith('http-header:')) return true
   }
   return false
+}
+
+/**
+ * Whether a WFS source signs in to its server: QGIS reads its login from
+ * `authcfg`, or a user name from `user` or `username` and a `password`
+ * (`QgsDataSourceUri`, QGIS 3.34).
+ */
+function wfsSourceSignsIn(params: Record<string, string | undefined>): boolean {
+  return ['authcfg', 'user', 'username', 'password'].some((key) => params[key]?.trim())
 }
 
 /**
@@ -410,12 +420,14 @@ function basename(pathLike: string): string {
  */
 function parseSpaceSeparatedKeyValues(raw: string): Record<string, string> {
   const out: Record<string, string> = {}
-  // Match key='...' or key="..."
-  const re = /(\w+)\s*=\s*(?:'((?:\\.|[^'\\])*)'|"((?:\\.|[^"\\])*)")/g
+  // Match key='...', key="..." or a bare key=value, which is how QGIS writes `authcfg`
+  // (`QgsDataSourceUri::uri`, QGIS 3.34).
+  // A bare value starts straight after `=`, so a key written with no value never takes the next pair.
+  const re = /(\w+)\s*(?:=\s*'((?:\\.|[^'\\])*)'|=\s*"((?:\\.|[^"\\])*)"|=([^\s'"]+))/g
   let m: RegExpExecArray | null
   while ((m = re.exec(raw)) !== null) {
     const key = m[1]
-    const value = (m[2] ?? m[3] ?? '').replace(/\\(.)/g, '$1')
+    const value = m[4] ?? (m[2] ?? m[3] ?? '').replace(/\\(.)/g, '$1')
     out[key] = value
   }
   return out
