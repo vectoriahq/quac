@@ -1,10 +1,11 @@
-"""Mirrors `packages/quac/src/parse/parseLayers.ts`, as far as the plugin's first-release fields read a layer.
+"""Mirrors `packages/quac/src/parse/parseLayers.ts`, as far as the plugin's catalogues read a layer.
 
 It reads a layer's id, names, geometry, WGS84 extent, coordinate system, data source, display
-field, identifiable and read-only flags, opacity, scale range, field names and
-aliases, Value Map lists and Value Relations, abstract, licence and temporal extent, QFieldSync
-locks, and the fields it hides from QGIS Server. Styles, forms, other widgets
-and the rest are not read; `port-exemptions.json` lists them.
+field, identifiable, read-only and Private flags, opacity, scale range, field names and
+aliases, Value Map lists and Value Relations, which fields take QGIS's Color widget, abstract,
+licence and temporal extent, styles (`parse_style.py`), legend placeholder image, the icons and
+added message its variables set, QFieldSync locks, and the fields it hides from QGIS Server.
+Its forms, other widgets and the rest are not read.
 """
 
 from __future__ import annotations
@@ -13,10 +14,16 @@ import re
 from typing import Optional
 from xml.etree.ElementTree import Element  # nosec B405
 
+import base64
+import binascii
+
 from ..js_compat import is_finite, js_number, js_trim, whole
-from ..model.qgs_project import BoundingBox, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
+from ..model.field_icon_address import resolve_field_icon_address
+from ..model.qgs_project import BoundingBox, FieldEditRule, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerResourceMetadata, LayerScaleRange, ServerHiddenFields
+from .custom_properties import read_custom_property_list
 from .parse_data_source import parse_data_source
 from .parse_qfield_sync import parse_qfield_sync_locks
+from .parse_style import parse_layer_styles
 from .xml_text import children_of_kind, direct_child, direct_child_text, first_descendant, text_content
 
 
@@ -47,6 +54,7 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         return None
     datasource_text = direct_child_text(maplayer, 'datasource') or ''
     provider_hint = direct_child_text(maplayer, 'provider')
+    styles, active_style_index = parse_layer_styles(maplayer)
     return LayerEntry(
         id=layer_id,
         name=name,
@@ -65,8 +73,16 @@ def _parse_map_layer(maplayer: Element) -> Optional[LayerEntry]:
         field_names=_parse_field_names(maplayer),
         field_aliases=_parse_field_aliases(maplayer),
         field_value_maps=_parse_field_value_maps(maplayer),
-        field_value_relations=_parse_field_value_relations(maplayer),
+        styles=styles,
+        active_style_index=active_style_index,
         resource_metadata=_parse_layer_resource_metadata(maplayer),
+        is_private=_parse_private(maplayer),
+        legend_image=_parse_legend_image(maplayer),
+        field_value_relations=_parse_field_value_relations(maplayer),
+        field_edit_rules=_parse_field_edit_rules(maplayer),
+        icon=_parse_layer_icon(maplayer),
+        added_message=_parse_added_message(maplayer),
+        field_icons=_parse_field_icons(maplayer),
         scale_range=_parse_scale_range(maplayer),
         locks=parse_qfield_sync_locks(maplayer),
     )
@@ -300,6 +316,147 @@ def _read_trimmed_option(options: dict[str, str], key: str) -> Optional[str]:
 
 def _read_flag(options: dict[str, str], key: str) -> bool:
     return options.get(key) in ('true', '1')
+
+
+def _parse_field_edit_rules(maplayer: Element) -> dict[str, FieldEditRule]:
+    """
+    Each field's edit settings, as far as `quac:color` reads them: a field
+    whose widget is QGIS's Color widget, which has no settings of its own.
+    Only the layer's own `<fieldConfiguration>` is read, and where `<field>`s
+    share a name, the first decides it. A field with no such setting is absent.
+    """
+    result: dict[str, FieldEditRule] = {}
+    field_config = direct_child(maplayer, 'fieldConfiguration')
+    if field_config is None:
+        return result
+    seen: set[str] = set()
+    for node in field_config:
+        name = node.get('name') if node.tag == 'field' else None
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        edit_widget = direct_child(node, 'editWidget')
+        if edit_widget is not None and edit_widget.get('type') == 'Color':
+            result.setdefault(name, FieldEditRule()).colour = True
+    return result
+
+
+# The start of the name of a layer variable that sets a field's icon, `quac_icon_species`, and the names of the variables that set the
+# layer's own icon and hold the message shown once a feature is added.
+_FIELD_ICON_VARIABLE_PREFIX = 'quac_icon_'
+_LAYER_ICON_VARIABLE = 'quac_icon'
+_ADDED_MESSAGE_VARIABLE = 'quac_added_message'
+
+
+def _parse_field_icons(maplayer: Element) -> dict[str, str]:
+    """
+    The icon each field's `quac_icon_<field>` variable names, as an address
+    (`resolve_field_icon_address`). QGIS keeps a layer's variables as two lists
+    of the same length in its custom properties, `variableNames` and
+    `variableValues`. A variable whose value names no icon is left out.
+    """
+    icons: dict[str, str] = {}
+    for field, value in _read_field_variables(maplayer, _FIELD_ICON_VARIABLE_PREFIX):
+        address = resolve_field_icon_address(value)
+        if address:
+            icons[field] = address
+    return icons
+
+
+def _read_layer_variable(maplayer: Element, variable: str) -> Optional[str]:
+    """The value of the layer variable of this name; None where the layer has none."""
+    properties = direct_child(maplayer, 'customproperties')
+    if properties is None:
+        return None
+    names = read_custom_property_list(properties, 'variableNames')
+    values = read_custom_property_list(properties, 'variableValues')
+    index = names.index(variable) if variable in names else -1
+    return None if index == -1 or index >= len(values) else values[index]
+
+
+def _parse_layer_icon(maplayer: Element) -> Optional[str]:
+    """The icon the layer's `quac_icon` variable names, as an address; None where it has none or it names no icon."""
+    value = _read_layer_variable(maplayer, _LAYER_ICON_VARIABLE)
+    return None if value is None else resolve_field_icon_address(value)
+
+
+def _parse_added_message(maplayer: Element) -> Optional[str]:
+    """The message the layer's `quac_added_message` variable holds, as written; None where it has none or it is blank."""
+    value = _read_layer_variable(maplayer, _ADDED_MESSAGE_VARIABLE)
+    return None if value is None or js_trim(value) == '' else value
+
+
+def _read_field_variables(maplayer: Element, prefix: str) -> list[tuple[str, str]]:
+    """Each of the layer's variables named `prefix` and a field's name, as that field's name and the variable's value."""
+    properties = direct_child(maplayer, 'customproperties')
+    if properties is None:
+        return []
+    names = read_custom_property_list(properties, 'variableNames')
+    values = read_custom_property_list(properties, 'variableValues')
+    return [
+        (variable[len(prefix):], values[index])
+        for index, variable in enumerate(names)
+        if variable.startswith(prefix) and index < len(values) and variable[len(prefix):]
+    ]
+
+
+# The whitespace JavaScript's `\s` matches, as far as a project's text and a decoded image's opening bytes hold it.
+_JS_SPACE = '\t\n\v\f\r \xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff'
+_DATA_URL = re.compile(rf'^data:image/[A-Za-z0-9_+.-]+;base64,[A-Za-z0-9+/={_JS_SPACE}]+\Z')
+_EMBEDDED = re.compile(rf'^base64:([A-Za-z0-9+/={_JS_SPACE}]+)\Z', re.IGNORECASE)
+_SVG_OPENING = re.compile(rf'^[{_JS_SPACE}]*(?:<\?xml|<svg)')
+
+# The image types an embedded legend image is read as, by the bytes it opens with.
+_IMAGE_SIGNATURES = (
+    ('image/png', lambda opening: opening.startswith('\x89PNG')),
+    ('image/jpeg', lambda opening: opening.startswith('\xff\xd8\xff')),
+    ('image/gif', lambda opening: opening.startswith('GIF8')),
+    ('image/webp', lambda opening: opening.startswith('RIFF') and opening[8:12] == 'WEBP'),
+    ('image/svg+xml', lambda opening: _SVG_OPENING.match(opening) is not None),
+)
+
+
+def _parse_legend_image(maplayer: Element) -> Optional[str]:
+    """
+    The layer's legend placeholder image where QGIS embeds it. **Embed File…**
+    saves the file as `base64:` and its contents, with no type, so the type is
+    read from the bytes the image opens with; a `data:` URL is kept as
+    written. A file path or web address is not read: it names a file rather
+    than holding one.
+    """
+    source = js_trim(maplayer.get('legendPlaceholderImage') or '')
+    if _DATA_URL.match(source):
+        return source
+    match = _EMBEDDED.match(source)
+    if match is None:
+        return None
+    data = re.sub(f'[{_JS_SPACE}]', '', match.group(1))
+    opening = _atob(data[:24])
+    if opening is None:
+        return None
+    image_type = next((name for name, matches in _IMAGE_SIGNATURES if matches(opening)), None)
+    return f'data:{image_type};base64,{data}' if image_type else None
+
+
+def _atob(text: str) -> Optional[str]:
+    """`atob`: the forgiving base64 decoder's bytes, one character each, or None where it throws."""
+    if len(text) % 4 == 0:
+        text = text[:-2] if text.endswith('==') else text[:-1] if text.endswith('=') else text
+    if len(text) % 4 == 1 or not re.fullmatch(r'[A-Za-z0-9+/]*', text):
+        return None
+    try:
+        return base64.b64decode(text + '=' * (-len(text) % 4)).decode('latin-1')
+    except (binascii.Error, ValueError):
+        return None
+
+
+def _parse_private(maplayer: Element) -> bool:
+    """`<flags><Private>1</Private></flags>`, the **Private** column of Project Properties → Data Sources; false where absent."""
+    flags = direct_child(maplayer, 'flags')
+    if flags is None:
+        return False
+    private = direct_child(flags, 'Private')
+    return private is not None and js_trim(text_content(private)) == '1'
 
 
 _SINGLE_FIELD = re.compile(r'^"([^"]+)"$')
