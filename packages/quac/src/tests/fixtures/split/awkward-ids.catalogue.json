@@ -1,0 +1,583 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "awkward-ids",
+  "title": "Awkward ids",
+  "description": "A made-up catalogue whose ids are not safe file names.",
+  "links": [
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/survey/roads.geojson.json",
+      "type": "application/json",
+      "title": "Roads"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/water/catalog.json",
+      "type": "application/json",
+      "title": "Water"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Survey/Roads.geojson.json",
+      "type": "application/json",
+      "title": "Roads again"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/...json",
+      "type": "application/json",
+      "title": "Dots"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/CON.json",
+      "type": "application/json",
+      "title": "Console"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/a #1?.json.json",
+      "type": "application/json",
+      "title": "Odd"
+    },
+    {
+      "rel": "child",
+      "href": "./catalogs/Water/catalog.json",
+      "type": "application/json",
+      "title": "Water again"
+    },
+    {
+      "rel": "license",
+      "href": "https://example.test/licence.html"
+    },
+    {
+      "rel": "self",
+      "href": "https://data.example.test/survey/",
+      "type": "application/json"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "survey/roads.geojson",
+      "title": "Roads",
+      "description": "Made-up layer survey/roads.geojson.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./survey/roads.geojson",
+          "type": "application/geo+json",
+          "roles": [
+            "data"
+          ]
+        },
+        "style": {
+          "href": "./project.qgs#survey%2Froads.geojson/default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        },
+        "thumbnail": {
+          "href": "https://example.test/thumbs/roads.png",
+          "roles": [
+            "thumbnail"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/survey/roads.geojson.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./project.qgs",
+          "title": "QGIS project"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Survey/Roads.geojson",
+      "title": "Roads again",
+      "description": "Made-up layer Survey/Roads.geojson.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "../outside/roads.gpkg",
+          "roles": [
+            "data"
+          ],
+          "quac:layer_name": "roads"
+        },
+        "style": {
+          "href": "#Survey%2FRoads.geojson/default",
+          "roles": [
+            "style",
+            "default"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/Survey/Roads.geojson.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "..",
+      "title": "Dots",
+      "description": "Made-up layer ...",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "/data/dots.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/...json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "CON",
+      "title": "Console",
+      "description": "Made-up layer CON.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "data/a%20b.csv?type=csv#top",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/CON.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "a #1?.json",
+      "title": "Odd",
+      "description": "Made-up layer a #1?.json.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./a%20%231%3F.json",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/a #1?.json.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "unlinked",
+      "title": "Unlinked",
+      "description": "Made-up layer unlinked.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "./data/../unlinked.geojson",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/unlinked.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    }
+  ],
+  "catalogs": [
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "water",
+      "title": "Water",
+      "description": "Made-up group.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/water/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "child",
+          "href": "./catalogs/water/collections/rivers.json",
+          "type": "application/json",
+          "title": "Rivers"
+        },
+        {
+          "rel": "child",
+          "href": "./catalogs/water/catalogs/deep/er/catalog.json",
+          "type": "application/json",
+          "title": "Deeper"
+        }
+      ],
+      "quac:mutually_exclusive": true,
+      "collections": [
+        {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "rivers",
+          "title": "Rivers",
+          "description": "Made-up layer rivers.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "assets": {
+            "data": {
+              "href": "./water/rivers.geojson",
+              "roles": [
+                "data"
+              ]
+            }
+          },
+          "links": [
+            {
+              "rel": "self",
+              "href": "./catalogs/water/collections/rivers.json"
+            },
+            {
+              "rel": "parent",
+              "href": "./catalogs/water/catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "./catalog.json"
+            }
+          ]
+        }
+      ],
+      "catalogs": [
+        {
+          "type": "Catalog",
+          "stac_version": "1.1.0",
+          "id": "deep/er",
+          "title": "Deeper",
+          "description": "Made-up group.",
+          "links": [
+            {
+              "rel": "self",
+              "href": "./catalogs/water/catalogs/deep/er/catalog.json"
+            },
+            {
+              "rel": "parent",
+              "href": "./catalogs/water/catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "./catalog.json"
+            },
+            {
+              "rel": "child",
+              "href": "./catalogs/water/catalogs/deep/er/collections/lakes.json",
+              "type": "application/json",
+              "title": "Lakes"
+            }
+          ],
+          "collections": [
+            {
+              "type": "Collection",
+              "stac_version": "1.1.0",
+              "id": "lakes",
+              "title": "Lakes",
+              "description": "Made-up layer lakes.",
+              "license": "other",
+              "extent": {
+                "spatial": {
+                  "bbox": [
+                    [
+                      -180,
+                      -90,
+                      180,
+                      90
+                    ]
+                  ]
+                },
+                "temporal": {
+                  "interval": [
+                    [
+                      null,
+                      null
+                    ]
+                  ]
+                }
+              },
+              "assets": {
+                "data": {
+                  "href": "./water/lakes.geojson",
+                  "roles": [
+                    "data"
+                  ]
+                }
+              },
+              "links": [
+                {
+                  "rel": "self",
+                  "href": "./catalogs/water/catalogs/deep/er/collections/lakes.json"
+                },
+                {
+                  "rel": "parent",
+                  "href": "./catalogs/water/catalogs/deep/er/catalog.json"
+                },
+                {
+                  "rel": "root",
+                  "href": "./catalog.json"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Catalog",
+      "stac_version": "1.1.0",
+      "id": "Water",
+      "title": "Water again",
+      "description": "Made-up group.",
+      "links": [
+        {
+          "rel": "self",
+          "href": "./catalogs/Water/catalog.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        }
+      ]
+    }
+  ]
+}

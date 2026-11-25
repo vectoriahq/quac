@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest'
 
-import { stacErrors } from './stacSchemas.ts'
-import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromWms, parseGetProjectSettings, parseQgsXml, serverLayerTree } from '../index.ts'
+import { savedSplit } from './savedSplit.ts'
+import { stacCollectionErrors, stacErrors } from './stacSchemas.ts'
+import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalogueFromWms, parseGetProjectSettings, parseQgsXml, serverLayerTree, splitCatalogue } from '../index.ts'
 
 /**
  * The second tier of QUAC's fixtures: for each whole-project fixture, the
@@ -16,6 +17,10 @@ import { generateServerStacCatalogue, generateStacCatalogue, generateStacCatalog
  * project's path, as a project in a cloud folder is. No companion data is
  * given, so no column is typed from loaded features, and no initial view,
  * which an application works out by reprojecting outside the package.
+ *
+ * The same catalogue is saved as separate documents, as `splitCatalogue`
+ * writes it, in `<name>.split.json` (`savedSplit`), each document checked
+ * against STAC's schemas too.
  *
  * Each project also has the catalogue the QUAC plugin's route would serve for
  * it, saved as `<name>.server.catalogue.json`: the second expected catalogue,
@@ -63,6 +68,16 @@ describe('saved catalogues of the whole-project fixtures', () => {
     const catalogue = generateStacCatalogue(parseQgsXml(PROJECTS[path]!), [], { projectPath })
     expect(stacErrors(catalogue)).toEqual([])
     await expect(saved(catalogue)).toMatchFileSnapshot(goldenPath(path))
+  })
+
+  it.each(Object.keys(PROJECTS))('splits the saved catalogue for %s into separate documents', async (path) => {
+    const projectPath = path.slice(path.lastIndexOf('/') + 1)
+    const catalogue = generateStacCatalogue(parseQgsXml(PROJECTS[path]!), [], { projectPath })
+    for (const { path: documentPath, document } of splitCatalogue(catalogue)) {
+      const errors = document.type === 'Collection' ? stacCollectionErrors(document) : stacErrors(document)
+      expect(errors, documentPath).toEqual([])
+    }
+    await expect(savedSplit(catalogue, projectPath.replace(/\.qgs$/, ''))).toMatchFileSnapshot(path.replace(/\.qgs$/, '.split.json'))
   })
 
   it.each(Object.keys(PROJECTS))('generates the saved server catalogue for %s', async (path) => {

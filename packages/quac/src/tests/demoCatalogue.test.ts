@@ -2,11 +2,11 @@ import './xmlParser.ts'
 import { Validator } from '@cfworker/json-schema'
 import { describe, expect, it } from 'vitest'
 
-import { generateStacCatalogue, parseQgsXml } from '../index.ts'
+import { generateStacCatalogue, parseQgsXml, splitCatalogue } from '../index.ts'
 import schemaJson from '../schema/quac.schema.json?raw'
 import PROJECT from '../../../../site/demo/street-trees.qgs?raw'
 
-import type { StacCatalog, StacCollection, StacLink } from '../model/Stac.ts'
+import type { StacCatalog } from '../model/Stac.ts'
 
 /**
  * The demo catalogue under `site/demo/`, which the site publishes beside the
@@ -15,9 +15,10 @@ import type { StacCatalog, StacCollection, StacLink } from '../model/Stac.ts'
  *
  * - `catalogue.json` is the one document the package writes, with its
  *   Collections inline.
- * - `catalog.json` and `collections/<id>.json` are the same catalogue split
- *   into one file per Collection, linked with `rel: "child"`, for a STAC client
- *   that follows links rather than reading inline Collections.
+ * - `catalog.json` and `collections/<id>.json` are the same catalogue as
+ *   `splitCatalogue` writes it, one file per Collection, linked with
+ *   `rel: "child"`, for a STAC client that follows links rather than reading
+ *   inline Collections.
  *
  * The demo passes `projectPath` but no `selfHref`, so every address in it is
  * relative and each file reads from wherever it is served, such as the site
@@ -35,34 +36,6 @@ function generateDemo(): StacCatalog {
   const extent = project.mapExtent
   const initialView = extent?.crs === 'EPSG:4326' ? { xmin: extent.xmin, ymin: extent.ymin, xmax: extent.xmax, ymax: extent.ymax } : null
   return generateStacCatalogue(project, [], { projectPath: 'street-trees.qgs', initialView })
-}
-
-/** An href relative to the root document, rewritten relative to a Collection's own file under `collections/`. */
-function fromCollectionsFolder(href: string): string {
-  if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('#') || href.startsWith('/')) return href
-  return `../${href.replace(/^\.\//, '')}`
-}
-
-/**
- * Splits the one document into a root Catalog and a file per Collection.
- * Every relative href in the one document resolves against the root, so each
- * is rewritten from the Collection's own file, apart from its `self` link,
- * which is written as that file.
- */
-function splitDemo(catalogue: StacCatalog): { root: StacCatalog, collections: StacCollection[] } {
-  if (catalogue.catalogs?.length) throw new Error('The demo has no groups; splitting one is not written.')
-  const { collections = [], ...root } = catalogue
-  const split = collections.map((collection) => {
-    const links: StacLink[] = (collection.links ?? []).map((link) => {
-      if (link.rel === 'self') return { ...link, href: `./${collection.id}.json` }
-      return { ...link, href: fromCollectionsFolder(link.href) }
-    })
-    const assets = Object.fromEntries(Object.entries(collection.assets ?? {}).map(([key, asset]) => (
-      [key, { ...asset, href: fromCollectionsFolder(asset.href) }]
-    )))
-    return { ...collection, links, assets }
-  })
-  return { root, collections: split }
 }
 
 function asFile(value: unknown): string {
@@ -95,14 +68,11 @@ describe('the demo catalogue', () => {
   })
 
   it('is the committed split form, each file passing the schema', async () => {
-    const { root, collections } = splitDemo(catalogue)
-    expect(schemaErrors(root)).toEqual([])
-    await expect(asFile(root)).toMatchFileSnapshot(`${DEMO}catalog.json`)
-    const childHrefs = (root.links ?? []).filter((link) => link.rel === 'child').map((link) => link.href)
-    expect(childHrefs).toEqual(collections.map((collection) => `./collections/${collection.id}.json`))
-    for (const collection of collections) {
-      expect(schemaErrors(collection)).toEqual([])
-      await expect(asFile(collection)).toMatchFileSnapshot(`${DEMO}collections/${collection.id}.json`)
+    const documents = splitCatalogue(catalogue)
+    expect(documents.map((document) => document.path)).toEqual(['catalog.json', ...(catalogue.collections ?? []).map((collection) => `collections/${collection.id}.json`)])
+    for (const { path, document } of documents) {
+      expect(schemaErrors(document), path).toEqual([])
+      await expect(asFile(document)).toMatchFileSnapshot(`${DEMO}${path}`)
     }
   })
 })

@@ -59,7 +59,7 @@ Portolan sets the conventions a reader of a cloud-native catalogue relies on. QU
 
 ## One Collection at a time
 
-The package writes a catalogue as one document, with each Catalog carrying its Collections inline. It also writes a `rel: "child"` link to where each Collection would sit as a file of its own, `./collections/<id>.json`, which is how a Portolan catalogue is laid out. [The demo](#try-it) is published both ways.
+The package writes a catalogue as one document, with each Catalog carrying its Collections inline. It also writes a `rel: "child"` link to where each Collection would sit as a file of its own, `./collections/<id>.json`, which is how a Portolan catalogue is laid out, and `splitCatalogue` writes the catalogue as those separate documents, each with the path to save it at. [The demo](#try-it) is published both ways.
 
 An application can read QUAC one Collection at a time, as a STAC client opens it:
 
