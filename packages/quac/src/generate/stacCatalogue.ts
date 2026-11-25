@@ -19,6 +19,7 @@ import { buildXyzLink } from '../model/stacXyz.ts'
 import { findGeometrySiblings, readSiblingShapes, siblingCollectionId } from '../parse/geometrySiblings.ts'
 import { findValueRelationLookup, isFilterInProject, isRelationInProject } from '../parse/projectNotes.ts'
 import { declaredMediaTypeForFile, isLayerFileOfFormat, PROJECT_DATA_ROLES, QML_STYLE_MEDIA_TYPE } from '../util/catalogueFileFormats.ts'
+import { nameRecord } from '../util/nameRecord.ts'
 
 import type { CollectionFilter, CollectionRelation, NormalizedLayer, NormalizedNode, NormalizedProject, QgisServerNames } from './normalizedProject.ts'
 import type { BoundingBox, EditLock, FieldAttachment, FieldConstraintExpression, FieldControl, FieldDefaultValue, FieldEditRule, FieldValueMapEntry, FieldValueRelation, FileDataSource, LayerEntry, LayerFormLayout, LayerGroup, LayerLocks, LayerStyle, LayerTreeNode, LockedEdit, PresetFilter, ProjectMeasurement, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing } from '../model/QgsProject.ts'
@@ -312,7 +313,7 @@ function collectValueRelationsByLayerId(
   const byLayerId = new Map<string, Record<string, TableColumnValueRelation>>()
 
   for (const layer of layers) {
-    const relations: Record<string, TableColumnValueRelation> = {}
+    const relations = nameRecord<TableColumnValueRelation>()
     for (const [field, widget] of Object.entries(layer.fieldValueRelations)) {
       const lookup = findValueRelationLookup(widget, layers, layersById)
       if (lookup) relations[field] = valueRelationToJson(collectionIdOf(lookup.id), widget)
@@ -779,7 +780,7 @@ function buildStyleAssets(
   projectPath: string | undefined,
   existing: Record<string, StacAsset>
 ): Record<string, StacAsset> {
-  const assets: Record<string, StacAsset> = {}
+  const assets = nameRecord<StacAsset>()
   // The first style with a renderer is the default — the active one, unless
   // QGIS wrote no renderer for it. Marked rather than left to its position,
   // because a style named `2024` takes an asset key JavaScript enumerates
@@ -930,14 +931,14 @@ function deriveTableColumns(
   geojson: FeatureCollection | null,
   fieldNames: string[],
   fieldAliases: Record<string, string>,
-  fieldValueMaps: Record<string, FieldValueMapEntry[]> = {},
-  fieldAttachments: Record<string, FieldAttachment> = {},
-  fieldEditRules: Record<string, FieldEditRule> = {},
-  fieldValueRelations: Record<string, TableColumnValueRelation> = {},
+  fieldValueMaps: Record<string, FieldValueMapEntry[]> = nameRecord(),
+  fieldAttachments: Record<string, FieldAttachment> = nameRecord(),
+  fieldEditRules: Record<string, FieldEditRule> = nameRecord(),
+  fieldValueRelations: Record<string, TableColumnValueRelation> = nameRecord(),
   formLayout: LayerFormLayout | null = null,
-  fieldIcons: Record<string, string> = {},
-  fieldControls: Record<string, FieldControl> = {},
-  fieldComments: Record<string, string> = {}
+  fieldIcons: Record<string, string> = nameRecord(),
+  fieldControls: Record<string, FieldControl> = nameRecord(),
+  fieldComments: Record<string, string> = nameRecord()
 ): TableColumn[] {
   const observedTypes = new Map<string, TableColumnType>()
   const orderedFieldNames: string[] = []

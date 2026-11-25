@@ -6,6 +6,7 @@ import { parseLayerStyles } from './parseStyle.ts'
 import { readQgisExpression, unescapeStringLiteral } from './qgisExpression.ts'
 import { resolveFieldIconAddress } from '../model/fieldIconAddress.ts'
 import { devLog } from '../util/devLog.ts'
+import { nameRecord } from '../util/nameRecord.ts'
 
 import type {
   BoundingBox,
@@ -345,7 +346,7 @@ const VALUE_MAP_NULL_CODE = '{2839923C-8B7D-419E-B84B-CA2FE9B80EC7}'
  * returned map.
  */
 function parseFieldValueMaps(maplayer: Element): Record<string, FieldValueMapEntry[]> {
-  const result: Record<string, FieldValueMapEntry[]> = {}
+  const result = nameRecord<FieldValueMapEntry[]>()
   for (const [name, editWidget] of layerEditWidgets(maplayer)) {
     if (result[name]) continue
 
@@ -400,7 +401,7 @@ function parseFieldValueMaps(maplayer: Element): Record<string, FieldValueMapEnt
  * A field with no ValueRelation widget is absent from the returned map.
  */
 function parseFieldValueRelations(maplayer: Element): Record<string, FieldValueRelation> {
-  const result: Record<string, FieldValueRelation> = {}
+  const result = nameRecord<FieldValueRelation>()
   for (const [name, editWidget] of layerEditWidgets(maplayer)) {
     if (result[name]) continue
 
@@ -481,7 +482,7 @@ const SINGLE_FILE_STORAGE_MODES = new Set([0, 3])
  * A field with no ExternalResource widget is absent from the returned map.
  */
 function parseFieldAttachments(maplayer: Element): Record<string, FieldAttachment> {
-  const result: Record<string, FieldAttachment> = {}
+  const result = nameRecord<FieldAttachment>()
   for (const [name, editWidget] of layerEditWidgets(maplayer)) {
     if (result[name]) continue
 
@@ -542,7 +543,7 @@ const NOW_EXPRESSIONS = new Set(['now()', '$now', 'to_date(now())', 'to_datetime
  * settings is absent from the returned map.
  */
 function parseFieldEditRules(maplayer: Element, note: NoteSink): Record<string, FieldEditRule> {
-  const result: Record<string, FieldEditRule> = {}
+  const result = nameRecord<FieldEditRule>()
   const ruleFor = (name: string): FieldEditRule => {
     result[name] ??= { readOnly: false, defaultValue: null, notNull: null, unique: null, hidden: false, reuseLastValue: false, duplicatePolicy: null }
     return result[name]
@@ -934,7 +935,7 @@ function parseFieldNames(maplayer: Element): string[] {
  * per field, which is the active-style block's when both are present.
  */
 function parseFieldAliases(maplayer: Element): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out = nameRecord<string>()
   const nodes = maplayer.querySelectorAll('aliases > alias')
   for (const node of Array.from(nodes)) {
     const field = node.getAttribute('field')
@@ -960,7 +961,7 @@ function parseFieldAliases(maplayer: Element): Record<string, string> {
  * entries name a field, the later stands, as QGIS's map of them keeps it.
  */
 function parseFieldComments(maplayer: Element): Record<string, string> {
-  const out: Record<string, string> = {}
+  const out = nameRecord<string>()
   for (const node of directChild(maplayer, 'customComments')?.querySelectorAll(':scope > customComment') ?? []) {
     const field = node.getAttribute('field')
     if (!field) continue
@@ -1003,7 +1004,7 @@ const FIELD_ICON_VARIABLE_PREFIX = 'quac_icon_'
  * 2026-10-25).
  */
 function parseFieldIcons(maplayer: Element): Record<string, string> {
-  const icons: Record<string, string> = {}
+  const icons = nameRecord<string>()
   for (const [field, value] of readFieldVariables(maplayer, FIELD_ICON_VARIABLE_PREFIX)) {
     const address = resolveFieldIconAddress(value)
     if (address) icons[field] = address
@@ -1060,7 +1061,7 @@ const FIELD_CONTROL_VARIABLE_PREFIX = 'quac_control_'
  * out.
  */
 function parseFieldControls(maplayer: Element): Record<string, FieldControl> {
-  const controls: Record<string, FieldControl> = {}
+  const controls = nameRecord<FieldControl>()
   for (const [field, value] of readFieldVariables(maplayer, FIELD_CONTROL_VARIABLE_PREFIX)) {
     const control = value.trim().toLowerCase()
     if (control === 'buttons' || control === 'dropdown') controls[field] = control
