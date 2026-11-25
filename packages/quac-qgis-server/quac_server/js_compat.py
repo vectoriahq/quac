@@ -1,7 +1,7 @@
 """JavaScript's answers for numbers and text, in Python.
 
 The JavaScript reader relies on `Number()`, `String()`, `JSON.stringify`,
-`String.prototype.trim`, the whitespace of a regular expression's `\\s`, the
+`Number.parseInt`, `String.prototype.trim`, the whitespace of a regular expression's `\\s`, the
 order `<` puts text in, `encodeURIComponent`, and the `URL` class and
 `URLSearchParams` for `http` and `https` addresses and a layer source's query. These helpers
 give the same answers for what a QGIS project holds, so a Python module can
@@ -55,6 +55,15 @@ def js_number(text: Optional[str]) -> float:
         except ValueError:
             return math.nan
     return math.nan
+
+
+_LEADING_INTEGER = re.compile(r'^([+-]?[0-9]+)')
+
+
+def js_parse_int(text: Optional[str]) -> float:
+    """`Number.parseInt(text, 10)`: the whole number the text opens with, after any space, or NaN where it opens with none."""
+    match = _LEADING_INTEGER.match(js_trim(text or ''))
+    return int(match.group(1)) if match else math.nan
 
 
 # The characters JavaScript's `\\s` matches, as the inside of a Python class.

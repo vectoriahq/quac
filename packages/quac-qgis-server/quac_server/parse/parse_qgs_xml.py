@@ -13,6 +13,7 @@ from .collect_layer_visibility import collect_layer_visibility
 from .parse_extent import parse_map_extent
 from .parse_layers import parse_project_layers
 from .parse_legend_tree import parse_legend_tree
+from .parse_measurement import parse_project_measurement
 from .parse_mergin import parse_mergin_filters
 from .parse_qfield_sync import parse_initial_active_layer_id, parse_wfs_transaction_layers
 from .parse_relations import parse_project_relations
@@ -54,6 +55,7 @@ def parse_qgs_xml(xml_text: str) -> QgsProject:
         layer_tree=layer_tree,
         relations=parse_project_relations(qgis_root),
         metadata=_parse_project_metadata(qgis_root),
+        measurement=parse_project_measurement(qgis_root),
         initial_active_layer_id=parse_initial_active_layer_id(qgis_root),
         wfs_transaction_layers=parse_wfs_transaction_layers(qgis_root),
         wms_publishing=parse_wms_publishing(qgis_root),

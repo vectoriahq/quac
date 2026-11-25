@@ -37,6 +37,12 @@ QUAC_ADDED_MESSAGE_FIELD = 'quac:added_message'
 
 QUAC_MUTUALLY_EXCLUSIVE_FIELD = 'quac:mutually_exclusive'
 
+# The units a Collection's expressions measure `$area`, `$length` and `$perimeter` in: `{area_unit, distance_unit}`, each the name QGIS saves.
+QUAC_MEASUREMENT_FIELD = 'quac:measurement'
+
+# The fields a Collection's edit form places, in the layout's order: a QGIS Drag and Drop Designer form.
+QUAC_FORM_ORDER_FIELD = 'quac:form_order'
+
 # The WGS84 box the source's author saved the map showing, on the top-level Catalog.
 _INITIAL_VIEW_FIELD = 'quac:initial_view'
 
@@ -108,6 +114,8 @@ class NormalizedLayer:
     icon: Optional[str] = None
     added_message: Optional[str] = None
     filters: list[CollectionFilter] = field(default_factory=list)
+    # The fields the layer's form places, in its order, written as `quac:form_order`; None for a layer with no form layout.
+    form_order: Optional[list[str]] = None
     # Fields that name the layer's source, such as `quac:wfs_endpoint`, copied straight onto the Collection.
     vendor_fields: dict[str, Any] = field(default_factory=dict)
     assets: dict[str, Any] = field(default_factory=dict)
@@ -277,6 +285,8 @@ def _build_collection(layer: NormalizedLayer, folder: str) -> dict[str, Any]:
         collection[QUAC_ICON_FIELD] = layer.icon
     if layer.added_message:
         collection[QUAC_ADDED_MESSAGE_FIELD] = layer.added_message
+    if layer.form_order is not None:
+        collection[QUAC_FORM_ORDER_FIELD] = layer.form_order
     for key, value in layer.vendor_fields.items():
         collection[key] = value
 

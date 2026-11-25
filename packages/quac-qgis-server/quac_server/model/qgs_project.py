@@ -79,11 +79,112 @@ class FieldValueRelation:
     descending: bool
 
 
+# A fixed default, typed as QGIS's expression parser reads the literal: text, a number, true or false, or None for NULL.
+FieldFixedValue = Union[str, int, float, bool, None]
+
+
+@dataclass
+class FieldDefaultValue:
+    """
+    A default value: `now` is the moment the feature is created, or saved where
+    `on_update` is set; `uuid` is a new random identifier written in `format`,
+    `with_braces`, `without_braces` or `id128`; `fixed` is `value` as the
+    source wrote it.
+    """
+
+    kind: str
+    on_update: bool
+    format: Optional[str] = None
+    value: FieldFixedValue = None
+
+
+@dataclass
+class FieldDefaultExpression:
+    """A default worked out from the feature's other values; `on_update` fills it on every save rather than only the one creating the feature."""
+
+    expression: str
+    on_update: bool
+
+
+@dataclass
+class FieldConstraintExpression:
+    """A QGIS constraint expression, its strength, `enforced` or `warn`, and the message the source gives for it, None where it gives none."""
+
+    expression: str
+    strength: str
+    description: Optional[str] = None
+
+
+@dataclass
+class FieldCheckbox:
+    """A Checkbox widget: the values a ticked and an unticked box write to a text field, None where unset, and its two display settings."""
+
+    checked_value: Optional[str]
+    unchecked_value: Optional[str]
+    show_stored_value: bool
+    allow_null: bool
+
+
+@dataclass
+class FieldAttachment:
+    """
+    A field's Attachment widget, which QGIS calls `ExternalResource`: what its
+    document viewer shows (`image`, `web`, `audio` or `video`, None for none),
+    its file filter and default root folder as written (None where unset), and
+    what a stored path is relative to (`absolute`, `project` or `default-root`).
+    """
+
+    viewer: Optional[str]
+    filter: Optional[str]
+    default_root: Optional[str]
+    relative_storage: str
+
+
+@dataclass
+class FormLayoutField:
+    """
+    A field the Drag and Drop Designer form places: the visibility expressions
+    of the containers around it, outermost first, and the expression behind its
+    data-defined Editable property, None where it has none.
+    """
+
+    name: str
+    visible_when: list[str]
+    editable_when: Optional[str] = None
+
+
+@dataclass
+class LayerFormLayout:
+    """A layer's Drag and Drop Designer form: the fields it places, in its order."""
+
+    fields: list[FormLayoutField]
+
+
 @dataclass
 class FieldEditRule:
-    """A field's edit settings, as far as `quac:color` reads them: whether its edit widget is QGIS's Color widget."""
+    """
+    What a field's form settings say about changing it, as `parseLayers.ts`'s
+    `FieldEditRule` holds it. `range` holds only the members the source sets,
+    of `min`, `max`, `step`, `precision` and `suffix`.
+    """
 
+    read_only: bool = False
+    default_value: Optional[FieldDefaultValue] = None
+    # `enforced` or `warn`, None where the source sets none.
+    not_null: Optional[str] = None
+    unique: Optional[str] = None
+    # `default` or `unset`, None for QGIS's `Duplicate`.
+    duplicate_policy: Optional[str] = None
+    constraint_expression: Optional[FieldConstraintExpression] = None
+    default_expression: Optional[FieldDefaultExpression] = None
+    hidden: bool = False
+    reuse_last_value: bool = False
+    checkbox: Optional[FieldCheckbox] = None
+    range: Optional[dict[str, Any]] = None
+    date_format: Optional[str] = None
     colour: bool = False
+    not_searchable: bool = False
+    label_on_top: bool = False
 
 
 @dataclass
@@ -193,6 +294,12 @@ class LayerEntry:
     # The address of the icon each field's `quac_icon_<field>` variable names, by field name.
     field_icons: dict[str, str] = field(default_factory=dict)
     field_edit_rules: dict[str, FieldEditRule] = field(default_factory=dict)
+    # Each field's Attachment widget, the control its `quac_control_<field>` variable asks for, and its custom comment, by field name.
+    field_attachments: dict[str, FieldAttachment] = field(default_factory=dict)
+    field_controls: dict[str, str] = field(default_factory=dict)
+    field_comments: dict[str, str] = field(default_factory=dict)
+    # The layer's Drag and Drop Designer form, None where its form is not one or places nothing.
+    form_layout: Optional[LayerFormLayout] = None
 
 
 @dataclass
@@ -301,3 +408,5 @@ class QgsProject:
     # The layer the QFieldSync plugin names as the one the project opens with as the active layer.
     initial_active_layer_id: Optional[str] = None
     mergin_filters: list[PresetFilter] = field(default_factory=list)
+    # The project's area and distance units, None where it saves neither.
+    measurement: Optional[ProjectMeasurement] = None

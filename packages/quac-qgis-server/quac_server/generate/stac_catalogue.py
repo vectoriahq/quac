@@ -2,8 +2,8 @@
 
 `generate_stac_catalogue` is the project file's catalogue, which the server
 route starts from and the QGIS Desktop part writes (`quac/publish.py`): each
-layer's settings, its data asset and its web map link, as `qgsLayerToNormalized`
-writes them, with a file layer's relative path or online address, a WFS layer's
+layer's settings, its fields' and form's settings in `table:columns`, its data
+asset and its web map link, as `qgsLayerToNormalized` writes them, with a file layer's relative path or online address, a WFS layer's
 GetFeature request or an ArcGIS layer's query, as `buildAssets` writes it, and a
 WMS, WMTS or XYZ layer's web-map-links link, or for an XYZ template addressed by
 `{quadkey}` its data asset. It writes no style asset and no `via` link to the
@@ -14,11 +14,33 @@ a data file or another service.
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import replace
 from typing import Any, Optional
 
-from ..model.qgs_project import BoundingBox, EditLock, FieldEditRule, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, PresetFilter, QgsProject, QgsRelation, WfsTransactionLayers, WmsPublishing
+
+from ..model.qgs_project import (
+    BoundingBox,
+    EditLock,
+    FieldAttachment,
+    FieldConstraintExpression,
+    FieldDefaultValue,
+    FieldEditRule,
+    FieldFixedValue,
+    FieldValueMapEntry,
+    FieldValueRelation,
+    LayerEntry,
+    LayerFormLayout,
+    LayerGroup,
+    LayerTreeNode,
+    PresetFilter,
+    ProjectMeasurement,
+    QgsProject,
+    QgsRelation,
+    WfsTransactionLayers,
+    WmsPublishing,
+)
 from ..model.stac_href import encode_asset_path
 from ..model.stac_projection import PROJ_CODE
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, build_wms_link
@@ -29,6 +51,7 @@ from ..parse.project_notes import find_value_relation_lookup, is_filter_in_proje
 from ..util.catalogue_file_formats import PROJECT_DATA_ROLES, declared_media_type_for_file, is_layer_file_of_format
 from .arcgis_stac_catalogue import arcgis_query_asset
 from .normalized_project import (
+    QUAC_MEASUREMENT_FIELD,
     CollectionFilter,
     CollectionRelation,
     CollectionRelationField,
@@ -84,6 +107,8 @@ class _LayerContext:
         self.layer_wgs84_extents = layer_wgs84_extents
         self.wfs_transaction_layers = project.wfs_transaction_layers
         self.wms_publishing = project.wms_publishing
+        # The project's area and distance units, written onto every layer's Collection.
+        self.measurement = project.measurement
         self.value_relations_by_layer_id = _collect_value_relations_by_layer_id(project.layers, siblings_by_id)
         self.relations_by_child_layer_id = _collect_relations_by_child_layer_id(project.relations, layers_by_id, siblings_by_id)
         # The filters the project sets up, by the id of the Collection each goes onto.
@@ -330,10 +355,15 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry
             layer.field_names,
             layer.field_aliases,
             layer.field_value_maps,
+            layer.field_attachments,
             layer.field_edit_rules,
             context.value_relations_by_layer_id.get(layer.id, {}),
+            layer.form_layout,
             layer.field_icons,
+            layer.field_controls,
+            layer.field_comments,
         ),
+        form_order=[field.name for field in layer.form_layout.fields] if layer.form_layout is not None else None,
         license=metadata.license,
         temporal_interval=metadata.temporal_interval,
         display_field=layer.display_field,
@@ -349,29 +379,31 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry
         added_message=layer.added_message,
         locks=_combine_locks(layer.locks, _wfs_transaction_locks(layer.id, context.wfs_transaction_layers)),
         filters=context.filters_by_collection_id.get(layer.id, []),
-        vendor_fields=_build_vendor_fields(layer),
+        vendor_fields=_build_vendor_fields(layer, context.measurement),
         assets=_build_assets(layer, geometry_filter),
         links=[web_map_link] if web_map_link else [],
         extensions=[WEB_MAP_LINKS_EXTENSION] if web_map_link else [],
     )
 
 
-def _build_vendor_fields(layer: LayerEntry) -> dict[str, Any]:
+def _build_vendor_fields(layer: LayerEntry, measurement: Optional[ProjectMeasurement]) -> dict[str, Any]:
     """
-    An XYZ layer's deepest zoom level as `quac:max_zoom`, a WFS layer's service,
-    feature type and coordinate system as `quac:wfs_*` fields, and an ArcGIS
-    layer's address and filter as `quac:arcgis_*` fields, so a reader reads them
-    directly instead of taking them back apart out of the asset href.
+    The project's measurement units as `quac:measurement`, an XYZ layer's
+    deepest zoom level as `quac:max_zoom`, a WFS layer's service, feature type
+    and coordinate system as `quac:wfs_*` fields, and an ArcGIS layer's address
+    and filter as `quac:arcgis_*` fields, so a reader reads them directly
+    instead of taking them back apart out of the asset href.
     """
     source = layer.data_source
+    shared: dict[str, Any] = {QUAC_MEASUREMENT_FIELD: {'area_unit': measurement.area_unit, 'distance_unit': measurement.distance_unit}} if measurement else {}
     if source.kind == 'xyz':
-        return {} if source.max_zoom is None else {'quac:max_zoom': source.max_zoom}
+        return shared if source.max_zoom is None else {**shared, 'quac:max_zoom': source.max_zoom}
     # The same fields an ArcGIS Online layer's Collection carries, so one reader loads both.
     if source.kind == 'arcgis':
-        return {'quac:arcgis_layer_url': source.url, **({'quac:arcgis_where': source.where} if source.where else {})}
+        return {**shared, 'quac:arcgis_layer_url': source.url, **({'quac:arcgis_where': source.where} if source.where else {})}
     if source.kind != 'wfs':
-        return {}
-    fields: dict[str, Any] = {'quac:wfs_endpoint': source.url, 'quac:wfs_type_name': source.type_name}
+        return shared
+    fields: dict[str, Any] = {**shared, 'quac:wfs_endpoint': source.url, 'quac:wfs_type_name': source.type_name}
     if source.srs_name:
         fields['quac:wfs_srs_name'] = source.srs_name
     return fields
@@ -514,36 +546,143 @@ def _derive_table_columns(
     field_names: list[str],
     field_aliases: dict[str, str],
     field_value_maps: dict[str, list[FieldValueMapEntry]],
+    field_attachments: dict[str, FieldAttachment],
     field_edit_rules: dict[str, FieldEditRule],
     field_value_relations: dict[str, dict[str, Any]],
+    form_layout: Optional[LayerFormLayout],
     field_icons: dict[str, str],
+    field_controls: dict[str, str],
+    field_comments: dict[str, str],
 ) -> list[dict[str, Any]]:
     """
     `table:columns` from the fields QGIS declares in `<fieldConfiguration>`,
-    then any field only an alias names, each with its alias as `title`, its
+    then any field only an alias names, as the JavaScript's
+    `deriveTableColumns` writes them with no data to read, so with no `type`:
+    each with its alias as `title`, its custom comment as `description`, its
     Value Map's list as `quac:values`, its Value Relation as
-    `quac:value_relation`, `quac:color` where its widget is QGIS's Color
-    widget, and the address of the icon its `quac_icon_<field>` variable names
-    as `quac:icon`. With no data to read, no `type` is written.
+    `quac:value_relation`, its Attachment widget as `quac:attachment`, its
+    Attributes Form settings as `quac:editable`, `quac:default`,
+    `quac:constraints`, `quac:hidden`, `quac:searchable`,
+    `quac:reuse_last_value`, `quac:duplicate_policy`, `quac:checkbox`,
+    `quac:range`, `quac:date_format`, `quac:color` and `quac:label_on_top`,
+    the icon and control its layer variables name as `quac:icon` and
+    `quac:control`, and where the layer has a Drag and Drop Designer form,
+    `quac:in_form`, `quac:visible_when` and `quac:editable_when`.
     """
     ordered = list(dict.fromkeys([*field_names, *field_aliases]))
+    placed_fields = {field.name: field for field in form_layout.fields} if form_layout is not None else {}
     columns: list[dict[str, Any]] = []
     for name in ordered:
         column: dict[str, Any] = {'name': name}
         alias = field_aliases.get(name)
         if alias:
             column['title'] = alias
+        comment = field_comments.get(name)
+        if comment:
+            column['description'] = comment
         values = field_value_maps.get(name)
         if values:
             column['quac:values'] = [{'value': entry.value, 'label': entry.label} for entry in values]
         value_relation = field_value_relations.get(name)
         if value_relation:
             column['quac:value_relation'] = value_relation
-        edit_rule = field_edit_rules.get(name)
-        if edit_rule is not None and edit_rule.colour:
-            column['quac:color'] = True
+        attachment = field_attachments.get(name)
+        if attachment is not None:
+            column['quac:attachment'] = _attachment_to_json(attachment)
+        rule = field_edit_rules.get(name)
+        if rule is not None:
+            _write_edit_rule(column, rule)
         icon = field_icons.get(name)
         if icon:
             column['quac:icon'] = icon
+        control = field_controls.get(name)
+        if control:
+            column['quac:control'] = control
+        if rule is not None and rule.label_on_top:
+            column['quac:label_on_top'] = True
+        if form_layout is not None:
+            placed = placed_fields.get(name)
+            if placed is None:
+                column['quac:in_form'] = False
+            elif placed.visible_when:
+                column['quac:visible_when'] = list(placed.visible_when)
+            if placed is not None and placed.editable_when:
+                column['quac:editable_when'] = placed.editable_when
         columns.append(column)
     return columns
+
+
+def _write_edit_rule(column: dict[str, Any], rule: FieldEditRule) -> None:
+    """A field's Attributes Form settings onto its column, from `quac:editable` to `quac:color`, in the order `deriveTableColumns` writes them."""
+    if rule.read_only:
+        column['quac:editable'] = False
+    if rule.default_value is not None:
+        column['quac:default'] = _default_to_json(rule.default_value)
+    elif rule.default_expression is not None:
+        column['quac:default'] = {'kind': 'expression', 'expression': rule.default_expression.expression, 'on_update': rule.default_expression.on_update}
+    if rule.not_null or rule.unique or rule.constraint_expression is not None:
+        constraints: dict[str, Any] = {}
+        if rule.not_null:
+            constraints['not_null'] = rule.not_null
+        if rule.unique:
+            constraints['unique'] = rule.unique
+        if rule.constraint_expression is not None:
+            constraints['expression'] = _constraint_expression_to_json(rule.constraint_expression)
+        column['quac:constraints'] = constraints
+    if rule.hidden:
+        column['quac:hidden'] = True
+    if rule.not_searchable:
+        column['quac:searchable'] = False
+    if rule.reuse_last_value:
+        column['quac:reuse_last_value'] = True
+    if rule.duplicate_policy:
+        column['quac:duplicate_policy'] = rule.duplicate_policy
+    if rule.checkbox is not None:
+        checkbox: dict[str, Any] = {}
+        if rule.checkbox.checked_value:
+            checkbox['checked'] = rule.checkbox.checked_value
+        if rule.checkbox.unchecked_value:
+            checkbox['unchecked'] = rule.checkbox.unchecked_value
+        if rule.checkbox.show_stored_value:
+            checkbox['show_stored'] = True
+        if rule.checkbox.allow_null:
+            checkbox['allow_null'] = True
+        column['quac:checkbox'] = checkbox
+    if rule.range:
+        column['quac:range'] = dict(rule.range)
+    if rule.date_format:
+        column['quac:date_format'] = rule.date_format
+    if rule.colour:
+        column['quac:color'] = True
+
+
+def _constraint_expression_to_json(constraint: FieldConstraintExpression) -> dict[str, Any]:
+    """A field's constraint expression as `quac:constraints` stores it: a description the source left blank is left off."""
+    return {'expression': constraint.expression, **({'description': constraint.description} if constraint.description else {}), 'strength': constraint.strength}
+
+
+def _default_to_json(default: FieldDefaultValue) -> dict[str, Any]:
+    """A field's default value as `quac:default` stores it."""
+    if default.kind == 'uuid':
+        return {'kind': 'uuid', 'format': default.format, 'on_update': default.on_update}
+    if default.kind == 'fixed':
+        return {'kind': 'fixed', 'value': _json_value(default.value), 'on_update': default.on_update}
+    return {'kind': 'now', 'on_update': default.on_update}
+
+
+def _json_value(value: FieldFixedValue) -> FieldFixedValue:
+    """A fixed default as JSON writes it: a number that is not finite, such as the NaN `Number('e5')` gives, is null, as `JSON.stringify` writes it."""
+    return None if isinstance(value, float) and not math.isfinite(value) else value
+
+
+def _attachment_to_json(attachment: FieldAttachment) -> dict[str, Any]:
+    """A field's Attachment widget as `quac:attachment` stores it: a member the source said nothing about is left off rather than written null."""
+    out: dict[str, Any] = {}
+    if attachment.viewer:
+        out['viewer'] = attachment.viewer
+    if attachment.filter:
+        out['filter'] = attachment.filter
+    if attachment.default_root:
+        out['default_root'] = attachment.default_root
+    out['relative_storage'] = attachment.relative_storage
+    return out

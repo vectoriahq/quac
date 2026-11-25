@@ -1,7 +1,7 @@
 """
 The helpers that give JavaScript's answers in Python. Each expected value is
 what Node 24 gave for the same input on 2026-11-07 (`URLSearchParams`,
-`encodeURIComponent` and `Number`), and on 2026-11-25 for a web map service's
+`encodeURIComponent` and `Number`), and on 2026-11-25 for `Number.parseInt` and for a web map service's
 address (`wmsEndpoint` and `wmtsEndpoint` in `packages/quac/src/model/`, which
 take an address apart and write it again with the `URL` class).
 """
@@ -11,7 +11,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from quac_server.js_compat import encode_uri_component, js_number, search_params_to_string, url_search_params
+from quac_server.js_compat import encode_uri_component, js_number, js_parse_int, search_params_to_string, url_search_params
 from quac_server.model.stac_wms import wms_endpoint
 from quac_server.model.stac_wmts import wmts_endpoint
 
@@ -57,6 +57,11 @@ class JavaScriptAnswers(unittest.TestCase):
         self.assertEqual([js_number(' 12.50 '), js_number('0x10'), js_number(''), js_number('1e3')], [12.5, 16, 0, 1000])
         self.assertTrue(math.isnan(js_number('abc')))
         self.assertIsInstance(js_number('1e3'), int)
+
+    def test_parse_int(self) -> None:
+        self.assertEqual([js_parse_int(text) for text in (' 12px', '-3', '+7', '0x10', '1e3', ' \xa0 5')], [12, -3, 7, 0, 1, 5])
+        for text in ('', 'x1', None):
+            self.assertTrue(math.isnan(js_parse_int(text)), text)
 
 
 if __name__ == '__main__':
