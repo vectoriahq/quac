@@ -33,17 +33,16 @@ from __future__ import annotations
 import re
 from typing import Any, Optional
 
-from ..js_compat import encode_uri_component, search_params_to_string
+from ..js_compat import encode_uri_component
 from ..model.qgs_project import BoundingBox, LayerEntry, QgsProject
 from ..model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from ..model.stac_projection import PROJECTION_EXTENSION
 from ..model.stac_tree_walk import catalogue_folder
 from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, WMS_REQUEST_PARAMETERS, choose_wms_crs
-from ..util.catalogue_file_formats import GEOJSON_MEDIA_TYPE
-from ..util.wfs_versions import WFS_CAPABILITIES_VERSION
 from .server_layer_tree import server_layer_tree, wms_published_layer_ids
 from .normalized_project import build_stac_extent, union_bboxes, with_data_type
 from .stac_catalogue import effective_wgs84_bbox, generate_stac_catalogue
+from .wfs_stac_catalogue import wfs_get_feature_asset
 from .wms_stac_catalogue import map_qt_type_to_stac_table_type
 
 
@@ -225,14 +224,7 @@ def _serve_collection(source: dict[str, Any], context: _ServeContext) -> dict[st
     }]
 
     if isinstance(wfs_type_name, str):
-        params = [('SERVICE', 'WFS'), ('VERSION', WFS_CAPABILITIES_VERSION), ('REQUEST', 'GetFeature'), ('TYPENAMES', wfs_type_name), ('OUTPUTFORMAT', 'application/json')]
-        separator = '&' if '?' in context.server_address else '?'
-        collection['assets'] = {'data': {
-            'href': f'{context.server_address}{separator}{search_params_to_string(params)}',
-            'type': GEOJSON_MEDIA_TYPE,
-            'title': f'WFS GetFeature: {wms_name}',
-            'roles': ['data'],
-        }}
+        collection['assets'] = {'data': wfs_get_feature_asset(context.server_address, wfs_type_name, wms_name)}
         collection['quac:wfs_endpoint'] = context.server_address
         collection['quac:wfs_type_name'] = wfs_type_name
     else:
@@ -285,8 +277,12 @@ def _serve_locks(collection: dict[str, Any], hidden: set[str]) -> None:
     }
 
 
-def _with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]) -> dict[str, Any]:
-    """The column with the `type` QGIS Server reports for its field, and the `data_type` beside it, where QGIS Server reports one."""
+def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]) -> dict[str, Any]:
+    """
+    The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ...}`
+    as `field_types` holds it, and the `data_type` beside it, where QGIS reports one.
+    The plugin's QGIS Desktop catalogue (`quac_catalogue/publish.py`) gives its columns their types by it too.
+    """
     column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', '')) if field_type else None
     return with_data_type({**column, 'type': column_type}) if column_type else column
 
@@ -296,7 +292,7 @@ def _serve_columns(collection: dict[str, Any], hidden: set[str], context: _Serve
     if not isinstance(columns, list):
         return
     field_types = context.field_types.get(layer_id, {})
-    kept = [_with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
+    kept = [with_field_type(_serve_column(column, hidden, context), field_types.get(column['name'])) for column in columns if column['name'] not in hidden]
     if kept:
         collection['table:columns'] = kept
     else:

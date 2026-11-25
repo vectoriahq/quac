@@ -1,18 +1,31 @@
 """Mirrors `packages/quac/src/generate/stacCatalogue.ts`, as far as the plugin's first-release fields need.
 
 `generate_stac_catalogue` is the project file's catalogue, which the server
-route starts from, written with the first-release fields only. It writes no
-data asset, style asset, link or field naming where a layer's own data comes
-from: the server route replaces or drops each of them.
+route starts from, written with the first-release fields, each layer's data
+asset and each web map layer's link: a file layer's relative path or online
+address, a WFS layer's GetFeature request or an ArcGIS layer's query, as
+`buildAssets` writes it, and a WMS, WMTS or XYZ layer's web-map-links link,
+or for an XYZ template addressed by `{quadkey}` its data asset. It writes no
+style asset, `via` link or other field naming where a layer's own data comes
+from. The server route replaces the links and replaces or drops the data
+asset, so a served catalogue never names a data file or another service.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 from typing import Any, Optional
 
 from ..model.qgs_project import BoundingBox, EditLock, FieldValueMapEntry, FieldValueRelation, LayerEntry, LayerGroup, LayerTreeNode, QgsProject, WfsTransactionLayers, WmsPublishing
-from ..parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
+from ..model.stac_href import encode_asset_path
+from ..model.stac_projection import PROJ_CODE
+from ..model.stac_wms import WEB_MAP_LINKS_EXTENSION, build_wms_link
+from ..model.stac_wmts import build_wmts_link
+from ..model.stac_xyz import build_xyz_link
+from ..parse.geometry_siblings import find_geometry_siblings, read_sibling_shapes, sibling_collection_id
+from ..util.catalogue_file_formats import PROJECT_DATA_ROLES, declared_media_type_for_file, is_layer_file_of_format
+from .arcgis_stac_catalogue import arcgis_query_asset
 from .normalized_project import (
     NormalizedGroup,
     NormalizedLayer,
@@ -23,10 +36,16 @@ from .normalized_project import (
     slugify,
     union_bboxes,
 )
+from .wfs_stac_catalogue import wfs_get_feature_asset
 
-# The source kinds that are images: a layer of one has no features to edit. `image` is how
-# `parse_data_source` reads every source of the providers that read images.
-_IMAGE_KINDS = ('wms', 'wmts', 'xyz', 'image')
+# The keys a data asset takes for the shapes its Collection holds, the GeoPackage table it reads, its Delimited Text options and its feature filter.
+QUAC_GEOMETRY_FILTER = 'quac:geometry_filter'
+QUAC_LAYER_NAME = 'quac:layer_name'
+QUAC_DELIMITED_TEXT = 'quac:delimited_text'
+QUAC_FEATURE_FILTER = 'quac:feature_filter'
+
+# The source kinds that are images: a layer of one has no features to edit.
+_IMAGE_KINDS = ('wms', 'wmts', 'xyz')
 
 
 def generate_stac_catalogue(project: QgsProject, layer_wgs84_extents: Optional[dict[str, BoundingBox]] = None) -> dict[str, Any]:
@@ -126,20 +145,22 @@ def _layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> Optional[
     """A layer's Collection: its own, or for a geometry sibling the set's, which its first sibling stands for."""
     siblings = context.siblings_by_id.get(layer.id)
     if not siblings:
-        return _qgs_layer_to_normalized(layer, context)
+        return _qgs_layer_to_normalized(layer, context, _geometry_filter_of(layer))
     return _siblings_to_normalized(siblings, layer.name, context) if siblings[0] is layer else None
 
 
 def _siblings_to_normalized(siblings: list[LayerEntry], title: str, context: _LayerContext) -> NormalizedLayer:
     """
     One Collection for layers QGIS split out of one file by shape: the first
-    sibling's settings and every sibling's extent. QGIS Server names each
-    sibling separately, so the one Collection has no name of its own, and the
-    server route does not serve it.
+    sibling's settings, every sibling's extent, and a data asset keeping the
+    siblings' shapes. With all three shapes it keeps none, so the layer reads
+    the whole file. QGIS Server names each sibling separately, so the one
+    Collection has no name of its own, and the server route does not serve it.
     """
     first = siblings[0]
+    shapes = read_sibling_shapes(siblings)
     wkb_types = [layer.wkb_type for layer in siblings if layer.wkb_type]
-    normalized = _qgs_layer_to_normalized(first, context)
+    normalized = _qgs_layer_to_normalized(first, context, None if len(shapes) == 3 else shapes)
     normalized.title = title
     normalized.description = first.resource_metadata.abstract if first.resource_metadata.abstract is not None else qgis_placeholder_description('layer', title)
     normalized.bbox = union_bboxes([effective_wgs84_bbox(layer, context.layer_wgs84_extents) for layer in siblings])
@@ -216,8 +237,21 @@ def _without_wms_excluded_layers(project: QgsProject) -> QgsProject:
     return replace(project, layers=[layer for layer in project.layers if layer.id not in excluded], layer_tree=prune(project.layer_tree))
 
 
-def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> NormalizedLayer:
+def _geometry_filter_of(layer: LayerEntry) -> Optional[list[str]]:
+    shapes = read_sibling_shapes([layer])
+    return shapes or None
+
+
+def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext, geometry_filter: Optional[list[str]]) -> NormalizedLayer:
+    """A layer's Collection. `geometry_filter` is the shapes its data asset keeps: its own `|geometrytype=` (`_geometry_filter_of`), or a set of siblings'."""
     metadata = layer.resource_metadata
+    source = layer.data_source
+    web_map_link = (
+        build_wms_link(source) if source.kind == 'wms'
+        else build_wmts_link(source) if source.kind == 'wmts'
+        else build_xyz_link(source.url or '', source.tiles or 'image') if source.kind == 'xyz'
+        else None
+    )
     return NormalizedLayer(
         id=layer.id,
         title=layer.name,
@@ -241,7 +275,64 @@ def _qgs_layer_to_normalized(layer: LayerEntry, context: _LayerContext) -> Norma
         scale_range=layer.scale_range,
         opacity=layer.opacity,
         locks=_combine_locks(layer.locks, _wfs_transaction_locks(layer.id, context.wfs_transaction_layers)),
+        assets=_build_assets(layer, geometry_filter),
+        links=[web_map_link] if web_map_link else [],
+        extensions=[WEB_MAP_LINKS_EXTENSION] if web_map_link else [],
     )
+
+
+def _layer_crs_field(layer: LayerEntry) -> dict[str, str]:
+    """
+    The layer's coordinate system as QGIS holds it, as `proj:code`. Nothing
+    where the project names none, or names one with no authority code, such as
+    a user-defined system.
+    """
+    return {PROJ_CODE: layer.crs} if layer.crs and re.match(r'^[A-Za-z]+:\S+\Z', layer.crs) else {}
+
+
+def _build_assets(layer: LayerEntry, geometry_filter: Optional[list[str]]) -> dict[str, Any]:
+    """
+    The layer's data asset, as the JavaScript's `buildAssets` writes it: for a
+    file, the path the project gives, not just the file's name, or an online
+    file's own address; for a WFS layer, its GetFeature request; for an ArcGIS
+    layer, its query; for an XYZ template addressed by `{quadkey}`, which no
+    `rel: "xyz"` link can hold, the template. A WMS or WMTS layer, and an XYZ
+    layer its link holds, has none, and neither has a source the catalogue
+    cannot address, such as a database.
+    """
+    source = layer.data_source
+    if source.kind in ('wms', 'wmts'):
+        return {}
+    if source.kind == 'xyz':
+        if build_xyz_link(source.url or ''):
+            return {}
+        return {'data': {'href': source.url, 'title': 'XYZ tile template', 'roles': ['data']}}
+    if source.kind == 'file':
+        filename = source.filename or ''
+        asset: dict[str, Any] = {
+            'href': source.url if source.url is not None else f'./{encode_asset_path(source.rel_path or "")}',
+            'type': declared_media_type_for_file(filename, PROJECT_DATA_ROLES),
+            'title': filename,
+            'roles': ['data'],
+        }
+        if geometry_filter:
+            asset[QUAC_GEOMETRY_FILTER] = geometry_filter
+        # Only a GeoPackage's: QGIS also writes `|layername=` for a GeoJSON file, which holds one layer.
+        if source.layer_name and is_layer_file_of_format(filename, 'geopackage'):
+            asset[QUAC_LAYER_NAME] = source.layer_name
+        if source.delimited_text:
+            asset[QUAC_DELIMITED_TEXT] = dict(source.delimited_text)
+        if source.feature_filter:
+            asset[QUAC_FEATURE_FILTER] = dict(source.feature_filter)
+        return {'data': {**asset, **_layer_crs_field(layer)}}
+    if source.kind == 'arcgis' and source.url:
+        return {'data': {**arcgis_query_asset(source.url, source.where, layer.name), **_layer_crs_field(layer)}}
+    if source.kind == 'wfs' and source.url and source.type_name:
+        asset = wfs_get_feature_asset(source.url, source.type_name, source.type_name)
+        if source.feature_filter:
+            asset[QUAC_FEATURE_FILTER] = dict(source.feature_filter)
+        return {'data': {**asset, **_layer_crs_field(layer)}}
+    return {}
 
 
 def effective_wgs84_bbox(layer: LayerEntry, layer_wgs84_extents: dict[str, BoundingBox]) -> Optional[BoundingBox]:

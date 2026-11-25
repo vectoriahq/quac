@@ -1,0 +1,254 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "web-map-layers",
+  "title": "Web map layers",
+  "description": "STAC catalogue generated from QGIS project \"Web map layers\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Parcels.json",
+      "type": "application/json",
+      "title": "Parcels"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Imagery.json",
+      "type": "application/json",
+      "title": "Imagery"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Aerial.json",
+      "type": "application/json",
+      "title": "Aerial"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/Streets.json",
+      "type": "application/json",
+      "title": "Streets"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Parcels",
+      "title": "Parcels",
+      "description": "Layer \"Parcels\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Parcels"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Parcels"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Imagery",
+      "title": "Imagery",
+      "description": "Layer \"Imagery\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Imagery"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Imagery"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Aerial",
+      "title": "Aerial",
+      "description": "Layer \"Aerial\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Aerial"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:qgis_server_wms_name": "Aerial",
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "Streets",
+      "title": "Streets",
+      "description": "Layer \"Streets\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "wms",
+          "href": "https://qgis.example.com/ows?MAP=/projects/fixture.qgs",
+          "type": "image/png",
+          "wms:layers": [
+            "Streets"
+          ],
+          "wms:styles": [
+            ""
+          ],
+          "wms:transparent": true,
+          "quac:wms_crs": "EPSG:3857"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 0.8,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Streets"
+    }
+  ],
+  "stac_extensions": [
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+  ]
+}

@@ -1,0 +1,315 @@
+{
+  "type": "Catalog",
+  "stac_version": "1.1.0",
+  "id": "web-map-layers",
+  "title": "Web map layers",
+  "description": "STAC catalogue generated from QGIS project \"Web map layers\".",
+  "links": [
+    {
+      "rel": "self",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "root",
+      "href": "./catalog.json"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/parcels_wms.json",
+      "type": "application/json",
+      "title": "Parcels"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/imagery_wmts.json",
+      "type": "application/json",
+      "title": "Imagery"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/aerial_quadkey.json",
+      "type": "application/json",
+      "title": "Aerial"
+    },
+    {
+      "rel": "child",
+      "href": "./collections/streets_xyz.json",
+      "type": "application/json",
+      "title": "Streets"
+    }
+  ],
+  "collections": [
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "parcels_wms",
+      "title": "Parcels",
+      "description": "Layer \"Parcels\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {},
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/parcels_wms.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "wms",
+          "href": "https://maps.example.test/ows?map=parks",
+          "type": "image/png",
+          "wms:layers": [
+            "parcels,roads"
+          ],
+          "wms:styles": [
+            "default,"
+          ],
+          "wms:transparent": false,
+          "wms:dimensions": {
+            "TIME": "2024-01-01"
+          },
+          "quac:wms_crs": "EPSG:28350",
+          "quac:wms_version": "1.1.1"
+        },
+        {
+          "rel": "via",
+          "href": "./web-maps.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Parcels"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "imagery_wmts",
+      "title": "Imagery",
+      "description": "Layer \"Imagery\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {},
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/imagery_wmts.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "wmts",
+          "href": "https://tiles.example.test/wmts?api_key=EXAMPLEKEY",
+          "type": "image/jpeg",
+          "wmts:layer": "imagery",
+          "wmts:encoding": "kvp",
+          "wmts:dimensions": {
+            "time": "2024"
+          },
+          "quac:wmts_tile_matrix_set": "WebMercatorQuad"
+        },
+        {
+          "rel": "via",
+          "href": "./web-maps.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Imagery"
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "aerial_quadkey",
+      "title": "Aerial",
+      "description": "Layer \"Aerial\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {
+        "data": {
+          "href": "https://tiles.example.test/aerial/a{quadkey}.jpeg?g=1",
+          "title": "XYZ tile template",
+          "roles": [
+            "data"
+          ]
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/aerial_quadkey.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "via",
+          "href": "./web-maps.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 1,
+      "quac:max_zoom": 19,
+      "quac:qgis_server_wms_name": "Aerial",
+      "stac_extensions": [
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ]
+    },
+    {
+      "type": "Collection",
+      "stac_version": "1.1.0",
+      "id": "streets_xyz",
+      "title": "Streets",
+      "description": "Layer \"Streets\" from the QGIS project.",
+      "license": "other",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              -180,
+              -90,
+              180,
+              90
+            ]
+          ]
+        },
+        "temporal": {
+          "interval": [
+            [
+              null,
+              null
+            ]
+          ]
+        }
+      },
+      "assets": {},
+      "links": [
+        {
+          "rel": "self",
+          "href": "./collections/streets_xyz.json"
+        },
+        {
+          "rel": "parent",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "root",
+          "href": "./catalog.json"
+        },
+        {
+          "rel": "xyz",
+          "href": "https://tiles.example.test/streets/{z}/{x}/{y}.png?api_key=EXAMPLEKEY"
+        },
+        {
+          "rel": "via",
+          "href": "./web-maps.qgs",
+          "title": "QGIS project"
+        }
+      ],
+      "quac:visibility_checked": true,
+      "quac:editable": false,
+      "quac:identifiable": true,
+      "quac:opacity": 0.8,
+      "quac:max_zoom": 18,
+      "stac_extensions": [
+        "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+        "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+      ],
+      "quac:qgis_server_wms_name": "Streets"
+    }
+  ],
+  "stac_extensions": [
+    "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+  ]
+}

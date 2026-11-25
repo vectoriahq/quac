@@ -1,0 +1,547 @@
+"""
+What the plugin's QGIS Desktop part writes when a project is saved, with no
+QGIS module, so its tests run anywhere. `desktop.py` reads the inputs from
+QGIS and writes the files.
+
+`plan_publication` takes the saved project's file name and bytes, the field
+types and WGS84 boxes QGIS gives (`qgis_inputs.field_types` and
+`layer_extents`), the project file's folder, the chosen folder, each layer's
+current style as QML, and a way to read a file already in the chosen folder.
+It returns a `Publication`: the files to write, each by its path relative to
+the chosen folder, the files to remove, and what was left out and why.
+
+The catalogue is the project file's (`generate_stac_catalogue`), with each
+column's type from QGIS, and less the names QGIS Server would give a layer. It
+is written as separate documents (`split_catalogue`): the root Catalog as
+`<project>.stac.json` in the chosen folder, every other document under
+`<project>.stac/`, and each layer's style as
+`<project>.stac/styles/<the Collection's file name stem>.qml`.
+
+The folder rules:
+
+- A file layer's data asset names its file by a path relative to the
+  document, worked out from the project's folder and the chosen folder. A
+  layer whose file is not in the chosen folder or below it is left out.
+- A layer read from a web address keeps it, unless the address holds a user
+  name or password (`server_wms_endpoint` refuses it), and then it is left out.
+  So does a WMS, WMTS or XYZ layer, whose address is written as a web map link,
+  or for an XYZ template addressed by `{quadkey}` as its data asset. One whose
+  source holds a user name, a password or an `authcfg` is left out the same
+  way: the catalogue never names the source, and it carries no link for it.
+- A layer whose data is not in a file or at a web address, such as one held in
+  a database, is left out.
+- A layer QGIS could not open is left out, unless it is a WMS, WMTS or XYZ
+  layer. QGIS opens a WMS or WMTS layer by reading its server's capabilities,
+  so it cannot open one whose server it could not reach at that moment; such
+  a layer is written with its address all the same, without the extent and
+  field types QGIS would have given, or left out where its source holds a
+  user name, a password or an `authcfg`.
+- A Value Relation reading its choices from a layer left out is not written.
+- Each Collection's `via` link to the project file is written only where the
+  project file is in the chosen folder or below it.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import posixpath
+import re
+from dataclasses import dataclass, field
+from typing import Any, Callable, Optional
+from urllib.parse import unquote
+
+from .quac_server.generate.normalized_project import build_stac_extent
+from .quac_server.js_compat import url_search_params
+from .quac_server.generate.server_stac_catalogue import server_wms_endpoint, with_field_type
+from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
+from .quac_server.generate.stac_catalogue import generate_stac_catalogue
+from .quac_server.model.qgs_project import BoundingBox, LayerEntry
+from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
+from .quac_server.model.stac_href import encode_asset_path
+from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
+from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
+from .quac_server.parse.read_project_file import read_project_xml
+from .quac_server.util.catalogue_file_formats import QML_STYLE_MEDIA_TYPE
+
+# Where the project keeps the settings (`QgsProject.writeEntry`): on or off, and the folder relative to the project file.
+SETTINGS_SCOPE = 'quac'
+WRITE_ON_SAVE_KEY = 'catalogue/write_on_save'
+FOLDER_KEY = 'catalogue/folder'
+
+# Why a layer is left out.
+OUTSIDE_FOLDER = 'outside_folder'
+NOT_A_FILE = 'not_a_file'
+HOLDS_CREDENTIALS = 'holds_credentials'
+NOT_OPENED = 'not_opened'
+
+_REASONS = {
+    OUTSIDE_FOLDER: 'its data file is outside the chosen folder',
+    NOT_A_FILE: 'its data is not in a file, such as a layer held in a database',
+    HOLDS_CREDENTIALS: 'its web address holds a user name or password',
+    NOT_OPENED: 'QGIS could not open its data',
+}
+
+_NEXT_STEPS = {
+    OUTSIDE_FOLDER: "To include a layer, move its data file into the chosen folder, or choose a folder that holds it.",
+    NOT_A_FILE: 'To include a layer held in a database, save its data as a file in the chosen folder.',
+    HOLDS_CREDENTIALS: 'To include a web layer, give it an address without a user name or password.',
+    NOT_OPENED: 'To include a layer QGIS could not open, fix its data source in QGIS and save again.',
+}
+
+# The kinds of source written as a web map link, which a reader contacts itself: written whether or not QGIS opened the layer.
+_WEB_MAP_KINDS = ('wms', 'wmts', 'xyz')
+
+# The title of the `via` link to the project file, as the JavaScript's `QGIS_PROJECT_LINK_TITLE` writes it.
+QGIS_PROJECT_LINK_TITLE = 'QGIS project'
+
+# The names QGIS Server would give a layer, which the served catalogue reads and this one does not carry.
+_SERVER_FIELDS = ('quac:qgis_server_wms_name', 'quac:qgis_server_wfs_type_name')
+
+# The extent a Collection takes where its source gives no box.
+_WHOLE_WORLD = [-180, -90, 180, 90]
+
+# Any version of the QUAC schema, so a catalogue an earlier version wrote is still recognised.
+_QUAC_SCHEMA = re.compile(r'^https://vectoriahq\.github\.io/quac/v[^/]+/schema\.json\Z')
+
+_DRIVE = re.compile(r'^[A-Za-z]:([\\/]|\Z)')
+_SCHEME = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]+:')
+# An address whose authority holds a user name or password.
+_USERINFO = re.compile(r'^[A-Za-z][A-Za-z0-9+.-]*:[/\\\\]*[^/\\\\?#]*@')
+
+
+@dataclass(frozen=True)
+class LayerStyle:
+    """A layer's current style: its name in QGIS's style manager and the QML QGIS writes for it."""
+
+    name: str
+    qml: bytes
+
+
+@dataclass(frozen=True)
+class LeftOutLayer:
+    name: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class DroppedChoices:
+    """A Value Relation not written because the layer it reads its choices from was left out."""
+
+    layer: str
+    field: str
+    lookup: str
+
+
+@dataclass
+class Publication:
+    root_file_name: str
+    children_folder: str
+    # Each file's path relative to the chosen folder, joined by `/`, and its bytes, in the order to write them: the root last.
+    files: list[tuple[str, bytes]] = field(default_factory=list)
+    # Files the previous catalogue linked under `children_folder` that this one does not.
+    removals: list[str] = field(default_factory=list)
+    left_out: list[LeftOutLayer] = field(default_factory=list)
+    dropped_choices: list[DroppedChoices] = field(default_factory=list)
+    # Layers whose style was not written because its QML names a folder on this computer.
+    skipped_styles: list[str] = field(default_factory=list)
+    # Why nothing is written, where nothing is.
+    refusal: Optional[str] = None
+    # How many layers the catalogue holds.
+    layer_count: int = 0
+
+    def warnings(self) -> list[str]:
+        """A sentence for each thing left out, for the log."""
+        sentences = [f'{layer.name} was left out: {_REASONS[layer.reason]}.' for layer in self.left_out]
+        reasons = {layer.name: layer.reason for layer in self.left_out}
+        for dropped in self.dropped_choices:
+            reason = reasons.get(dropped.lookup, OUTSIDE_FOLDER)
+            step = f"Move {dropped.lookup}'s data into the chosen folder to keep them." if reason == OUTSIDE_FOLDER else _NEXT_STEPS[reason]
+            sentences.append(f'The choices for {dropped.layer}, field {dropped.field}, were left out, because they come from {dropped.lookup}, which was left out. {step}')
+        sentences += [f"The style of {name} was not written, because it names a folder on this computer." for name in self.skipped_styles]
+        return sentences
+
+
+def catalogue_names(project_file_name: str) -> tuple[str, str]:
+    """
+    The root document's file name and the folder beside it holding every other
+    document, from the project file's name: `Parks.qgz` gives
+    `Parks.stac.json` and `Parks.stac`. A character no file name may hold on
+    some system becomes `_`.
+    """
+    base = re.split(r'[\\/]', project_file_name)[-1]
+    stem = _safe_name(re.sub(r'\.(qgs|qgz)\Z', '', base, flags=re.IGNORECASE))
+    return f'{stem}.stac.json', f'{stem}.stac'
+
+
+def chosen_folder(project_folder: str, setting: str, path: Any = os.path) -> str:
+    """The chosen folder from the saved setting: empty is the project's folder, and a relative path is relative to it."""
+    if not setting:
+        return path.normpath(project_folder)
+    return path.normpath(setting if path.isabs(setting) else path.join(project_folder, setting))
+
+
+def folder_setting(project_folder: str, folder: str, path: Any = os.path) -> str:
+    """
+    The setting saved for a chosen folder: its path relative to the project's
+    folder, joined by `/`, or empty for the project's folder itself. A folder
+    on another drive, which has no relative path, is saved as it is.
+    """
+    if not folder:
+        return ''
+    try:
+        relative = path.relpath(folder, project_folder)
+    except ValueError:
+        return path.normpath(folder)
+    if relative == path.curdir:
+        return ''
+    return relative.replace(path.sep, '/')
+
+
+def plan_publication(
+    project_file_name: str,
+    project_bytes: bytes,
+    field_types: dict[str, dict[str, dict[str, str]]],
+    layer_wgs84_extents: dict[str, BoundingBox],
+    project_folder: str,
+    folder: str,
+    styles: dict[str, LayerStyle],
+    read_existing: Callable[[str], Optional[bytes]],
+    path: Any = os.path,
+    opened_layer_ids: Optional[set[str]] = None,
+) -> Publication:
+    """
+    What to write into `folder`, the chosen folder, for a saved project.
+
+    `project_folder` and `folder` are absolute paths, both read with `path`,
+    `os.path` by default (`ntpath` or `posixpath` in the tests). `styles` holds
+    each layer's current style by layer id. `read_existing` gives the bytes of
+    a file in the chosen folder by its path relative to it, joined by `/`, or
+    None where there is none. `opened_layer_ids` holds the layers QGIS opened,
+    its valid layers; a layer of the project not in it is left out, unless it
+    is a WMS, WMTS or XYZ layer. None takes every layer as opened.
+
+    Where the chosen folder already holds a root document of that name that is
+    not a QUAC Catalog, nothing is written and `refusal` says why.
+    """
+    root_file_name, children_folder = catalogue_names(project_file_name)
+    publication = Publication(root_file_name, children_folder)
+    previous_root = read_existing(root_file_name)
+    previous: Optional[dict[str, Any]] = None
+    if previous_root is not None:
+        previous = _json_object(previous_root)
+        if previous is None or not _is_quac_catalog(previous):
+            publication.refusal = (
+                f'The STAC catalogue was not written: {root_file_name} in the chosen folder is not a QUAC catalogue, so it was left as it is. '
+                'Rename or move that file, or choose another folder, and save again.'
+            )
+            return publication
+
+    project = parse_qgs_xml(read_project_xml(project_file_name, project_bytes))
+    catalogue = generate_stac_catalogue(project, layer_wgs84_extents)
+    layers_by_id = {layer.id: layer for layer in project.layers}
+    project_folder = path.normpath(project_folder)
+    folder = path.normpath(folder)
+
+    left_out_ids: set[str] = set()
+    titles: dict[str, str] = {}
+    for collection in _collections(catalogue):
+        titles[collection['id']] = collection.get('title', collection['id'])
+        layer = layers_by_id.get(collection['id'])
+        web_map = layer is not None and (layer.data_source.kind in _WEB_MAP_KINDS or (layer.data_source.kind == 'unsupported' and _web_map_source_holds_credentials(layer.data_source.raw, layer.data_source.hint)))
+        if opened_layer_ids is not None and collection['id'] not in opened_layer_ids and not web_map:
+            reason: Optional[str] = NOT_OPENED
+        else:
+            reason = _place_data(layer, collection, project_folder, folder, path)
+        if reason is not None:
+            left_out_ids.add(collection['id'])
+            publication.left_out.append(LeftOutLayer(collection.get('title', collection['id']), reason))
+    _leave_out(catalogue, left_out_ids)
+
+    project_href = _inside(path.join(project_folder, project_file_name), folder, path)
+    for collection in _collections(catalogue):
+        for key in _SERVER_FIELDS:
+            collection.pop(key, None)
+        columns = collection.get('table:columns')
+        if isinstance(columns, list):
+            types = field_types.get(collection['id'], {})
+            kept = []
+            for column in columns:
+                relation = column.get('quac:value_relation')
+                if isinstance(relation, dict) and relation.get('collection') in left_out_ids:
+                    column = {key: value for key, value in column.items() if key != 'quac:value_relation'}
+                    publication.dropped_choices.append(DroppedChoices(collection.get('title', collection['id']), column['name'], titles.get(relation['collection'], relation['collection'])))
+                kept.append(with_field_type(column, types.get(column['name'])))
+            collection['table:columns'] = kept
+        if project_href is not None:
+            collection['links'] = [*collection['links'], {'rel': 'via', 'href': f'./{encode_asset_path(project_href)}', 'title': QGIS_PROJECT_LINK_TITLE}]
+    publication.layer_count = sum(1 for _ in _collections(catalogue))
+    _refit_extent(catalogue)
+    _declare_quac_again(catalogue)
+
+    documents = split_catalogue(catalogue, root_file_name, children_folder)
+    style_folders = [path.normpath(project_folder), folder]
+    style_names: set[str] = set()
+    style_files: list[tuple[str, bytes]] = []
+    for entry in documents:
+        document = entry['document']
+        style = styles.get(document.get('id')) if document.get('type') == 'Collection' else None
+        if style is None:
+            continue
+        if _names_a_folder(style.qml, style_folders):
+            publication.skipped_styles.append(document.get('title', document['id']))
+            continue
+        stem = posixpath.basename(entry['path'])[:-len('.json')]
+        style_path = f'{children_folder}/styles/{_unclaimed(stem, ".qml", style_names)}'
+        assets = document.setdefault('assets', {})
+        assets[style_asset_key(assets, style.name)] = {
+            'href': encode_asset_path(posixpath.relpath(style_path, posixpath.dirname(entry['path']))),
+            'type': QML_STYLE_MEDIA_TYPE,
+            'title': style.name,
+            'roles': ['style', DEFAULT_STYLE_ROLE],
+        }
+        style_files.append((style_path, style.qml))
+
+    publication.files = [*style_files, *((entry['path'], _encode(entry['document'])) for entry in documents[1:]), (documents[0]['path'], _encode(documents[0]['document']))]
+    if previous is not None:
+        written = {name.lower() for name, _data in publication.files}
+        linked = _previously_linked(root_file_name, previous, children_folder, read_existing)
+        publication.removals = sorted(name for name in linked if name.lower() not in written)
+    return publication
+
+
+def emptied_folders(removals: list[str], children_folder: str) -> list[str]:
+    """The folders under `children_folder` that held a removed file, deepest first: the ones to remove where they are left empty."""
+    folders: set[str] = set()
+    for name in removals:
+        parent = posixpath.dirname(name)
+        while parent.startswith(f'{children_folder}/'):
+            folders.add(parent)
+            parent = posixpath.dirname(parent)
+    return sorted(folders, key=lambda name: (-name.count('/'), name))
+
+
+def message(publication: Publication) -> tuple[str, str]:
+    """
+    The message bar's one entry for a publication, `('info', text)` or
+    `('warning', text)`: what was written, each layer left out and why, and
+    what to do next.
+    """
+    if publication.refusal:
+        return 'warning', publication.refusal
+    if not (publication.left_out or publication.dropped_choices or publication.skipped_styles):
+        return 'info', f'Wrote the STAC catalogue {publication.root_file_name}.'
+    sentences = [f'Wrote the STAC catalogue {publication.root_file_name}.']
+    if publication.left_out:
+        count = len(publication.left_out)
+        listed = ', '.join(f'{layer.name} ({_REASONS[layer.reason]})' for layer in publication.left_out)
+        sentences.append(f"{'One layer was' if count == 1 else f'{count} layers were'} left out: {listed}.")
+    if publication.dropped_choices:
+        listed = ', '.join(f'{dropped.layer} ({dropped.field}, from {dropped.lookup})' for dropped in publication.dropped_choices)
+        sentences.append(f'Choices that come from a layer left out were left out too: {listed}.')
+    if publication.skipped_styles:
+        sentences.append(f"The style of {', '.join(publication.skipped_styles)} was not written, because it names a folder on this computer.")
+    sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
+    return 'warning', ' '.join(sentences)
+
+
+def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project_folder: str, folder: str, path: Any) -> Optional[str]:
+    """
+    Rewrites a Collection's data asset for the chosen folder, or returns why
+    the layer is left out. A file's href becomes its path from the chosen
+    folder, which `split_catalogue` then writes from each document.
+    """
+    if layer is None:
+        return NOT_A_FILE
+    source = layer.data_source
+    data = (collection.get('assets') or {}).get('data')
+    if source.kind in _WEB_MAP_KINDS:
+        return None if source.url and server_wms_endpoint(source.url) else HOLDS_CREDENTIALS
+    if source.kind == 'unsupported' and _web_map_source_holds_credentials(source.raw, source.hint):
+        return HOLDS_CREDENTIALS
+    if data is None:
+        return NOT_A_FILE
+    if source.kind in ('wfs', 'arcgis') or source.url is not None:
+        return None if source.url and server_wms_endpoint(source.url) else HOLDS_CREDENTIALS
+    written = source.rel_path or ''
+    if not _DRIVE.match(written) and (_SCHEME.match(written) or written.lower().startswith('/vsi')):
+        # An address the parser did not take as an online file: one holding a user name or password, or a GDAL virtual path.
+        return HOLDS_CREDENTIALS if '@' in written else NOT_A_FILE
+    if _DRIVE.match(written) and path.sep != '\\':
+        # A Windows path, read on a system with no drives.
+        return OUTSIDE_FOLDER
+    relative = _inside(path.join(project_folder, written), folder, path)
+    if relative is None:
+        return OUTSIDE_FOLDER
+    data['href'] = f'./{encode_asset_path(relative)}'
+    return None
+
+
+def _web_map_source_holds_credentials(raw: str, provider: Optional[str]) -> bool:
+    """
+    Whether a `wms` or `xyzvectortiles` source names a user name, a password or
+    an `authcfg`, as its own keys or in its address, which `parse_data_source`
+    reads as `unsupported`.
+    """
+    if (provider or '').lower() not in ('wms', 'xyzvectortiles'):
+        return False
+    params = url_search_params(raw.strip())
+    if any(key in ('authcfg', 'username', 'password') and value.strip() for key, value in params):
+        return True
+    return any(key == 'url' and _USERINFO.match(value.strip()) for key, value in params)
+
+
+def _inside(target: str, folder: str, path: Any) -> Optional[str]:
+    """`target`'s path from `folder`, joined by `/`, where it is in `folder` or below it, and None otherwise."""
+    try:
+        relative = path.relpath(path.normpath(target), folder)
+    except ValueError:
+        return None
+    if path.isabs(relative):
+        return None
+    parts = relative.replace(path.sep, '/').split('/')
+    if any(part in ('', path.curdir, path.pardir) for part in parts) or _DRIVE.match(parts[0]):
+        return None
+    return '/'.join(parts)
+
+
+def _collections(catalog: dict[str, Any]):
+    yield from catalog.get('collections') or []
+    for child in catalog.get('catalogs') or []:
+        yield from _collections(child)
+
+
+def _self_href(node: dict[str, Any]) -> Optional[str]:
+    return next((link.get('href') for link in node.get('links') or [] if link.get('rel') == 'self'), None)
+
+
+def _leave_out(catalog: dict[str, Any], ids: set[str]) -> bool:
+    """Takes the Collections in `ids` out with their child links; false where a Catalog held a layer and now holds none, so its parent leaves it out."""
+    held = any(True for _ in _collections(catalog))
+    removed_hrefs: set[Any] = set()
+    collections = []
+    for collection in catalog.get('collections') or []:
+        if collection['id'] in ids:
+            removed_hrefs.add(_self_href(collection))
+        else:
+            collections.append(collection)
+    catalogs = []
+    for child in catalog.get('catalogs') or []:
+        if _leave_out(child, ids):
+            catalogs.append(child)
+        else:
+            removed_hrefs.add(_self_href(child))
+    catalog['links'] = [link for link in catalog['links'] if not (link.get('rel') == 'child' and link.get('href') in removed_hrefs)]
+    for key, kept in (('collections', collections), ('catalogs', catalogs)):
+        if kept:
+            catalog[key] = kept
+        else:
+            catalog.pop(key, None)
+    return bool(collections or catalogs) or not held
+
+
+def _refit_extent(catalogue: dict[str, Any]) -> None:
+    """The top-level extent, worked out again from the layers written."""
+    boxes = [collection['extent']['spatial']['bbox'][0] for collection in _collections(catalogue)]
+    boxes = [box for box in boxes if box != _WHOLE_WORLD]
+    if boxes:
+        catalogue['extent'] = build_stac_extent(BoundingBox(min(box[0] for box in boxes), min(box[1] for box in boxes), max(box[2] for box in boxes), max(box[3] for box in boxes)))
+    else:
+        catalogue.pop('extent', None)
+
+
+def _declare_quac_again(catalogue: dict[str, Any]) -> None:
+    """Lists the QUAC schema afresh, now that the names QGIS Server would give a layer are taken out."""
+
+    def clear(node: dict[str, Any]) -> None:
+        extensions = [url for url in node.get('stac_extensions') or [] if url != QUAC_SCHEMA_URL]
+        if extensions:
+            node['stac_extensions'] = extensions
+        else:
+            node.pop('stac_extensions', None)
+        for child in [*(node.get('collections') or []), *(node.get('catalogs') or [])]:
+            clear(child)
+
+    clear(catalogue)
+    declare_quac_extension(catalogue)
+
+
+def _names_a_folder(qml: bytes, folders: list[str]) -> bool:
+    """Whether a style's QML holds the path of the project's folder or the chosen folder, written with either slash."""
+    text = qml.decode('utf-8', errors='replace')
+    for folder in folders:
+        for spelling in {folder, folder.replace('\\', '/'), folder.replace('/', '\\')}:
+            if len(spelling) > 3 and spelling in text:
+                return True
+    return False
+
+
+def _unclaimed(name: str, suffix: str, taken: set[str]) -> str:
+    """`name` and `suffix`, or with `-2`, `-3` and so on before the suffix, whichever is first not in `taken`, compared in lower case."""
+    candidate = f'{name}{suffix}'
+    count = 2
+    while candidate.lower() in taken:
+        candidate = f'{name}-{count}{suffix}'
+        count += 1
+    taken.add(candidate.lower())
+    return candidate
+
+
+def _encode(document: dict[str, Any]) -> bytes:
+    return (json.dumps(document, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+
+
+def _json_object(data: bytes) -> Optional[dict[str, Any]]:
+    try:
+        value = json.loads(data.decode('utf-8'))
+    except (UnicodeDecodeError, ValueError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _is_quac_catalog(document: dict[str, Any]) -> bool:
+    extensions = document.get('stac_extensions')
+    return document.get('type') == 'Catalog' and isinstance(extensions, list) and any(isinstance(url, str) and _QUAC_SCHEMA.match(url) for url in extensions)
+
+
+def _previously_linked(root_file_name: str, root: dict[str, Any], children_folder: str, read_existing: Callable[[str], Optional[bytes]]) -> set[str]:
+    """
+    The documents and styles under `children_folder` the previous catalogue
+    linked: each document a `child` link names, from the root down, and each
+    style asset of a Collection among them.
+    """
+    linked: set[str] = set()
+    seen = {root_file_name.lower()}
+    queue = [(root_file_name, root)]
+    while queue:
+        document_path, document = queue.pop()
+        for link in document.get('links') or []:
+            if not isinstance(link, dict) or link.get('rel') != 'child':
+                continue
+            target = _resolve_inside(link.get('href'), document_path, children_folder)
+            if target is None or not target.lower().endswith('.json') or target.lower() in seen:
+                continue
+            seen.add(target.lower())
+            linked.add(target)
+            data = read_existing(target)
+            child = _json_object(data) if data is not None else None
+            if child is not None:
+                queue.append((target, child))
+        if document.get('type') == 'Collection' and isinstance(document.get('assets'), dict):
+            for asset in document['assets'].values():
+                if isinstance(asset, dict) and 'style' in (asset.get('roles') or []):
+                    target = _resolve_inside(asset.get('href'), document_path, children_folder)
+                    if target is not None:
+                        linked.add(target)
+    return linked
+
+
+def _resolve_inside(href: Any, document_path: str, children_folder: str) -> Optional[str]:
+    """A relative href in the document at `document_path`, as a path from the chosen folder, where it is under `children_folder`, and None otherwise."""
+    if not isinstance(href, str) or not href or href[0] in '/?#' or _SCHEME.match(href) or _DRIVE.match(href):
+        return None
+    relative = unquote(re.split(r'[?#]', href, maxsplit=1)[0])
+    if '\\' in relative or '\x00' in relative:
+        return None
+    resolved = posixpath.normpath(posixpath.join(posixpath.dirname(document_path), relative))
+    return resolved if resolved.startswith(f'{children_folder}/') else None

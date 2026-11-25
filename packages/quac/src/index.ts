@@ -256,4 +256,6 @@ export { generateServerStacCatalogue, withoutHiddenFields } from './generate/ser
 export type { HiddenFieldContext } from './generate/serverStacCatalogue.ts'
 export { serverLayerTree } from './generate/serverLayerTree.ts'
 export type { ServerLayerTree, ServerLayerTreeGroup, ServerLayerTreeLayer, ServerLayerTreeNode } from './generate/serverLayerTree.ts'
+export { splitCatalogue } from './generate/splitCatalogue.ts'
+export type { CatalogueDocument, SplitCatalogueOptions } from './generate/splitCatalogue.ts'
 export { PROJ_CODE, PROJECTION_EXTENSION, readCollectionCrs } from './model/stacProjection.ts'

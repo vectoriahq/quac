@@ -61,6 +61,18 @@ const catalogue = generateStacCatalogue(project, [], {
 
 `selfHref` is the address of the folder the project is published in, and `projectPath` is the project file's path inside that folder. A layer's data files and styles are addressed relative to them, so a catalogue to be published or saved apart from the project needs both. Without `projectPath`, each style's address names no file, and only an application already holding the project can read it; without `selfHref`, the catalogue's relative addresses have no folder to start from.
 
+`generateStacCatalogue` returns one document, with each Catalog carrying its Collections and nested Catalogs inline. `splitCatalogue` gives the same catalogue as separate documents, each with the path to save it at, for a STAC client that follows `child` links:
+
+```js
+import { splitCatalogue } from '@vectoriahq/quac'
+
+for (const { path, document } of splitCatalogue(catalogue, { rootFileName: 'survey.json', childrenFolder: 'survey' })) {
+  // path: 'survey.json', 'survey/collections/roads_3f2a….json', …
+}
+```
+
+Each path is relative to the folder the root document is saved in, and every relative address inside a document is rewritten from that document's own path, so a layer's data file keeps its place. Without options, the root is `catalog.json` and the other documents sit beside it. The field reference's [§ The document](https://github.com/vectoriahq/quac/tree/main/packages/quac/spec#the-document) says how the documents are named.
+
 `project.notes` lists the project's settings that the catalogue does not carry, such as a widget it does not read or an expression it cannot read. Each note gives the layer, the field where there is one, a reason code and the setting's own text where it helps; the `ProjectNoteReason` type lists the codes and what each means. The notes are not written into the catalogue.
 
 The JSON Schema that checks a catalogue's `quac:` fields is exported as `@vectoriahq/quac/schema`.

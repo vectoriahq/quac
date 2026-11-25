@@ -75,10 +75,24 @@ class InputsFromQgisServer(unittest.TestCase):
 
 
 class DataSourceKinds(unittest.TestCase):
-    def test_reads_every_source_of_an_image_provider_as_an_image(self) -> None:
-        for source, provider in (('url=https://maps.example.com/wms&layers=roads', 'wms'), ('type=xyz&url=https://tiles.example.com/%7Bz%7D/%7Bx%7D/%7By%7D.png', 'wms'), ('url=not an address&layers=roads', 'wms'), ('type=xyz&url=https://tiles.example.com/%7Bz%7D/%7Bx%7D/%7By%7D.pbf', 'xyzvectortiles')):
+    def test_reads_each_source_of_an_image_provider_as_the_javascript_does(self) -> None:
+        for source, provider, kind in (
+            ('url=https://maps.example.com/wms&layers=roads', 'wms', 'wms'),
+            ('layers=roads&tileMatrixSet=WebMercatorQuad&url=https://tiles.example.com/wmts', 'wms', 'wmts'),
+            ('type=xyz&url=https://tiles.example.com/%7Bz%7D/%7Bx%7D/%7By%7D.png', 'wms', 'xyz'),
+            ('type=xyz&url=https://tiles.example.com/%7Bz%7D/%7Bx%7D/%7By%7D.pbf', 'xyzvectortiles', 'xyz'),
+            ('url=not an address&layers=roads', 'wms', 'unsupported'),
+            ('authcfg=ab12cd3&url=https://maps.example.com/wms&layers=roads', 'wms', 'unsupported'),
+            ('password=secret&username=editor&url=https://maps.example.com/wms&layers=roads', 'wms', 'unsupported'),
+            ('url=https://editor:secret@maps.example.com/wms&layers=roads', 'wms', 'unsupported'),
+            ('type=mbtiles&url=file:///tiles.mbtiles', 'wms', 'unsupported'),
+            ('type=xyz&url=https://tiles.example.com/%7Bz%7D/%7Bx%7D.pbf', 'xyzvectortiles', 'unsupported'),
+        ):
             with self.subTest(source=source):
-                self.assertEqual(parse_data_source(source, provider).kind, 'image')
+                parsed = parse_data_source(source, provider)
+                self.assertEqual(parsed.kind, kind)
+                if kind == 'unsupported':
+                    self.assertEqual(parsed.hint, provider)
 
     def test_reads_a_file_and_its_shape(self) -> None:
         source = parse_data_source('./notes.geojson|geometrytype=Point', 'ogr')

@@ -1,0 +1,353 @@
+[
+  {
+    "options": {},
+    "documents": [
+      {
+        "path": "catalog.json",
+        "document": {
+          "type": "Catalog",
+          "stac_version": "1.1.0",
+          "id": "tile-layers",
+          "title": "Tile layers",
+          "description": "STAC catalogue generated from QGIS project \"Tile layers\".",
+          "links": [
+            {
+              "rel": "self",
+              "href": "./catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "./catalog.json"
+            },
+            {
+              "rel": "child",
+              "href": "./collections/world_imagery_wmts.json",
+              "type": "application/json",
+              "title": "World Imagery"
+            },
+            {
+              "rel": "child",
+              "href": "./collections/openstreetmap_xyz.json",
+              "type": "application/json",
+              "title": "OpenStreetMap"
+            }
+          ],
+          "stac_extensions": [
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ]
+        }
+      },
+      {
+        "path": "collections/world_imagery_wmts.json",
+        "document": {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "world_imagery_wmts",
+          "title": "World Imagery",
+          "description": "Layer \"World Imagery\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "assets": {},
+          "links": [
+            {
+              "rel": "self",
+              "href": "./world_imagery_wmts.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "wmts",
+              "href": "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml",
+              "type": "application/xml",
+              "wmts:layer": "World_Imagery",
+              "wmts:encoding": "rest",
+              "quac:wmts_tile_matrix_set": "GoogleMapsCompatible",
+              "quac:wmts_style": "default"
+            },
+            {
+              "rel": "via",
+              "href": "../tiles.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:visibility_checked": true,
+          "quac:editable": false,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "stac_extensions": [
+            "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ],
+          "quac:qgis_server_wms_name": "World Imagery"
+        }
+      },
+      {
+        "path": "collections/openstreetmap_xyz.json",
+        "document": {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "openstreetmap_xyz",
+          "title": "OpenStreetMap",
+          "description": "Layer \"OpenStreetMap\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "assets": {},
+          "links": [
+            {
+              "rel": "self",
+              "href": "./openstreetmap_xyz.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "root",
+              "href": "../catalog.json"
+            },
+            {
+              "rel": "xyz",
+              "href": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            },
+            {
+              "rel": "via",
+              "href": "../tiles.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:visibility_checked": true,
+          "quac:editable": false,
+          "quac:identifiable": true,
+          "quac:opacity": 0.8,
+          "quac:max_zoom": 19,
+          "stac_extensions": [
+            "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ],
+          "quac:qgis_server_wms_name": "OpenStreetMap"
+        }
+      }
+    ]
+  },
+  {
+    "options": {
+      "rootFileName": "tiles.json",
+      "childrenFolder": "tiles"
+    },
+    "documents": [
+      {
+        "path": "tiles.json",
+        "document": {
+          "type": "Catalog",
+          "stac_version": "1.1.0",
+          "id": "tile-layers",
+          "title": "Tile layers",
+          "description": "STAC catalogue generated from QGIS project \"Tile layers\".",
+          "links": [
+            {
+              "rel": "self",
+              "href": "./tiles.json"
+            },
+            {
+              "rel": "root",
+              "href": "./tiles.json"
+            },
+            {
+              "rel": "child",
+              "href": "./tiles/collections/world_imagery_wmts.json",
+              "type": "application/json",
+              "title": "World Imagery"
+            },
+            {
+              "rel": "child",
+              "href": "./tiles/collections/openstreetmap_xyz.json",
+              "type": "application/json",
+              "title": "OpenStreetMap"
+            }
+          ],
+          "stac_extensions": [
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ]
+        }
+      },
+      {
+        "path": "tiles/collections/world_imagery_wmts.json",
+        "document": {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "world_imagery_wmts",
+          "title": "World Imagery",
+          "description": "Layer \"World Imagery\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "assets": {},
+          "links": [
+            {
+              "rel": "self",
+              "href": "./world_imagery_wmts.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../../tiles.json"
+            },
+            {
+              "rel": "root",
+              "href": "../../tiles.json"
+            },
+            {
+              "rel": "wmts",
+              "href": "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/WMTS/1.0.0/WMTSCapabilities.xml",
+              "type": "application/xml",
+              "wmts:layer": "World_Imagery",
+              "wmts:encoding": "rest",
+              "quac:wmts_tile_matrix_set": "GoogleMapsCompatible",
+              "quac:wmts_style": "default"
+            },
+            {
+              "rel": "via",
+              "href": "../../tiles.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:visibility_checked": true,
+          "quac:editable": false,
+          "quac:identifiable": true,
+          "quac:opacity": 1,
+          "stac_extensions": [
+            "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ],
+          "quac:qgis_server_wms_name": "World Imagery"
+        }
+      },
+      {
+        "path": "tiles/collections/openstreetmap_xyz.json",
+        "document": {
+          "type": "Collection",
+          "stac_version": "1.1.0",
+          "id": "openstreetmap_xyz",
+          "title": "OpenStreetMap",
+          "description": "Layer \"OpenStreetMap\" from the QGIS project.",
+          "license": "other",
+          "extent": {
+            "spatial": {
+              "bbox": [
+                [
+                  -180,
+                  -90,
+                  180,
+                  90
+                ]
+              ]
+            },
+            "temporal": {
+              "interval": [
+                [
+                  null,
+                  null
+                ]
+              ]
+            }
+          },
+          "assets": {},
+          "links": [
+            {
+              "rel": "self",
+              "href": "./openstreetmap_xyz.json"
+            },
+            {
+              "rel": "parent",
+              "href": "../../tiles.json"
+            },
+            {
+              "rel": "root",
+              "href": "../../tiles.json"
+            },
+            {
+              "rel": "xyz",
+              "href": "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            },
+            {
+              "rel": "via",
+              "href": "../../tiles.qgs",
+              "title": "QGIS project"
+            }
+          ],
+          "quac:visibility_checked": true,
+          "quac:editable": false,
+          "quac:identifiable": true,
+          "quac:opacity": 0.8,
+          "quac:max_zoom": 19,
+          "stac_extensions": [
+            "https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json",
+            "https://vectoriahq.github.io/quac/v0.3.0/schema.json"
+          ],
+          "quac:qgis_server_wms_name": "OpenStreetMap"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE qgis PUBLIC "http://mrcc.com/qgis.dtd" "SYSTEM">
+<qgis version="3.34.4-Prizren" projectname="Web map layers">
+  <title>Web map layers</title>
+  <layer-tree-group>
+    <layer-tree-layer checked="Qt::Checked" expanded="0" id="parcels_wms" name="Parcels">
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Checked" expanded="0" id="imagery_wmts" name="Imagery">
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Checked" expanded="0" id="aerial_quadkey" name="Aerial">
+    </layer-tree-layer>
+    <layer-tree-layer checked="Qt::Checked" expanded="0" id="streets_xyz" name="Streets">
+    </layer-tree-layer>
+  </layer-tree-group>
+  <projectlayers>
+    <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
+      <id>parcels_wms</id>
+      <datasource>crs=EPSG:28350&amp;dpiMode=7&amp;format=image/png&amp;layers=parcels&amp;layers=roads&amp;styles=default&amp;styles&amp;time=2024-01-01&amp;transparent=false&amp;url=https://Maps.Example.test:443/ows?map%3Dparks%26SERVICE%3DWMS%26request%3DGetCapabilities%23top&amp;version=1.1.1</datasource>
+      <layername>Parcels</layername>
+      <provider encoding="">wms</provider>
+      <layerOpacity>1</layerOpacity>
+    </maplayer>
+    <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
+      <id>imagery_wmts</id>
+      <datasource>crs=EPSG:3857&amp;dpiMode=7&amp;format=image/jpeg&amp;layers=imagery&amp;styles&amp;tileDimensions=time%3D2024&amp;tileMatrixSet=WebMercatorQuad&amp;url=https://tiles.example.test/wmts?api_key%3DEXAMPLEKEY%26SERVICE%3DWMTS%26REQUEST%3DGetCapabilities</datasource>
+      <layername>Imagery</layername>
+      <provider encoding="">wms</provider>
+      <layerOpacity>1</layerOpacity>
+    </maplayer>
+    <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
+      <id>aerial_quadkey</id>
+      <datasource>crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://tiles.example.test/aerial/a%7Bq%7D.jpeg?g%3D1&amp;zmax=19&amp;zmin=1&amp;http-header:referer=</datasource>
+      <layername>Aerial</layername>
+      <provider encoding="">wms</provider>
+      <layerOpacity>1</layerOpacity>
+    </maplayer>
+    <maplayer hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="1e+08" type="raster">
+      <id>streets_xyz</id>
+      <datasource>crs=EPSG:3857&amp;format&amp;type=xyz&amp;url=https://tiles.example.test/streets/%7Bz%7D/%7Bx%7D/%7By%7D.png?api_key%3DEXAMPLEKEY&amp;zmax=18&amp;zmin=0</datasource>
+      <layername>Streets</layername>
+      <provider encoding="">wms</provider>
+      <layerOpacity>0.8</layerOpacity>
+    </maplayer>
+  </projectlayers>
+</qgis>
