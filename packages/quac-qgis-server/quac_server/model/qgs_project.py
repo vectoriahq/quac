@@ -10,6 +10,14 @@ EditLock = Union[bool, dict[str, str]]
 
 
 @dataclass
+class ProjectMeasurement:
+    """The unit names QGIS saves under `<Measurement>` (`QgsUnitTypes::encodeUnit`), such as `ha` and `meters`."""
+
+    area_unit: str
+    distance_unit: str
+
+
+@dataclass
 class ServerHiddenFields:
     """The fields QGIS Server leaves out of WMS and of WFS."""
 
