@@ -9,9 +9,12 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
 
 1. with the option off, and checks nothing is written;
 2. with the option on and `publish/` chosen, and checks the documents, the
-   data hrefs, the QML styles, the web map links of an XYZ layer and of a WMS
-   layer whose made-up server QGIS cannot reach, and the message bar's one
-   warning for a layer whose data is outside the folder;
+   data hrefs, the QML styles and a categorised one's field, the map
+   canvas's extent in WGS84 as the initial view, a default and the form's
+   order and conditions, a condition reading a layer left out not being
+   written, the web map links of an XYZ
+   layer and of a WMS layer whose made-up server QGIS cannot reach, and the
+   message bar's one warning for a layer whose data is outside the folder;
 3. after removing a layer, and checks only that layer's document and style
    are removed;
 4. after a layer's data file is deleted and the project read again, and checks
@@ -51,7 +54,25 @@ sys.path.insert(0, str(PACKAGE))
 
 from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin  # noqa: E402
 
-from qgis.core import QgsApplication, QgsEditorWidgetSetup, QgsProcessingException, QgsProcessingFeedback, QgsProject, QgsRasterLayer, QgsVectorLayer  # noqa: E402
+from qgis.core import (  # noqa: E402
+    QgsApplication,
+    QgsAttributeEditorContainer,
+    QgsAttributeEditorField,
+    QgsCategorizedSymbolRenderer,
+    QgsCoordinateReferenceSystem,
+    QgsDefaultValue,
+    QgsEditFormConfig,
+    QgsEditorWidgetSetup,
+    QgsExpression,
+    QgsOptionalExpression,
+    QgsProcessingException,
+    QgsProcessingFeedback,
+    QgsProject,
+    QgsRasterLayer,
+    QgsRectangle,
+    QgsVectorLayer,
+)
+from qgis.gui import QgsMapCanvas  # noqa: E402
 from qgis.PyQt.QtWidgets import QMainWindow, QMenu  # noqa: E402
 
 try:
@@ -236,6 +257,26 @@ def main() -> int:
             'Layer': kinds_layer.id(), 'LayerName': 'Kinds', 'Key': 'code', 'Value': 'label',
             'AllowNull': False, 'AllowMulti': False, 'OrderByValue': False, 'FilterExpression': '',
         }))
+        parks_layer.setRenderer(QgsCategorizedSymbolRenderer('kind', []))
+        # A default, and a Drag and Drop Designer form whose containers show a field on a condition: one on Parks's own field,
+        # one reading Trails, which is left out.
+        parks_fields = parks_layer.fields()
+        parks_layer.setDefaultValueDefinition(parks_fields.indexOf('name'), QgsDefaultValue("'Unnamed park'"))
+        form = parks_layer.editFormConfig()
+        form.setLayout(QgsEditFormConfig.TabLayout)
+        form_root = form.invisibleRootContainer()
+        form_root.clear()
+        form_root.addChildElement(QgsAttributeEditorField('id', parks_fields.indexOf('id'), form_root))
+        for title, condition, field_name in (('Details', '"kind" = \'dog\'', 'name'), ('Trail', 'aggregate(\'Trails\', \'count\', "id") > 0', 'kind')):
+            container = QgsAttributeEditorContainer(title, form_root)
+            container.setVisibilityExpression(QgsOptionalExpression(QgsExpression(condition)))
+            container.addChildElement(QgsAttributeEditorField(field_name, parks_fields.indexOf(field_name), container))
+            form_root.addChildElement(container)
+        parks_layer.setEditFormConfig(form)
+        # A map canvas writes its extent into the project on save, as QGIS Desktop's does.
+        canvas = QgsMapCanvas()
+        canvas.setDestinationCrs(QgsCoordinateReferenceSystem('EPSG:3857'))
+        canvas.setExtent(QgsRectangle(12890000, -3760000, 12900000, -3750000))
         project_file = home / 'Parks.qgz'
 
         # 1. The option off.
@@ -277,18 +318,30 @@ def main() -> int:
         check(parks_document['assets']['data']['href'] == '../../../../vector/parks.geojson', f"Parks's data href is relative to its document: {parks_document['assets']['data']['href']}")
         style = parks_document['assets'].get('default', {})
         check(style.get('roles') == ['style', 'default'] and style.get('type') == 'application/x-qgis-qml+xml', 'Parks has a QML style asset with the style and default roles')
+        check(style.get('quac:categorised_field') == 'kind', f"Parks's categorised style names the field it classifies by: {style}")
+        view = root_document.get('quac:initial_view')
+        print('      initial view:', view)
+        # The canvas widens the extent to its own shape, so the view is checked to be around the extent's centre, 115.838, -31.936, in degrees.
+        around_centre = isinstance(view, list) and len(view) == 4 and 115.7 < view[0] < 115.838 < view[2] < 116 and -32.1 < view[1] < -31.936 < view[3] < -31.8
+        check(around_centre, "the root's initial view is the canvas's extent in WGS84")
         qml = (publish / 'Parks.stac' / 'styles' / f'{posixpath.basename(parks_name)[:-5]}.qml').read_text(encoding='utf-8')
         check('<renderer-v2' in qml and '<!DOCTYPE qgis' in qml, 'the QML is the style QGIS writes')
         check('ValueRelation' not in qml and str(work) not in qml, "the QML holds no form settings and no path of this computer")
         kind = next(column for column in parks_document['table:columns'] if column['name'] == 'kind')
         check(kind.get('quac:value_relation', {}).get('collection') == kinds_layer.id(), 'the Value Relation names Kinds')
         check({column['name']: column.get('type') for column in parks_document['table:columns']} == {'id': 'int', 'name': 'string', 'kind': 'string'}, 'each column has the type QGIS reports')
+        name_column = next(column for column in parks_document['table:columns'] if column['name'] == 'name')
+        check(name_column.get('quac:default') == {'kind': 'fixed', 'value': 'Unnamed park', 'on_update': False}, f"the name's default reaches the document: {name_column.get('quac:default')}")
+        check(name_column.get('quac:visible_when') == ['"kind" = \'dog\''], f"the condition for showing the name reaches the document: {name_column.get('quac:visible_when')}")
+        check(parks_document.get('quac:form_order') == ['id', 'name', 'kind'], f"the form's order reaches the document: {parks_document.get('quac:form_order')}")
+        check('quac:visible_when' not in kind and 'Trails' not in json.dumps(parks_document), 'the condition reading Trails, which is left out, is not written')
         all_text = ''.join((publish / name).read_text(encoding='utf-8') for name in written if name.startswith('Parks.stac'))
         check(str(work) not in all_text and 'Parks.qgz' not in all_text, 'no document names a folder of this computer or the project file, which is outside publish/')
         check(not [name for name in written if name.endswith('.tmp')], 'no temporary file is left')
         check(len(iface.bar.messages) == 1, 'one message bar entry')
         print('      message:', iface.bar.messages[-1][1])
         check('Trails (its data file is outside the chosen folder)' in iface.bar.messages[-1][1], 'the warning names Trails and why it was left out')
+        check('Parks (kind, its condition for showing it, from Trails)' in iface.bar.messages[-1][1], 'the warning names the condition left out with Trails')
         check('Parcels WMS' not in iface.bar.messages[-1][1] and 'could not open' not in iface.bar.messages[-1][1], 'the warning does not name Parcels WMS')
 
         # 3. A layer removed.

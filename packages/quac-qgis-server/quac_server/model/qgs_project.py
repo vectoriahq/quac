@@ -1,4 +1,4 @@
-"""Mirrors `packages/quac/src/model/QgsProject.ts`, as far as the plugin's first-release fields read a project."""
+"""Mirrors `packages/quac/src/model/QgsProject.ts`, as far as the plugin's catalogues read a project."""
 
 from __future__ import annotations
 
@@ -7,6 +7,14 @@ from typing import Any, Optional, Union
 
 # An edit's lock: `True`, or `{'expression': ...}`, the expression locking the feature it is true for.
 EditLock = Union[bool, dict[str, str]]
+
+
+@dataclass
+class ProjectMeasurement:
+    """The unit names QGIS saves under `<Measurement>` (`QgsUnitTypes::encodeUnit`), such as `ha` and `meters`."""
+
+    area_unit: str
+    distance_unit: str
 
 
 @dataclass
@@ -35,7 +43,7 @@ class LayerScaleRange:
 
 @dataclass
 class LayerResourceMetadata:
-    """The parts of a layer's `<resourceMetadata>` the first-release fields read."""
+    """The parts of a layer's `<resourceMetadata>` the catalogues read."""
 
     abstract: Optional[str] = None
     license: Optional[str] = None
@@ -71,6 +79,128 @@ class FieldValueRelation:
     descending: bool
 
 
+# A fixed default, typed as QGIS's expression parser reads the literal: text, a number, true or false, or None for NULL.
+FieldFixedValue = Union[str, int, float, bool, None]
+
+
+@dataclass
+class FieldDefaultValue:
+    """
+    A default value: `now` is the moment the feature is created, or saved where
+    `on_update` is set; `uuid` is a new random identifier written in `format`,
+    `with_braces`, `without_braces` or `id128`; `fixed` is `value` as the
+    source wrote it.
+    """
+
+    kind: str
+    on_update: bool
+    format: Optional[str] = None
+    value: FieldFixedValue = None
+
+
+@dataclass
+class FieldDefaultExpression:
+    """A default worked out from the feature's other values; `on_update` fills it on every save rather than only the one creating the feature."""
+
+    expression: str
+    on_update: bool
+
+
+@dataclass
+class FieldConstraintExpression:
+    """A QGIS constraint expression, its strength, `enforced` or `warn`, and the message the source gives for it, None where it gives none."""
+
+    expression: str
+    strength: str
+    description: Optional[str] = None
+
+
+@dataclass
+class FieldCheckbox:
+    """A Checkbox widget: the values a ticked and an unticked box write to a text field, None where unset, and its two display settings."""
+
+    checked_value: Optional[str]
+    unchecked_value: Optional[str]
+    show_stored_value: bool
+    allow_null: bool
+
+
+@dataclass
+class FieldAttachment:
+    """
+    A field's Attachment widget, which QGIS calls `ExternalResource`: what its
+    document viewer shows (`image`, `web`, `audio` or `video`, None for none),
+    its file filter and default root folder as written (None where unset), and
+    what a stored path is relative to (`absolute`, `project` or `default-root`).
+    """
+
+    viewer: Optional[str]
+    filter: Optional[str]
+    default_root: Optional[str]
+    relative_storage: str
+
+
+@dataclass
+class FormLayoutField:
+    """
+    A field the Drag and Drop Designer form places: the visibility expressions
+    of the containers around it, outermost first, and the expression behind its
+    data-defined Editable property, None where it has none.
+    """
+
+    name: str
+    visible_when: list[str]
+    editable_when: Optional[str] = None
+
+
+@dataclass
+class LayerFormLayout:
+    """A layer's Drag and Drop Designer form: the fields it places, in its order."""
+
+    fields: list[FormLayoutField]
+
+
+@dataclass
+class FieldEditRule:
+    """
+    What a field's form settings say about changing it, as `parseLayers.ts`'s
+    `FieldEditRule` holds it. `range` holds only the members the source sets,
+    of `min`, `max`, `step`, `precision` and `suffix`.
+    """
+
+    read_only: bool = False
+    default_value: Optional[FieldDefaultValue] = None
+    # `enforced` or `warn`, None where the source sets none.
+    not_null: Optional[str] = None
+    unique: Optional[str] = None
+    # `default` or `unset`, None for QGIS's `Duplicate`.
+    duplicate_policy: Optional[str] = None
+    constraint_expression: Optional[FieldConstraintExpression] = None
+    default_expression: Optional[FieldDefaultExpression] = None
+    hidden: bool = False
+    reuse_last_value: bool = False
+    checkbox: Optional[FieldCheckbox] = None
+    range: Optional[dict[str, Any]] = None
+    date_format: Optional[str] = None
+    colour: bool = False
+    not_searchable: bool = False
+    label_on_top: bool = False
+
+
+@dataclass
+class LayerStyle:
+    """
+    One of a layer's named styles, as far as `quac:categorised_field` reads
+    it: its name in QGIS's style manager, whether it is the one applied, and
+    the field a categorised or graduated renderer classifies by. The
+    renderer's own XML is not kept.
+    """
+
+    name: str
+    is_active: bool
+    categorised_field: Optional[str] = None
+
+
 @dataclass
 class DataSource:
     """
@@ -102,6 +232,8 @@ class DataSource:
     # A Delimited Text source's options, as `quac:delimited_text` writes them.
     delimited_text: Optional[dict[str, Any]] = None
     type_name: Optional[str] = None
+    # A WFS layer's `srsname`, the coordinate system it asks the service for.
+    srs_name: Optional[str] = None
     # An ArcGIS layer's filter, sent to the service as its query's `where`.
     where: Optional[str] = None
     # A WMS layer's layer names and style names, tile or image format, CRS, version, transparency and `TIME` or `ELEVATION` dimension.
@@ -149,6 +281,70 @@ class LayerEntry:
     resource_metadata: LayerResourceMetadata = field(default_factory=LayerResourceMetadata)
     scale_range: Optional[LayerScaleRange] = None
     locks: dict[str, EditLock] = field(default_factory=dict)
+    # The layer's named styles, and the index of the one applied, -1 where there is none.
+    styles: list[LayerStyle] = field(default_factory=list)
+    active_style_index: int = -1
+    # **Private** in Project Properties → Data Sources: the layer is kept out of the legend.
+    is_private: bool = False
+    # The legend placeholder image the project embeds, as a `data:` URL.
+    legend_image: Optional[str] = None
+    # The address of the icon the layer's `quac_icon` variable names, and its `quac_added_message`.
+    icon: Optional[str] = None
+    added_message: Optional[str] = None
+    # The address of the icon each field's `quac_icon_<field>` variable names, by field name.
+    field_icons: dict[str, str] = field(default_factory=dict)
+    field_edit_rules: dict[str, FieldEditRule] = field(default_factory=dict)
+    # Each field's Attachment widget, the control its `quac_control_<field>` variable asks for, and its custom comment, by field name.
+    field_attachments: dict[str, FieldAttachment] = field(default_factory=dict)
+    field_controls: dict[str, str] = field(default_factory=dict)
+    field_comments: dict[str, str] = field(default_factory=dict)
+    # The layer's Drag and Drop Designer form, None where its form is not one or places nothing.
+    form_layout: Optional[LayerFormLayout] = None
+
+
+@dataclass
+class MapExtent:
+    """The map canvas extent the project saves, in the canvas's coordinate system, or the project's where the canvas names none."""
+
+    xmin: float
+    ymin: float
+    xmax: float
+    ymax: float
+    crs: Optional[str]
+
+
+@dataclass
+class QgsRelationFieldPair:
+    """One `<fieldRef>` of a relation: the field on the parent layer (`referencedField`) and on the child (`referencingField`)."""
+
+    parent_field: str
+    child_field: str
+
+
+@dataclass
+class QgsRelation:
+    """
+    One of the project's relations: its id and name (empty where the project
+    gives none), the parent layer's id (`referencedLayer`), the child's
+    (`referencingLayer`), the field pairs joining them in file order, and
+    QGIS's `strength` as written, None where the project gives none.
+    """
+
+    id: str
+    name: str
+    parent_layer_id: str
+    child_layer_id: str
+    field_pairs: list[QgsRelationFieldPair]
+    strength: Optional[str]
+
+
+@dataclass
+class PresetFilter:
+    """A filter the project sets up on a layer's field, and the name it is shown under, None where it has none."""
+
+    layer_id: str
+    field: str
+    name: Optional[str]
 
 
 @dataclass
@@ -191,7 +387,7 @@ class WfsTransactionLayers:
 
 @dataclass
 class ProjectMetadata:
-    """The parts of `<projectMetadata>` the first-release fields read."""
+    """The parts of `<projectMetadata>` the catalogues read."""
 
     abstract: Optional[str] = None
 
@@ -207,3 +403,10 @@ class QgsProject:
     project_crs: Optional[str] = None
     metadata: ProjectMetadata = field(default_factory=ProjectMetadata)
     wms_crs_list: list[str] = field(default_factory=list)
+    map_extent: Optional[MapExtent] = None
+    relations: list[QgsRelation] = field(default_factory=list)
+    # The layer the QFieldSync plugin names as the one the project opens with as the active layer.
+    initial_active_layer_id: Optional[str] = None
+    mergin_filters: list[PresetFilter] = field(default_factory=list)
+    # The project's area and distance units, None where it saves neither.
+    measurement: Optional[ProjectMeasurement] = None

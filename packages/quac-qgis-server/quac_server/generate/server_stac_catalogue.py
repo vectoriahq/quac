@@ -20,6 +20,10 @@ QGIS Server settings, as GetProjectSettings does:
   uses one becomes `True`, so that hiding a field never unlocks an edit.
 - A Value Relation names its lookup by the lookup's WMS name, and is dropped
   where the lookup is not served or the relation uses a hidden field.
+- Each Catalog, Collection and column keeps only the fields the plugin's
+  first release declares, `declared_fields.json`, so a setting the project
+  file's catalogue carries beyond them, such as `quac:related_to`, is not
+  served.
 
 The access answers of the person asking are not applied.
 
@@ -30,7 +34,9 @@ control character, or holds a user name or password.
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import Any, Optional
 
 from ..js_compat import encode_uri_component
@@ -44,6 +50,15 @@ from .normalized_project import build_stac_extent, union_bboxes, with_data_type
 from .stac_catalogue import effective_wgs84_bbox, generate_stac_catalogue
 from .wfs_stac_catalogue import wfs_get_feature_asset
 from .wms_stac_catalogue import map_qt_type_to_stac_table_type
+
+
+# The fields the plugin's first release serves, by where they sit.
+DECLARED_FIELDS: dict[str, list[str]] = json.loads((Path(__file__).resolve().parents[1] / 'declared_fields.json').read_text(encoding='utf-8'))
+
+
+def _declared(value: dict[str, Any], place: str) -> dict[str, Any]:
+    """`value` less every field `declared_fields.json` does not list for `place`, the rest in their order."""
+    return {key: item for key, item in value.items() if key in DECLARED_FIELDS[place]}
 
 
 def generate_server_stac_catalogue(
@@ -94,7 +109,7 @@ def generate_server_stac_catalogue(
     def serve_catalog(node: dict[str, Any]) -> dict[str, Any]:
         collections = [_serve_collection(collection, context) for collection in node.get('collections') or [] if collection['id'] in served_ids]
         catalogs = [serve_catalog(child) for child in node.get('catalogs') or []]
-        served = {key: value for key, value in node.items() if key not in ('collections', 'catalogs', 'stac_extensions')}
+        served = {key: value for key, value in _declared(node, 'catalog').items() if key not in ('collections', 'catalogs', 'stac_extensions')}
         served['links'] = [*(link for link in node['links'] if link['rel'] != 'child'), *_child_links(catalogue_folder(node) or './', collections, catalogs)]
         if collections:
             served['collections'] = collections
@@ -210,7 +225,7 @@ def _serve_collection(source: dict[str, Any], context: _ServeContext) -> dict[st
     wms_name = context.served_ids[layer_id]
     wfs_type_name = source.get('quac:qgis_server_wfs_type_name') if layer_id in context.wfs_published else None
 
-    collection = {**source, 'id': wms_name}
+    collection = {**_declared(source, 'collection'), 'id': wms_name}
     for key in _SOURCE_FIELDS:
         collection.pop(key, None)
     collection['links'] = [{
@@ -250,7 +265,7 @@ def _serve_column(source: dict[str, Any], hidden: set[str], context: _ServeConte
     where it uses a field the project hides, of the lookup's or, in its filter,
     of this layer's.
     """
-    column = dict(source)
+    column = _declared(source, 'column')
     relation = column.get('quac:value_relation')
     if isinstance(relation, dict):
         lookup_id = context.served_ids.get(relation['collection'])

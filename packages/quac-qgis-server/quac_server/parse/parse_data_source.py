@@ -2,8 +2,8 @@
 
 It reads a file source's path, or an online file's address, the GeoPackage
 table it names, the shape its `|geometrytype=` keeps, its Delimited Text
-options and its feature filter; a WFS source's address, feature type and
-filter; an ArcGIS FeatureServer source's address and filter; and a WMS, WMTS
+options and its feature filter; a WFS source's address, feature type,
+coordinate system and filter; an ArcGIS FeatureServer source's address and filter; and a WMS, WMTS
 or XYZ source of the `wms` or `xyzvectortiles` provider. The server route
 writes none of them, and never writes `raw`.
 
@@ -91,7 +91,8 @@ def parse_data_source(raw: str, provider_hint: Optional[str] = None) -> DataSour
                 feature_filter = {'expression': sql, 'dialect': 'wfs_sql'}
             elif wfs_filter:
                 feature_filter = {'expression': wfs_filter, 'dialect': 'ogc_filter' if js_trim(wfs_filter).startswith('<') else 'qgis_expression'}
-            return DataSource(kind='wfs', raw=raw, url=url, type_name=type_name, feature_filter=feature_filter)
+            srs_name = params['srsname'] if 'srsname' in params else params.get('srsName')
+            return DataSource(kind='wfs', raw=raw, url=url, type_name=type_name, srs_name=srs_name, feature_filter=feature_filter)
 
     if _looks_like_file_path(trimmed) or provider_hint == 'ogr':
         return _parse_file_data_source(raw, trimmed)

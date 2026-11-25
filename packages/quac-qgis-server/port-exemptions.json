@@ -2,20 +2,8 @@
   "about": "Every module in packages/quac/src/parse/ and packages/quac/src/generate/ has a Python counterpart in quac_server/ of the same name, or is listed under modules with the reason it has none. A module with a counterpart exports each of its JavaScript functions under the Python name, or lists the function under functions with its reason. tests/test_parity.py checks both. Under departures, a function that does what its JavaScript counterpart does in a different way, and why.",
   "modules": {
     "parse/parseBrandColour.ts": "The project's Brand colour, which an application reads from the parsed project; no catalogue field carries it.",
-    "parse/parseDataDefinedEditable.ts": "A field's data-defined editable expression, for quac:editable_when, which is not in the first release.",
-    "parse/parseExtent.ts": "The map canvas extent, for quac:initial_view, which is not in the first release.",
-    "parse/parseFormLayout.ts": "The form layout, for quac:form_order, quac:in_form, quac:visible_when and quac:editable_when, which are not in the first release.",
     "parse/parseGetProjectSettings.ts": "Reads a GetProjectSettings response, the other QGIS Server producer's input. The plugin reads the project's text.",
-    "parse/parseMeasurement.ts": "The project's area and distance units, for quac:measurement, which is not in the first release.",
-    "parse/parseMergin.ts": "The Mergin Maps plugin's filters, for quac:filters, which is not in the first release.",
     "parse/parseProjectVariables.ts": "The project's variables, which an application reads from the parsed project; no catalogue field carries them.",
-    "parse/parseRelations.ts": "The project's relations, for quac:related_to, which is not in the first release.",
-    "parse/parseStyle.ts": "A layer's styles. The plugin's first release serves no style.",
-    "parse/projectNotes.ts": "The notes on what a project's catalogue does not carry, and the rules for Value Relations, relations and filters they share with the catalogue. Of a field's form settings the served catalogue carries only a Value Map's list and a Value Relation, and it carries no relations or filters, which are not in the first release. The rule finding a Value Relation's lookup is in generate/stac_catalogue.py.",
-    "parse/qgisExpression.ts": "Reads QGIS expressions, for defaults, constraints and conditional fields, which are not in the first release.",
-    "parse/qtDateFormat.ts": "Qt date patterns, for quac:date_format and for evaluating expressions, neither in the first release.",
-    "parse/qtRegex.ts": "Qt regular expressions, for evaluating expressions, which the first release does not do.",
-    "parse/sqlFeatureFilter.ts": "Evaluates a GDAL SQL feature filter against features, for an application that hands a layer's data to the public itself. QGIS Server applies a layer's filter when it serves the layer.",
     "generate/externalStacCatalogue.ts": "Reads a STAC catalogue from somewhere else: another kind of source.",
     "generate/fileLayerCollection.ts": "The Collection for a single data file: another kind of source.",
     "generate/folderStacCatalogue.ts": "The folder of data files producer: another kind of source.",
@@ -28,8 +16,8 @@
     "parse/geometrySiblings.ts": {
       "readGeometrySiblingShapes": "Used by an application's loaders, not by a producer."
     },
-    "parse/parseQfieldSync.ts": {
-      "parseInitialActiveLayerId": "For quac:active_collection, which is not in the first release."
+    "parse/projectNotes.ts": {
+      "crossLayerNotes": "The notes on the settings naming another layer that do not reach the catalogue. The plugin writes no notes."
     },
     "generate/normalizedProject.ts": {
       "withSelfLink": "The server route writes no self address of its own.",
@@ -65,7 +53,7 @@
       "readCollectionGeometryFilter": "A reader of a catalogue, for an application, not a producer.",
       "readCollectionLayerName": "A reader of a catalogue, for an application, not a producer.",
       "isQgisPlaceholderDescription": "Used by an application to tell a placeholder description from the project's own.",
-      "parseQgisStyleAssetHref": "Takes a style asset's address apart. The plugin's first release serves no style."
+      "parseQgisStyleAssetHref": "Takes apart the address of a style asset pointing into the project file, which the plugin's catalogues do not write (see departures)."
     },
     "generate/serverStacCatalogue.ts": {
       "withoutHiddenFields": "The served catalogue's hidden-field step, for an application that serves a project's layers itself. The plugin's generate_server_stac_catalogue applies the same rules to every Collection it serves."
@@ -84,7 +72,14 @@
     }
   },
   "departures": {
-    "generate/stacCatalogue.ts": "generate_stac_catalogue writes each layer's data asset and web map link as buildAssets and qgsLayerToNormalized write them for a file, WFS, ArcGIS, WMS, WMTS or XYZ layer, but writes no style asset, no via link to the project, and no quac:wfs_*, quac:arcgis_* or quac:max_zoom field. The style asset the JavaScript writes points into the project file (./<project>.qgs#<id>/<style>), and a catalogue written beside a QGIS project is to link QML files written beside it instead (vectoriahq/quac#69).",
-    "parse/parseDataSource.ts": "An address, an online file's or a WMS, WMTS or XYZ layer's, is read as the URL class reads it by js_compat.split_url and written as the class writes its href by url_to_string, which covers lower-casing the scheme and host, leaving off a default port, taking dot segments out of the path, percent-encoding what the class escapes, and writing the query again as URLSearchParams does where a request parameter is taken out of a service's address; a host outside ASCII is converted with Python's IDNA 2003 codec, where the URL class uses UTS 46, so such a host can be written differently, and an address the class refuses for a reason split_url does not check, such as a malformed IPv6 host, can be read where the JavaScript reads the source as unsupported."
+    "generate/stacCatalogue.ts": "generate_stac_catalogue writes each layer's settings, data asset and web map link as qgsLayerToNormalized, buildVendorFields and buildAssets write them, but writes no style asset, no via link to the project, and no providers or keywords. The style asset the JavaScript writes points into the project file (./<project>.qgs#<id>/<style>), and a catalogue written beside a QGIS project is to link QML files written beside it instead (vectoriahq/quac#69): quac/publish.py writes each layer's current style as one, with the quac:categorised_field its style in the project gives. It writes every field and form setting deriveTableColumns writes for a column, and quac:form_order and quac:measurement on the Collection; it takes no companion data, so, as the JavaScript given none, it types no column from features (the server route and quac/publish.py type each column from QGIS with with_field_type).",
+    "parse/parseLayers.ts": "parse_project_layers gives none of the notes parseProjectLayers adds on the settings a Collection does not carry, and reads no layer metadata beyond the abstract, licence and temporal extent.",
+    "parse/parseDataSource.ts": "An address, an online file's or a WMS, WMTS or XYZ layer's, is read as the URL class reads it by js_compat.split_url and written as the class writes its href by url_to_string, which covers lower-casing the scheme and host, leaving off a default port, taking dot segments out of the path, percent-encoding what the class escapes, and writing the query again as URLSearchParams does where a request parameter is taken out of a service's address; a host outside ASCII is converted with Python's IDNA 2003 codec, where the URL class uses UTS 46, so such a host can be written differently, and an address the class refuses for a reason split_url does not check, such as a malformed IPv6 host, can be read where the JavaScript reads the source as unsupported.",
+    "generate/serverStacCatalogue.ts": "generate_server_stac_catalogue keeps on each Catalog, Collection and column only the fields declared_fields.json lists, the plugin's first release, so a setting the project file's catalogue carries beyond them, such as quac:related_to, quac:filters or a column's quac:icon, is not served.",
+    "parse/parseStyle.ts": "parse_layer_styles keeps each style's name, whether it is the one applied, and its quac:categorised_field, not its renderer's XML: the plugin writes no style asset pointing into the project file (see generate/stacCatalogue.ts).",
+    "model/fieldIconAddress.ts": "read_https_address reads an icon's https address with js_compat.split_url and writes it with url_to_string, as parse_data_source reads an address, with the differences recorded for parse/parseDataSource.ts; like the JavaScript, it reads no address holding a user name or password.",
+    "parse/qtDateFormat.ts": "format_qt_date_time names months, days and am and pm in en-AU only, the language format_date uses where none is given: for any other language it gives None, where the JavaScript names them in that language with the browser's Intl and gives null only for a language the browser cannot read. Python has no table of other languages' names. read_qt_date_time takes a Python datetime where the JavaScript takes a Date, a naive one read as local time. The local time is the operating system's (time.localtime), read as Date reads it; where time.localtime refuses a moment before 1970, the offset at 1970 stands in for that moment's.",
+    "parse/qtRegex.ts": "compile_qt_regex gives a compiled Python re pattern, written in Python's syntax, where the JavaScript gives a RegExp: \\d, \\w, \\s and \\b are written as the classes and lookarounds the JavaScript's mean, $ as (?=\\n?\\Z), \\D and \\W inside a class of ~ as a choice of classes, and a lookbehind holding a | as one lookbehind per branch, as Python asks a lookbehind to have one length. The Unicode classes of the regexp_ functions are built from Python's unicodedata, whose Unicode version (15.1 in Python 3.13) can be older than the JavaScript engine's (17.0 in Node 24), so a character added since can be read as no letter, digit or space. With (?i), Python's re also takes İ (U+0130) and ı (U+0131) as the same letter as i, where JavaScript takes neither, so such a pattern can match where the JavaScript's does not.",
+    "parse/sqlFeatureFilter.ts": "An ILIKE pattern ignores case with Python's re, which also takes İ (U+0130) and ı (U+0131) as the same letter as i, where JavaScript takes neither, so such a filter can keep a feature the JavaScript's leaves out."
   }
 }

@@ -10,8 +10,9 @@ The save, the menu action and the Processing algorithm all write through
 - Only for a project saved as a `.qgs` or `.qgz` file.
 - A layer QGIS could not open, or that it does not hold, is left out, except a
   WMS, WMTS or XYZ layer.
-- The saved file is read from disk, the field types and WGS84 boxes from
-  QGIS (`qgis_inputs.py`), and each layer's current style as QML.
+- The saved file is read from disk, the field types, the layers' WGS84 boxes
+  and the map canvas extent in WGS84 from QGIS (`qgis_inputs.py`), and each
+  layer's current style as QML.
 - Each file is written to a temporary file in its own folder and then renamed
   over the old one, so a sync client never sees half a file. A file whose
   bytes have not changed is left as it is.
@@ -59,7 +60,7 @@ from .publish import (
     message,
     plan_publication,
 )
-from .qgis_inputs import field_types, layer_extents, stored_project
+from .qgis_inputs import field_types, layer_extents, stored_project, wgs84_box
 
 LOG_TAG = 'QUAC'
 TITLE = 'QUAC'
@@ -146,6 +147,7 @@ def write_catalogue(project: Any, folder: Optional[str] = None) -> tuple[str, Pu
         export_styles(project, os.path.join(folder, children_folder, 'styles')),
         lambda name: _read_inside(folder, name),
         opened_layer_ids={layer_id for layer_id, layer in project.mapLayers().items() if layer.isValid()},
+        wgs84_box=wgs84_box(project),
     )
     if publication.refusal is None:
         write_publication(folder, publication)

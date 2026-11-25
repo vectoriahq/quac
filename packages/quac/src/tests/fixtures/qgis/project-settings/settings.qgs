@@ -1,0 +1,161 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis projectname="Project settings" version="3.44.8-Solothurn">
+  <title>Project settings</title>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <authid>EPSG:7855</authid>
+    </spatialrefsys>
+  </projectCrs>
+  <mapcanvas annotationsVisible="1" name="theMapCanvas">
+    <units>meters</units>
+    <extent>
+      <xmin>16137000</xmin>
+      <ymin>-4553000</ymin>
+      <xmax>16140000</xmax>
+      <ymax>-4550500</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <authid>EPSG:3857</authid>
+      </spatialrefsys>
+    </destinationsrs>
+  </mapcanvas>
+  <layer-tree-group>
+    <layer-tree-layer id="trees_7d3b4f60" name="Trees" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="inspections_a8e12b9c" name="Inspections" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="kerbs_4d6f0a11" name="Kerbs" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="parcels_5c2e9a41" name="Parcels" checked="Qt::Checked" expanded="1"/>
+    <layer-tree-layer id="parks_3e8b1c72" name="Parks" checked="Qt::Unchecked" expanded="1"/>
+  </layer-tree-group>
+  <relations>
+    <relation id="tree_inspections" name="Inspections" referencedLayer="trees_7d3b4f60" referencingLayer="inspections_a8e12b9c" strength="Composition">
+      <fieldRef referencedField="tree_id" referencingField="tree_id"/>
+      <fieldRef referencedField="species" referencingField="species"/>
+    </relation>
+    <relation id="parcel_inspections" referencedLayer="parcels_5c2e9a41" referencingLayer="inspections_a8e12b9c" strength="Association">
+      <fieldRef referencedField="parcel_id" referencingField="parcel_id"/>
+    </relation>
+    <relation id="kerb_inspections" name="Kerb inspections" referencedLayer="kerbs_4d6f0a11" referencingLayer="inspections_a8e12b9c" strength="Association">
+      <fieldRef referencedField="kerb_id" referencingField="kerb_id"/>
+    </relation>
+    <relation id="removed_inspections" name="Removed" referencedLayer="removed_9f04d5a6" referencingLayer="inspections_a8e12b9c" strength="Association">
+      <fieldRef referencedField="tree_id" referencingField="tree_id"/>
+    </relation>
+    <relation id="no_fields" name="No fields" referencedLayer="trees_7d3b4f60" referencingLayer="inspections_a8e12b9c" strength="Association"/>
+  </relations>
+  <properties>
+    <qfieldsync>
+      <initialActiveLayer type="QString">kerbs_4d6f0a11</initialActiveLayer>
+    </qfieldsync>
+    <WMSRestrictedLayers type="QStringList"><value>Kerbs</value></WMSRestrictedLayers>
+    <Mergin>
+      <Filtering>
+        <Enabled type="bool">true</Enabled>
+        <Filters type="QString">[{&quot;filter_name&quot;: &quot; Species &quot;, &quot;layer_id&quot;: &quot;trees_7d3b4f60&quot;, &quot;field_name&quot;: &quot;species&quot;, &quot;filter_type&quot;: &quot;Single select&quot;, &quot;sql_expression&quot;: &quot;\&quot;species\&quot; IS @@value@@&quot;}, {&quot;layer_id&quot;: &quot;trees_7d3b4f60&quot;, &quot;field_name&quot;: &quot;planted&quot;, &quot;filter_type&quot;: &quot;Date&quot;, &quot;sql_expression&quot;: &quot;\&quot;planted\&quot; = @@value@@&quot;}, {&quot;filter_name&quot;: &quot;Condition&quot;, &quot;layer_id&quot;: &quot;inspections_a8e12b9c&quot;, &quot;field_name&quot;: &quot;condition&quot;, &quot;filter_type&quot;: &quot;Text&quot;, &quot;sql_expression&quot;: &quot;\&quot;condition\&quot; LIKE @@value@@&quot;}, {&quot;filter_name&quot;: &quot;Inspector&quot;, &quot;layer_id&quot;: &quot;inspections_a8e12b9c&quot;, &quot;field_name&quot;: &quot;inspector&quot;, &quot;filter_type&quot;: &quot;Single select&quot;, &quot;sql_expression&quot;: &quot;\&quot;inspector\&quot; IS @@value@@&quot;}, {&quot;filter_name&quot;: &quot;Kerb type&quot;, &quot;layer_id&quot;: &quot;kerbs_4d6f0a11&quot;, &quot;field_name&quot;: &quot;kerb_type&quot;, &quot;filter_type&quot;: &quot;Multi select&quot;, &quot;sql_expression&quot;: &quot;\&quot;kerb_type\&quot; IN @@value@@&quot;}, {&quot;filter_name&quot;: &quot;No SQL&quot;, &quot;layer_id&quot;: &quot;inspections_a8e12b9c&quot;, &quot;field_name&quot;: &quot;condition&quot;, &quot;filter_type&quot;: &quot;Number&quot;, &quot;sql_expression&quot;: &quot; &quot;}, {&quot;filter_name&quot;: &quot;Zone&quot;, &quot;layer_id&quot;: &quot;parcels_5c2e9a41&quot;, &quot;field_name&quot;: &quot;zone&quot;, &quot;filter_type&quot;: &quot;Checkbox&quot;, &quot;sql_expression&quot;: &quot;\&quot;zone\&quot; = @@value@@&quot;}]</Filters>
+      </Filtering>
+    </Mergin>
+  </properties>
+  <projectlayers>
+    <maplayer type="vector" geometry="Point" wkbType="Point" readOnly="0" legendPlaceholderImage="base64:R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAA LAAAAAABAAEAAAIBRAA7">
+      <id>trees_7d3b4f60</id>
+      <datasource>./trees.geojson</datasource>
+      <layername>Trees</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:4326</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="UTF-8">ogr</provider>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>1</Private>
+      </flags>
+      <map-layer-style-manager current="By species">
+        <map-layer-style name="By age">
+          <qgis version="3.44.8-Solothurn" styleCategories="Symbology">
+            <renderer-v2 type="graduatedSymbol" attr=" age " symbollevels="0" enableorderby="0" forceraster="0"/>
+          </qgis>
+        </map-layer-style>
+        <map-layer-style name="By species"/>
+        <map-layer-style name="Plain">
+          <qgis version="3.44.8-Solothurn" styleCategories="Symbology">
+            <renderer-v2 type="singleSymbol" attr="species" symbollevels="0" enableorderby="0" forceraster="0"/>
+          </qgis>
+        </map-layer-style>
+      </map-layer-style-manager>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species">
+          <editWidget type="TextEdit"/>
+        </field>
+        <field configurationFlags="NoFlag" name="age"/>
+        <field configurationFlags="NoFlag" name="planted"/>
+        <field configurationFlags="NoFlag" name="marker_colour">
+          <editWidget type="Color">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <renderer-v2 type="categorizedSymbol" attr="species" symbollevels="0" enableorderby="0" forceraster="0"/>
+      <customproperties><Option type="Map"><Option name="variableNames" type="StringList"><Option type="QString" value="quac_icon"/><Option type="QString" value="quac_icon_species"/><Option type="QString" value="quac_icon_age"/><Option type="QString" value="quac_icon_planted"/><Option type="QString" value="quac_icon_marker_colour"/><Option type="QString" value="quac_added_message"/></Option><Option name="variableValues" type="StringList"><Option type="QString" value="material-symbols:park-outline-rounded"/><Option type="QString" value=" ph:Tree-Bold "/><Option type="QString" value="https://Icons.Example.test/set/../age.svg"/><Option type="QString" value="unknown:calendar"/><Option type="QString" value="heroicons:swatch-20-solid"/><Option type="QString" value="Thanks for adding a tree."/></Option></Option></customproperties>
+    </maplayer>
+    <maplayer type="vector" geometry="No geometry" wkbType="NoGeometry" readOnly="0">
+      <id>inspections_a8e12b9c</id>
+      <datasource>./inspections.geojson</datasource>
+      <layername>Inspections</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="inspection_id"/>
+        <field configurationFlags="NoFlag" name="tree_id"/>
+        <field configurationFlags="NoFlag" name="species"/>
+        <field configurationFlags="NoFlag" name="parcel_id"/>
+        <field configurationFlags="NoFlag" name="kerb_id"/>
+        <field configurationFlags="NoFlag" name="condition"/>
+      </fieldConfiguration>
+      <customproperties><Option type="Map"><Option name="variableNames" type="StringList"><Option type="QString" value="quac_icon"/><Option type="QString" value="quac_added_message"/></Option><Option name="variableValues" type="StringList"><Option type="QString" value="https://inspector:example-secret@icons.example.test/clipboard.svg"/><Option type="QString" value="   "/></Option></Option></customproperties>
+    </maplayer>
+    <maplayer type="vector" geometry="Line" wkbType="LineString" readOnly="0">
+      <id>kerbs_4d6f0a11</id>
+      <datasource>./kerbs.geojson</datasource>
+      <layername>Kerbs</layername>
+      <provider encoding="UTF-8">ogr</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="kerb_id"/>
+        <field configurationFlags="NoFlag" name="kerb_type"/>
+      </fieldConfiguration>
+    </maplayer>
+    <maplayer type="vector" geometry="Polygon" wkbType="MultiPolygon" readOnly="0">
+      <id>parcels_5c2e9a41</id>
+      <datasource> url='https://gis.example.test/arcgis/rest/services/Parcels/FeatureServer/2/' sql="zone" = 'R1'</datasource>
+      <layername>Parcels</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <authid>EPSG:3857</authid>
+        </spatialrefsys>
+      </srs>
+      <provider encoding="">arcgisfeatureserver</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="parcel_id"/>
+        <field configurationFlags="NoFlag" name="zone"/>
+      </fieldConfiguration>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Private>0</Private>
+      </flags>
+    </maplayer>
+    <maplayer type="vector" geometry="Polygon" wkbType="MultiPolygon" readOnly="0">
+      <id>parks_3e8b1c72</id>
+      <datasource> pagingEnabled='default' srsname='' typename='city:parks' url='https://data.example.test/wfs' version='auto'</datasource>
+      <layername>Parks</layername>
+      <provider encoding="">WFS</provider>
+      <fieldConfiguration>
+        <field configurationFlags="NoFlag" name="park_id"/>
+      </fieldConfiguration>
+    </maplayer>
+  </projectlayers>
+</qgis>
