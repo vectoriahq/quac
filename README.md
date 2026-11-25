@@ -2,7 +2,7 @@
 
 # QUAC
 
-QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 that adds map layer settings to a catalogue.
+QUAC (Quite Useful Additions for Catalogs) is a profile of [STAC](https://stacspec.org) 1.1.0 that adds map layer settings to a catalogue, and the tools that write and read it: a QGIS plugin that writes a project's catalogue from QGIS Desktop and serves it from QGIS Server, and a JavaScript package that writes and reads it. [What this repository holds](#what-this-repository-holds) says where each is.
 
 **What QUAC lets you know about a catalogue**
 
