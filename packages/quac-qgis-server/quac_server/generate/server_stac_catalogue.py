@@ -281,7 +281,7 @@ def with_field_type(column: dict[str, Any], field_type: Optional[dict[str, str]]
     """
     The column with the `type` QGIS reports for its field, `{'type': ..., 'typeName': ...}`
     as `field_types` holds it, and the `data_type` beside it, where QGIS reports one.
-    The plugin's QGIS Desktop catalogue (`quac_catalogue/publish.py`) gives its columns their types by it too.
+    The plugin's QGIS Desktop catalogue (`quac/publish.py`) gives its columns their types by it too.
     """
     column_type = map_qt_type_to_stac_table_type(field_type.get('type', ''), field_type.get('typeName', '')) if field_type else None
     return with_data_type({**column, 'type': column_type}) if column_type else column

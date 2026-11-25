@@ -36,7 +36,7 @@ The catalogue closes the gap. A Value Map's column carries `quac:values`, its li
 python3 packages/quac-qgis-server/build_plugin.py dist
 ```
 
-Install the zip's `quac_catalogue/` folder in the server's plugins folder, put this folder's `playgrounds.qgs`, `equipment.geojson` and `suppliers.geojson` where the server can read them, and then:
+Install the zip's `quac/` folder in the server's plugins folder, put this folder's `playgrounds.qgs`, `equipment.geojson` and `suppliers.geojson` where the server can read them, and then:
 
 ```bash
 python3 packages/quac-qgis-server/demo/value-labels/show_value_labels.py https://qgis.example.test /srv/qgis/playgrounds.qgs
@@ -46,7 +46,7 @@ The QGIS Server workflow, `.github/workflows/qgis-server.yml`, runs it on QGIS S
 
 ## What it showed
 
-On QGIS Server 3.44.15, 2026-11-17, with the QUAC Catalogue plugin at version 0.1.3, which serves neither `quac:values` nor `quac:value_relation`:
+On QGIS Server 3.44.15, 2026-11-17, with the plugin at version 0.1.3, then named QUAC Catalogue, which serves neither `quac:values` nor `quac:value_relation`:
 
 | Feature | Field | WFS GetFeature | WMS GetFeatureInfo | WFS with the catalogue |
 |---|---|---|---|---|

@@ -2,8 +2,8 @@
 Lays out the QUAC catalogue plugin as QGIS installs it, and zips it for the
 QGIS plugin repository. Python's standard library only.
 
-`python3 build_plugin.py <folder>` writes `quac_catalogue-<version>.zip` into
-`<folder>` and prints its path. The zip holds one folder, `quac_catalogue/`,
+`python3 build_plugin.py <folder>` writes `quac-<version>.zip` into
+`<folder>` and prints its path. The zip holds one folder, `quac/`,
 with its own copy of `quac_server` inside, as an installed plugin needs.
 """
 
@@ -17,7 +17,7 @@ import zipfile
 from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parent
-CATALOGUE_PLUGIN = PACKAGE / 'quac_catalogue'
+CATALOGUE_PLUGIN = PACKAGE / 'quac'
 LEFT_OUT = shutil.ignore_patterns('__pycache__', '*.pyc')
 
 

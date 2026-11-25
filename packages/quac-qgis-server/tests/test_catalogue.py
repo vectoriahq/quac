@@ -1,11 +1,11 @@
-"""The endpoint's answer, cache and version warning, which need no QGIS module (`quac_catalogue/catalogue.py`)."""
+"""The endpoint's answer, cache and version warning, which need no QGIS module (`quac/catalogue.py`)."""
 
 from __future__ import annotations
 
 import json
 import unittest
 
-from quac_catalogue.catalogue import FAILURE_MESSAGE, CatalogueCache, answer, version_warning
+from quac.catalogue import FAILURE_MESSAGE, CatalogueCache, answer, version_warning
 
 
 class Builds:

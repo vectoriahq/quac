@@ -1,5 +1,5 @@
 """
-The QUAC Catalogue plugin's QGIS Server checks, run by `.github/workflows/qgis-server.yml` after
+The QUAC plugin's QGIS Server checks, run by `.github/workflows/qgis-server.yml` after
 `check_qgis_server.py prepare` and the reading route's checks, against the same
 server. Python's standard library only.
 
@@ -19,7 +19,7 @@ PostgreSQL copy named through a pg_service file, and fails where:
 - a project saved by a newer QGIS than the server runs gives no warning in the
   server's log;
 - for each test person of `quac_test_access/rules.py`, the catalogue is not the
-  one `quac_catalogue.access.apply_access` gives from that person's answers, it
+  one `quac.access.apply_access` gives from that person's answers, it
   shows what they may not see or leaves unlocked what they may not do, or its
   layers and groups differ from QGIS Server's own GetProjectSettings for them.
 
@@ -47,8 +47,8 @@ sys.path.insert(0, str(PACKAGE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_qgis_server import CACHE_PROJECT, FIXTURES, SYNTHETIC_SIZES, children, local  # noqa: E402 - beside this file
-from quac_catalogue.access import LayerAnswer, apply_access  # noqa: E402 - the package two folders up
-from quac_catalogue.catalogue import FAILURE_MESSAGE  # noqa: E402
+from quac.access import LayerAnswer, apply_access  # noqa: E402 - the package two folders up
+from quac.catalogue import FAILURE_MESSAGE  # noqa: E402
 from quac_server import generate_server_stac_catalogue, parse_qgs_xml, server_layer_tree  # noqa: E402
 from quac_server.model.qgs_project import BoundingBox  # noqa: E402
 from tests.leaks import leak_failures  # noqa: E402
@@ -430,7 +430,7 @@ def server_qgis_version(base: str) -> str:
 
 
 def markdown_report(results: dict, failures: list[str]) -> str:
-    lines = [f'## QUAC Catalogue plugin on QGIS {results.get("qgisVersion")}', '', '### Fixtures', '',
+    lines = [f'## QUAC plugin on QGIS {results.get("qgisVersion")}', '', '### Fixtures', '',
              '| Project | Answer | Collections | Typed columns | Matches the Python | Leaks |', '|---|---|---|---|---|---|']
     for entry in results['projects'] + results['routes']:
         leaks = '; '.join(entry.get('leaks') or []) or ('none' if entry['status'] == 200 else entry.get('error', ''))

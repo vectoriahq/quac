@@ -1,5 +1,5 @@
 """
-The QUAC Catalogue plugin, one plugin for QGIS Server and QGIS Desktop.
+The QUAC plugin, one plugin for QGIS Server and QGIS Desktop.
 
 QGIS Server starts it through `serverClassFactory`: `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`
 answers the open project's catalogue (`service.py`). QGIS Desktop starts it

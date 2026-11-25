@@ -1,10 +1,10 @@
 # QUAC for QGIS Server and QGIS Desktop
 
-The QUAC Catalogue plugin for QGIS Server and QGIS Desktop, and the Python it is built on. The plugin is in the QGIS plugin repository as [QUAC Catalogue](https://plugins.qgis.org/plugins/quac_catalogue/).
+The QUAC plugin for QGIS Server and QGIS Desktop, and the Python it is built on. The plugin is in the QGIS plugin repository as [QUAC](https://plugins.qgis.org/plugins/quac/).
 
 ## The plugin
 
-`quac_catalogue/` is the plugin, one plugin for both. QGIS Server starts it through `serverClassFactory` and QGIS Desktop through `classFactory` (`quac_catalogue/__init__.py`), and each imports only its own part: the server never loads `desktop.py`, which needs `qgis.gui`, and QGIS Desktop never loads `service.py`.
+`quac/` is the plugin, one plugin for both. QGIS Server starts it through `serverClassFactory` and QGIS Desktop through `classFactory` (`quac/__init__.py`), and each imports only its own part: the server never loads `desktop.py`, which needs `qgis.gui`, and QGIS Desktop never loads `service.py`.
 
 On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>` answers the open project's catalogue as one STAC document with its Collections inlined. An installed copy holds `quac_server` inside its folder. `build_plugin.py` lays it out that way, both for the plugin's zip and for the QGIS Server job. The plugin's `icon.png` is `assets/quac-mark.svg` drawn at 128 pixels square.
 
@@ -21,7 +21,7 @@ On a QGIS Server with it installed, `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<proj
 
   QGIS answers nothing finer than that per layer. So which fields a person sees but may not change, changing details but not moving shapes, and which features they may edit are not in the catalogue. The access plugin refuses such a save.
 
-`quac_catalogue/catalogue.py` and `quac_catalogue/access.py` need no QGIS module, so `tests/test_catalogue.py` and `tests/test_access.py` check the answer, the cache, the warning and each person's catalogue anywhere.
+`quac/catalogue.py` and `quac/access.py` need no QGIS module, so `tests/test_catalogue.py` and `tests/test_access.py` check the answer, the cache, the warning and each person's catalogue anywhere.
 
 ## In QGIS Desktop
 
@@ -80,7 +80,7 @@ Parks Project/
 
 ### Writing on demand
 
-The save, the menu action and the algorithm below write through one function, `write_catalogue` in `quac_catalogue/desktop.py`, so they write the same files and give the same reasons for what they leave out. The menu action and the algorithm write whether or not the project writes its catalogue on save.
+The save, the menu action and the algorithm below write through one function, `write_catalogue` in `quac/desktop.py`, so they write the same files and give the same reasons for what they leave out. The menu action and the algorithm write whether or not the project writes its catalogue on save.
 
 - **Project ▸ Write STAC catalogue now** writes the catalogue of the open project as it was last saved, into its chosen folder, without saving it: such as after its data has changed, which moves a layer's extent or fields. It reads the saved file into a project of its own, apart from the one on screen, so a change not yet saved does not reach the catalogue; where there is one, the message ends "It follows the project as last saved. To include your unsaved changes, save the project." For a project not saved as a `.qgs` or `.qgz` file the action stays in the menu and says to save the project as a file first.
 - **Write QUAC catalogue** (`quac:writequaccatalogue`), in the QUAC provider of the Processing Toolbox, takes a project file (`PROJECT`) and, optionally, a folder (`FOLDER`); with no folder it writes into the project's chosen folder. It opens the project in a `QgsProject` of its own, never the one on screen, and releases its layers when it is done, so batch mode can run it over many project files from one table. It gives the root file's path (`ROOT_FILE`) and the number of layers written (`LAYERS_WRITTEN`) and left out (`LAYERS_LEFT_OUT`), and reports what was left out as a warning in its log, with the message bar's reasons and next steps. A file QGIS cannot read as a project, a folder that does not exist, or a root file in the way that is not a QUAC catalogue stops it with an error, and nothing is written. The folder is a folder input rather than a folder output: an empty one then means the project's chosen folder, where Processing would offer a temporary folder in its place for an output.
@@ -88,7 +88,7 @@ The save, the menu action and the algorithm below write through one function, `w
 `qgis_process` runs the algorithm once the plugin is installed in the plugins folder of the QGIS profile it uses, `default`, and enabled for it: until then `qgis_process list` does not list it. These commands were run with `qgis_process` 3.34; on a machine with no display, set `QT_QPA_PLATFORM=offscreen` first, as `qgis_process` needs it there even to list its plugins.
 
 ```bash
-qgis_process plugins enable quac_catalogue
+qgis_process plugins enable quac
 qgis_process help quac:writequaccatalogue
 qgis_process run quac:writequaccatalogue -- PROJECT=/data/projects/Parks.qgz
 qgis_process run quac:writequaccatalogue -- PROJECT=/data/projects/Parks.qgz FOLDER=/data/publish
@@ -107,7 +107,7 @@ done
 On Windows, `qgis_process` is started through a batch file in the `bin` folder of the QGIS installation: `qgis_process-qgis-ltr.bat` for a long-term release or `qgis_process-qgis.bat` for the latest, under `C:\Program Files\QGIS <version>\` for QGIS's own installer or `C:\OSGeo4W\` for OSGeo4W. Enable the plugin once, as the Windows user the scheduled task runs as, since each user has their own QGIS profile:
 
 ```bat
-"C:\Program Files\QGIS 3.40\bin\qgis_process-qgis-ltr.bat" plugins enable quac_catalogue
+"C:\Program Files\QGIS 3.40\bin\qgis_process-qgis-ltr.bat" plugins enable quac
 ```
 
 A batch file such as this, saved as `write-catalogues.cmd`, writes every project in a folder. Change the two paths to the installation's batch file and the projects' folder:
@@ -137,7 +137,7 @@ The Windows commands follow the batch file names and folders QGIS's Windows inst
 
 ### Its code and checks
 
-`quac_catalogue/publish.py` works out what to write, from the saved project's bytes and what QGIS gives, with no QGIS module, `quac_catalogue/desktop.py` reads those from QGIS, draws the settings page, adds the menu action and writes the files, and `quac_catalogue/algorithm.py` is the Processing provider and its algorithm. `tests/test_publish.py` checks `publish.py` anywhere: the paths, the hrefs and the folder rules, Windows paths among them, the styles, what an earlier catalogue leaves to remove and the messages, and that no document written for any fixture holds an absolute path, a user name or a password. It imports the plugin as QGIS installs it (`tests/installed_plugin.py`).
+`quac/publish.py` works out what to write, from the saved project's bytes and what QGIS gives, with no QGIS module, `quac/desktop.py` reads those from QGIS, draws the settings page, adds the menu action and writes the files, and `quac/algorithm.py` is the Processing provider and its algorithm. `tests/test_publish.py` checks `publish.py` anywhere: the paths, the hrefs and the folder rules, Windows paths among them, the styles, what an earlier catalogue leaves to remove and the messages, and that no document written for any fixture holds an absolute path, a user name or a password. It imports the plugin as QGIS installs it (`tests/installed_plugin.py`).
 
 `tests/desktop/check_desktop.py` runs the Desktop part in QGIS's own Python: it starts the plugin through `classFactory` with a stand-in for QGIS's `iface`, saves a made-up project with the option off and on, after removing a layer and after a layer's data file is deleted, runs Project ▸ Write STAC catalogue now with the option off, with and without unsaved changes and for a project not saved as a file, runs the Processing algorithm on two project files one after the other and on a file that is not a project, and draws the settings page. It needs QGIS's Processing plugin, which it loads from QGIS's own `python/plugins` folder. The `QGIS Desktop` job of `.github/workflows/qgis-server.yml` runs it in the official `qgis/qgis` image. To run it where QGIS's Python bindings are installed:
 
@@ -233,4 +233,4 @@ gh workflow run qgis-server.yml --ref main
 
 ## Licence
 
-Copyright 2026 Vectoria Pty Ltd. This folder is free software: you can redistribute it and modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 of the License or (at your option) any later version. It is distributed without any warranty; see [`LICENSE`](LICENSE). The installed plugin carries the same text in `quac_catalogue/LICENSE`.
+Copyright 2026 Vectoria Pty Ltd. This folder is free software: you can redistribute it and modify it under the terms of the GNU General Public License as published by the Free Software Foundation, version 2 of the License or (at your option) any later version. It is distributed without any warranty; see [`LICENSE`](LICENSE). The installed plugin carries the same text in `quac/LICENSE`.

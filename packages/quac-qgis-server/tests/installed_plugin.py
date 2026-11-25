@@ -2,7 +2,7 @@
 The plugin as QGIS installs it, with its own copy of `quac_server` inside, so
 a test can import a plugin module that reaches `quac_server` by a relative
 import. It is laid out once per test run by `build_plugin.lay_out_plugin` and
-imported under the name `installed_quac_catalogue`.
+imported under the name `installed_quac`.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from types import ModuleType
 
 from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin
 
-PACKAGE_NAME = 'installed_quac_catalogue'
+PACKAGE_NAME = 'installed_quac'
 
 
 def installed_module(name: str) -> ModuleType:

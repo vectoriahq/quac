@@ -1,6 +1,6 @@
 """
 What the plugin's QGIS Desktop part writes when a project is saved
-(`quac_catalogue/publish.py`): the documents and their paths, the data hrefs
+(`quac/publish.py`): the documents and their paths, the data hrefs
 and the folder rules, the styles, the settings' paths, what an earlier
 catalogue leaves to remove, and the message shown. The projects are made up,
 apart from the whole-project fixtures, every one of which is checked for an
