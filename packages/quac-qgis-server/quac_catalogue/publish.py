@@ -30,10 +30,12 @@ The folder rules:
   way: the catalogue never names the source, and it carries no link for it.
 - A layer whose data is not in a file or at a web address, such as one held in
   a database, is left out.
-- A layer QGIS could not open is left out. QGIS opens a WMS or WMTS layer by
-  reading its server's capabilities, so one whose server it could not reach
-  when it opened the layer is left out this way. QGIS 3.34 opens an XYZ
-  layer without reaching its server.
+- A layer QGIS could not open is left out, unless it is a WMS, WMTS or XYZ
+  layer. QGIS opens a WMS or WMTS layer by reading its server's capabilities,
+  so it cannot open one whose server it could not reach at that moment; such
+  a layer is written with its address all the same, without the extent and
+  field types QGIS would have given, or left out where its source holds a
+  user name, a password or an `authcfg`.
 - A Value Relation reading its choices from a layer left out is not written.
 - Each Collection's `via` link to the project file is written only where the
   project file is in the chosen folder or below it.
@@ -86,6 +88,9 @@ _NEXT_STEPS = {
     HOLDS_CREDENTIALS: 'To include a web layer, give it an address without a user name or password.',
     NOT_OPENED: 'To include a layer QGIS could not open, fix its data source in QGIS and save again.',
 }
+
+# The kinds of source written as a web map link, which a reader contacts itself: written whether or not QGIS opened the layer.
+_WEB_MAP_KINDS = ('wms', 'wmts', 'xyz')
 
 # The title of the `via` link to the project file, as the JavaScript's `QGIS_PROJECT_LINK_TITLE` writes it.
 QGIS_PROJECT_LINK_TITLE = 'QGIS project'
@@ -142,6 +147,8 @@ class Publication:
     skipped_styles: list[str] = field(default_factory=list)
     # Why nothing is written, where nothing is.
     refusal: Optional[str] = None
+    # How many layers the catalogue holds.
+    layer_count: int = 0
 
     def warnings(self) -> list[str]:
         """A sentence for each thing left out, for the log."""
@@ -211,8 +218,8 @@ def plan_publication(
     each layer's current style by layer id. `read_existing` gives the bytes of
     a file in the chosen folder by its path relative to it, joined by `/`, or
     None where there is none. `opened_layer_ids` holds the layers QGIS opened,
-    its valid layers; a layer of the project not in it is left out. None takes
-    every layer as opened.
+    its valid layers; a layer of the project not in it is left out, unless it
+    is a WMS, WMTS or XYZ layer. None takes every layer as opened.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -240,10 +247,12 @@ def plan_publication(
     titles: dict[str, str] = {}
     for collection in _collections(catalogue):
         titles[collection['id']] = collection.get('title', collection['id'])
-        if opened_layer_ids is not None and collection['id'] not in opened_layer_ids:
+        layer = layers_by_id.get(collection['id'])
+        web_map = layer is not None and (layer.data_source.kind in _WEB_MAP_KINDS or (layer.data_source.kind == 'unsupported' and _web_map_source_holds_credentials(layer.data_source.raw, layer.data_source.hint)))
+        if opened_layer_ids is not None and collection['id'] not in opened_layer_ids and not web_map:
             reason: Optional[str] = NOT_OPENED
         else:
-            reason = _place_data(layers_by_id.get(collection['id']), collection, project_folder, folder, path)
+            reason = _place_data(layer, collection, project_folder, folder, path)
         if reason is not None:
             left_out_ids.add(collection['id'])
             publication.left_out.append(LeftOutLayer(collection.get('title', collection['id']), reason))
@@ -266,6 +275,7 @@ def plan_publication(
             collection['table:columns'] = kept
         if project_href is not None:
             collection['links'] = [*collection['links'], {'rel': 'via', 'href': f'./{encode_asset_path(project_href)}', 'title': QGIS_PROJECT_LINK_TITLE}]
+    publication.layer_count = sum(1 for _ in _collections(catalogue))
     _refit_extent(catalogue)
     _declare_quac_again(catalogue)
 
@@ -345,7 +355,7 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
         return NOT_A_FILE
     source = layer.data_source
     data = (collection.get('assets') or {}).get('data')
-    if source.kind in ('wms', 'wmts', 'xyz'):
+    if source.kind in _WEB_MAP_KINDS:
         return None if source.url and server_wms_endpoint(source.url) else HOLDS_CREDENTIALS
     if source.kind == 'unsupported' and _web_map_source_holds_credentials(source.raw, source.hint):
         return HOLDS_CREDENTIALS

@@ -3,8 +3,9 @@ The QUAC Catalogue plugin, one plugin for QGIS Server and QGIS Desktop.
 
 QGIS Server starts it through `serverClassFactory`: `SERVICE=QUAC&REQUEST=GetCatalogue&MAP=<project>`
 answers the open project's catalogue (`service.py`). QGIS Desktop starts it
-through `classFactory`: on each save of a project with the option on, the
-project's catalogue is written into a chosen folder (`desktop.py`). Each
+through `classFactory`: on each save of a project with the option on, or on
+demand from the Project menu or the Processing algorithm, the project's
+catalogue is written into a chosen folder (`desktop.py`, `algorithm.py`). Each
 imports its own part only, so the server never loads `qgis.gui`. An installed
 copy holds `quac_server` inside this folder; `catalogue.py`, `access.py` and
 `publish.py` need no QGIS module, so their tests run anywhere.

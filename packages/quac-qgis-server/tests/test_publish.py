@@ -355,6 +355,27 @@ class FolderRules(unittest.TestCase):
         )))
         self.assertIn('Kinds was left out: QGIS could not open its data.', publication.warnings())
 
+    def test_keeps_a_web_map_layer_qgis_could_not_open_by_its_address(self) -> None:
+        wms = 'crs=EPSG:3857&format=image/png&layers=parcels&styles&url=https://maps.example.test/wms'
+        project = parks_project(trails=web_layer_xml('trails_3', 'Trails', wms))
+        publication = publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, {'parks_1', 'playgrounds_2', 'kinds_4'})
+        self.assertEqual(publication.left_out, [])
+        links = [link for link in collection(publication, 'trails_3')[1]['links'] if link['rel'] == 'wms']
+        self.assertEqual([link['href'] for link in links], ['https://maps.example.test/wms'])
+        self.assertEqual(publish.message(publication), ('info', 'Wrote the STAC catalogue Parks.stac.json.'))
+
+    def test_leaves_out_a_web_map_layer_qgis_could_not_open_whose_source_holds_credentials(self) -> None:
+        wms = 'layers=parcels&styles&url=https://editor:secret@maps.example.test/wms'
+        project = parks_project(trails=web_layer_xml('trails_3', 'Trails', wms))
+        publication = publish.plan_publication('Parks.qgs', project, {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, {'parks_1', 'playgrounds_2', 'kinds_4'})
+        self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.HOLDS_CREDENTIALS)])
+        self.assertNotIn('secret', json.dumps(documents(publication)))
+
+    def test_counts_the_layers_written(self) -> None:
+        publication = plan(parks_project())
+        self.assertEqual((publication.layer_count, len(publication.left_out)), (3, 1))
+        self.assertEqual(plan(parks_project(), project_folder='/work/Parks Project/a', folder='/work').layer_count, 4)
+
     def test_writes_the_project_link_only_where_the_project_is_in_the_chosen_folder(self) -> None:
         inside = plan(parks_project(), folder=PROJECT_FOLDER)
         name, parks = collection(inside, 'parks_1')
