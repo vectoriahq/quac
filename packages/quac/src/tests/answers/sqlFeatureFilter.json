@@ -1,0 +1,1658 @@
+[
+  {
+    "expression": "\"status\" = 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "Approved"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": "APPROVED"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": "proposed"
+        },
+        "kept": false
+      },
+      {
+        "properties": null,
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {},
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" <> 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "Approved"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "proposed"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" != 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "proposed"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": "APPROVED"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" IN ('approved', 'lodged')",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "Lodged"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": "x"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" NOT IN ('approved', 'lodged')",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "Lodged"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "x"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": null
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"lot\" LIKE 'Lot%'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "lot": "Lot 5"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "lot": "lot 5"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "lot": null
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"lot\" ILIKE 'Lot%'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "lot": "lot 5"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "lot": "LOT"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "lot": "Lo"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"area\" > 500",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "area": 600
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "area": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "area": "600"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "area": "big"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "area": true
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "area": 500
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"area\" BETWEEN 100 AND 500",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "area": 600
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "area": 100
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "area": 500
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "area": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "area": "300"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "NOT (\"status\" = 'approved')",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "approved"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "x"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" IS NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": null
+        },
+        "kept": true
+      },
+      {
+        "properties": {},
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": "x"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": 0
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" IS NOT NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {},
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": ""
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" = 'approved' OR \"area\" > 500",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "proposed",
+          "area": 600
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "status": null,
+          "area": null
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"status\" = 'approved' AND \"area\" > 500",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "Approved",
+          "area": 100
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "Approved",
+          "area": 600
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"approved\" = 1",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "approved": "1"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": "1.0"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": " 1 "
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": 1
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": true
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "comment": "x"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": "1e0"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": "0x1"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": 1.0000000000000002
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"code\" = '10'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "code": "10.0"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "code": "10"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "code": 10
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "code": 10
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"approved\" = 1 OR \"status\" = 'urgent'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "approved": 1,
+          "status": null
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"approved\" = 1 AND \"status\" = 'urgent'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "approved": 0,
+          "status": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": 1,
+          "status": null
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN (1, NULL)",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 1
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": 2
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN (2, NULL)",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 1
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "NOT (\"n\" IN (2, NULL))",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 1
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" <> 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" != 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" < 3",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" > 3",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" <= 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" >= 3",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN (1, 2)",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 'a%'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" ILIKE 'A%'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" BETWEEN 1 AND 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" NOT BETWEEN 1 AND 2",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" IS NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" IS NOT NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 2 AND NOT (\"s\" = 'b' OR \"n\" = 3)",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 2,
+          "s": "abc"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "STATUS = 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "status": "approved"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"Status\" = 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "Status": "proposed",
+          "status": "approved"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "status": "approved"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "STATUS": "approved",
+          "status": "x"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"approved\"",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "approved": 1
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": 0
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": "1"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": "yes"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "approved": ""
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": null
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "approved": 1e-16
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "lower(\"status\") = 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"area\" + 1 > 500",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"name\" || 'x' = 'ax'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"flag\" = TRUE",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"status\" IS 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "SELECT * FROM properties WHERE \"status\" = 'approved'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"status\" = 'approved",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "$area > 500",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"name\" ~ '^A'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"n\" = 1",
+    "dialect": "qgis_expression",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"n\" = 1",
+    "dialect": "wfs_sql",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"n\" = 1",
+    "dialect": "ogc_filter",
+    "kind": "unreadable",
+    "kept": []
+  },
+  {
+    "expression": "\"code\" = '123'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "code": "123"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "code": 123
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "code": " 123"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"name\" = 'ÉTÉ'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "name": "été"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "name": "ete"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"name\" = '123'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "name": 123
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"name\" > 'b'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "name": "c"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "name": "B"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "name": "b"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "name": "😀"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "name": "￿"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"name\" < '😀'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "name": "￿"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "name": "a"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" > '10'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 9
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": "9"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": 11
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"flag\" = 1",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "flag": true
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "flag": false
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "flag": "true"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"flag\" = 'true'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "flag": true
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "flag": false
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"flag\" > 0",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "flag": true
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "flag": false
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"list\" = '1,2'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "list": [
+            1,
+            2
+          ]
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "list": {
+            "a": 1
+          }
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"obj\" = '[object Object]'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "obj": {
+            "a": 1
+          }
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 1e21",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 1e+21
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "1e21"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "1e+21"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"t\" = '1e+21'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "t": 1e+21
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"t\" = '0.0000001'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "t": 1e-7
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "t": "0.0000001"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN ('1', 2)",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "1"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": 1
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "2"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "2.0"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN ('A')",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "a"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IN ('1')",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "1.0"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": 1
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 'a\\%b'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": "a%b"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "s": "axb"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 'a\\_b'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": "a_b"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "s": "axb"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 'a_c'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": "a\nc"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "s": "a😀c"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "s": "abbc"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE '%.*+?^$()[]{}|/\\'",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": [
+      {
+        "properties": {
+          "s": "x.*+?^$()[]{}|/\\"
+        },
+        "kept": null
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 'ab'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": "ab\n"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "s": "ab"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" LIKE 5",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": 5
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "s": "5"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "s": 55
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"s\" ILIKE 'STRASSE'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "s": "straße"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "s": "strasse"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" BETWEEN 'a' AND 'c'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "b"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "d"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" BETWEEN NULL AND 5",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 3
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": 9
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"a\" OR \"b\"",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "a": null,
+          "b": 1
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "a": null,
+          "b": 0
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "a": "x",
+          "b": 0
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {},
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "'text'",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {},
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "1",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {},
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = NULL",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": null
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" IS NOT NULL AND \"n\" <> ''",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": ""
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": "x"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 0.1 + 0.2",
+    "dialect": "ogr_sql",
+    "kind": "unreadable",
+    "kept": [
+      {
+        "properties": {
+          "n": 0.3
+        },
+        "kept": null
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 0.3",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": 0.30000000000000004
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": 0.3000001
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" <> -1",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": -1
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": "-1"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": "- 1"
+        },
+        "kept": true
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" = 5",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "5."
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": ".5e1"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "+5"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": " 5 "
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "Infinity"
+        },
+        "kept": false
+      },
+      {
+        "properties": {
+          "n": "5e999"
+        },
+        "kept": false
+      }
+    ]
+  },
+  {
+    "expression": "\"n\" > 1e308",
+    "dialect": "ogr_sql",
+    "kind": "readable",
+    "kept": [
+      {
+        "properties": {
+          "n": "1e309"
+        },
+        "kept": true
+      },
+      {
+        "properties": {
+          "n": "Infinity"
+        },
+        "kept": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,5072 @@
+[
+  {
+    "pattern": "ll",
+    "unicode": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": {
+            "index": 2,
+            "groups": [
+              "ll"
+            ]
+          }
+        },
+        {
+          "text": "HELLO",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": {
+            "index": 2,
+            "groups": [
+              "ll"
+            ]
+          }
+        },
+        {
+          "text": "HELLO",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^ll",
+    "unicode": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": null
+        },
+        {
+          "text": "llama",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ll"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": null
+        },
+        {
+          "text": "llama",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ll"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "llo$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": {
+            "index": 2,
+            "groups": [
+              "llo"
+            ]
+          }
+        },
+        {
+          "text": "hello\n",
+          "match": {
+            "index": 2,
+            "groups": [
+              "llo"
+            ]
+          }
+        },
+        {
+          "text": "hello\n\n",
+          "match": null
+        },
+        {
+          "text": "hellos",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "hello",
+          "match": {
+            "index": 2,
+            "groups": [
+              "llo"
+            ]
+          }
+        },
+        {
+          "text": "hello\n",
+          "match": {
+            "index": 2,
+            "groups": [
+              "llo"
+            ]
+          }
+        },
+        {
+          "text": "hello\n\n",
+          "match": null
+        },
+        {
+          "text": "hellos",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[eL]+",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-o"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-o"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(?<=H).*L",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-o"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-o"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(?<=H).*?L",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-Lo"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "-",
+          "result": "H-Lo"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(eL)",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "x\\1x",
+          "result": "HxeLxLo"
+        },
+        {
+          "text": "HeLLo",
+          "after": "\\0\\2\\11",
+          "result": "H\\0\\2eL1Lo"
+        },
+        {
+          "text": "HeLLo",
+          "after": "\\",
+          "result": "H\\Lo"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "HeLLo",
+          "after": "x\\1x",
+          "result": "HxeLxLo"
+        },
+        {
+          "text": "HeLLo",
+          "after": "\\0\\2\\11",
+          "result": "H\\0\\2eL1Lo"
+        },
+        {
+          "text": "HeLLo",
+          "after": "\\",
+          "result": "H\\Lo"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(\\d+)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 3,
+            "groups": [
+              "123",
+              "123"
+            ]
+          }
+        },
+        {
+          "text": "abcdef",
+          "match": null
+        },
+        {
+          "text": "abc١٢٣",
+          "match": {
+            "index": 3,
+            "groups": [
+              "١٢٣",
+              "١٢٣"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 3,
+            "groups": [
+              "123",
+              "123"
+            ]
+          }
+        },
+        {
+          "text": "abcdef",
+          "match": null
+        },
+        {
+          "text": "abc١٢٣",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(\\d+?)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 3,
+            "groups": [
+              "1",
+              "1"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 3,
+            "groups": [
+              "1",
+              "1"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "c(.)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c1",
+              "1"
+            ]
+          }
+        },
+        {
+          "text": "abc\n1",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c1",
+              "1"
+            ]
+          }
+        },
+        {
+          "text": "abc\n1",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "c\\d",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c1"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc123",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c1"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": ".b.",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 0,
+            "groups": [
+              "abc"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        },
+        {
+          "text": "\nb\n",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 0,
+            "groups": [
+              "abc"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        },
+        {
+          "text": "\nb\n",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "Buda\\b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "Budač",
+          "match": null
+        },
+        {
+          "text": "Buda",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Buda"
+            ]
+          }
+        },
+        {
+          "text": "Buda ",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Buda"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "Budač",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Buda"
+            ]
+          }
+        },
+        {
+          "text": "Buda",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Buda"
+            ]
+          }
+        },
+        {
+          "text": "Buda ",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Buda"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "Budač\\b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "Budač",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Budač"
+            ]
+          }
+        },
+        {
+          "text": "Budačx",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "Budač",
+          "match": null
+        },
+        {
+          "text": "Budačx",
+          "match": {
+            "index": 0,
+            "groups": [
+              "Budač"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\s[A-Z]+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc DEF",
+          "match": {
+            "index": 3,
+            "groups": [
+              " DEF"
+            ]
+          }
+        },
+        {
+          "text": "abc DEF",
+          "match": {
+            "index": 3,
+            "groups": [
+              " DEF"
+            ]
+          }
+        },
+        {
+          "text": "abc DEF",
+          "match": {
+            "index": 3,
+            "groups": [
+              " DEF"
+            ]
+          }
+        },
+        {
+          "text": "abcDEF",
+          "match": {
+            "index": 3,
+            "groups": [
+              "DEF"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc DEF",
+          "match": {
+            "index": 3,
+            "groups": [
+              " DEF"
+            ]
+          }
+        },
+        {
+          "text": "abc DEF",
+          "match": null
+        },
+        {
+          "text": "abc DEF",
+          "match": null
+        },
+        {
+          "text": "abcDEF",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\s[a-z]+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc DEF",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc DEF",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "({[a-zA-Z\\d]{8}\\-[a-zA-Z\\d]{4}\\-[a-zA-Z\\d]{4}\\-[a-zA-Z\\d]{4}\\-[a-zA-Z\\d]{12}})",
+    "unicode": {
+      "matches": [
+        {
+          "text": "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}",
+              "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}"
+            ]
+          }
+        },
+        {
+          "text": "6f1e2a9c",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}",
+              "{6f1e2a9c-8b4d-4c3e-9a17-5d2f0b7e4c61}"
+            ]
+          }
+        },
+        {
+          "text": "6f1e2a9c",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[[[",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a.b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a\rb",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a\rb"
+            ]
+          }
+        },
+        {
+          "text": "a\nb",
+          "match": null
+        },
+        {
+          "text": "a b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a b"
+            ]
+          }
+        },
+        {
+          "text": "a😀b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a😀b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a\rb",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a\rb"
+            ]
+          }
+        },
+        {
+          "text": "a\nb",
+          "match": null
+        },
+        {
+          "text": "a b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a b"
+            ]
+          }
+        },
+        {
+          "text": "a😀b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a😀b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "end$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "end\n",
+          "match": {
+            "index": 0,
+            "groups": [
+              "end"
+            ]
+          }
+        },
+        {
+          "text": "end",
+          "match": {
+            "index": 0,
+            "groups": [
+              "end"
+            ]
+          }
+        },
+        {
+          "text": "end\n\n",
+          "match": null
+        },
+        {
+          "text": "end\r\n",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "end\n",
+          "match": {
+            "index": 0,
+            "groups": [
+              "end"
+            ]
+          }
+        },
+        {
+          "text": "end",
+          "match": {
+            "index": 0,
+            "groups": [
+              "end"
+            ]
+          }
+        },
+        {
+          "text": "end\n\n",
+          "match": null
+        },
+        {
+          "text": "end\r\n",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^\\w$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        },
+        {
+          "text": "e",
+          "match": {
+            "index": 0,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "_",
+          "match": {
+            "index": 0,
+            "groups": [
+              "_"
+            ]
+          }
+        },
+        {
+          "text": "٣",
+          "match": {
+            "index": 0,
+            "groups": [
+              "٣"
+            ]
+          }
+        },
+        {
+          "text": "-",
+          "match": null
+        },
+        {
+          "text": "ǅ",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ǅ"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "é",
+          "match": null
+        },
+        {
+          "text": "e",
+          "match": {
+            "index": 0,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "_",
+          "match": {
+            "index": 0,
+            "groups": [
+              "_"
+            ]
+          }
+        },
+        {
+          "text": "٣",
+          "match": null
+        },
+        {
+          "text": "-",
+          "match": null
+        },
+        {
+          "text": "ǅ",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^\\d$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "٣",
+          "match": {
+            "index": 0,
+            "groups": [
+              "٣"
+            ]
+          }
+        },
+        {
+          "text": "3",
+          "match": {
+            "index": 0,
+            "groups": [
+              "3"
+            ]
+          }
+        },
+        {
+          "text": "²",
+          "match": null
+        },
+        {
+          "text": "Ⅳ",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "٣",
+          "match": null
+        },
+        {
+          "text": "3",
+          "match": {
+            "index": 0,
+            "groups": [
+              "3"
+            ]
+          }
+        },
+        {
+          "text": "²",
+          "match": null
+        },
+        {
+          "text": "Ⅳ",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)hello",
+    "unicode": {
+      "matches": [
+        {
+          "text": "HELLO",
+          "match": {
+            "index": 0,
+            "groups": [
+              "HELLO"
+            ]
+          }
+        },
+        {
+          "text": "HeLLo",
+          "match": {
+            "index": 0,
+            "groups": [
+              "HeLLo"
+            ]
+          }
+        },
+        {
+          "text": "help",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "HELLO",
+          "match": {
+            "index": 0,
+            "groups": [
+              "HELLO"
+            ]
+          }
+        },
+        {
+          "text": "HeLLo",
+          "match": {
+            "index": 0,
+            "groups": [
+              "HeLLo"
+            ]
+          }
+        },
+        {
+          "text": "help",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a\\-b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a-b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a-b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a-b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a-b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^{x}$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "{x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "{x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "{x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "{x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a]"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a]"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[]a]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "]"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "]"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[^]a]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "]",
+          "match": null
+        },
+        {
+          "text": "a",
+          "match": null
+        },
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "]",
+          "match": null
+        },
+        {
+          "text": "a",
+          "match": null
+        },
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\x{e9}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        },
+        {
+          "text": "e",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        },
+        {
+          "text": "e",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\x{1F600}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a😀",
+          "match": {
+            "index": 1,
+            "groups": [
+              "😀"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a😀",
+          "match": {
+            "index": 1,
+            "groups": [
+              "😀"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\x{110000}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\x41\\x{42}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "AB",
+          "match": {
+            "index": 0,
+            "groups": [
+              "AB"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "AB",
+          "match": {
+            "index": 0,
+            "groups": [
+              "AB"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(\\d+)-(\\d+)-(\\d+)",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "2026-10-26",
+          "after": "\\3/\\2/\\1",
+          "result": "26/10/2026"
+        },
+        {
+          "text": "2026-10-26 and 2027-01-02",
+          "after": "\\3/\\2/\\1",
+          "result": "26/10/2026 and 02/01/2027"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "2026-10-26",
+          "after": "\\3/\\2/\\1",
+          "result": "26/10/2026"
+        },
+        {
+          "text": "2026-10-26 and 2027-01-02",
+          "after": "\\3/\\2/\\1",
+          "result": "26/10/2026 and 02/01/2027"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "a",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "\\1$1",
+          "result": "\\1$1b"
+        },
+        {
+          "text": "aaa",
+          "after": "$&",
+          "result": "$&$&$&"
+        },
+        {
+          "text": "",
+          "after": "x",
+          "result": ""
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "\\1$1",
+          "result": "\\1$1b"
+        },
+        {
+          "text": "aaa",
+          "after": "$&",
+          "result": "$&$&$&"
+        },
+        {
+          "text": "",
+          "after": "x",
+          "result": ""
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "\\D",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "0412 345 678",
+          "after": "",
+          "result": "0412345678"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "0412 345 678",
+          "after": "",
+          "result": "0412345678"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(x)?b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(x)?(b)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b",
+              null,
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b",
+              null,
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(a*)?b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        },
+        {
+          "text": "aab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aab",
+              "aa"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        },
+        {
+          "text": "aab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aab",
+              "aa"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:(a*))?b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(x|){0,1}b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(a)??b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab",
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab",
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(a)??ab",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:|a)?",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:\\d*|N/A)?",
+    "unicode": {
+      "matches": [
+        {
+          "text": "N/A",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "N/A",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:|a)??a",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^A\\d{3}$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "A102",
+          "match": {
+            "index": 0,
+            "groups": [
+              "A102"
+            ]
+          }
+        },
+        {
+          "text": "A1023",
+          "match": null
+        },
+        {
+          "text": "a102",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "A102",
+          "match": {
+            "index": 0,
+            "groups": [
+              "A102"
+            ]
+          }
+        },
+        {
+          "text": "A1023",
+          "match": null
+        },
+        {
+          "text": "a102",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": ".*?",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-----"
+        },
+        {
+          "text": "",
+          "after": "-",
+          "result": "-"
+        },
+        {
+          "text": "😀a",
+          "after": "-",
+          "result": "-----"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-----"
+        },
+        {
+          "text": "",
+          "after": "-",
+          "result": "-"
+        },
+        {
+          "text": "😀a",
+          "after": "-",
+          "result": "-----"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "a??",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "---b-"
+        },
+        {
+          "text": "😀a",
+          "after": "-",
+          "result": "-😀---"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "---b-"
+        },
+        {
+          "text": "😀a",
+          "after": "-",
+          "result": "-😀---"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "x*",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b-"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b-"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "a*",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "baac",
+          "after": "-",
+          "result": "-b--c-"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "baac",
+          "after": "-",
+          "result": "-b--c-"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "\\b",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab cd",
+          "after": "|",
+          "result": "|ab| |cd|"
+        },
+        {
+          "text": "é a",
+          "after": "|",
+          "result": "|é| |a|"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab cd",
+          "after": "|",
+          "result": "|ab| |cd|"
+        },
+        {
+          "text": "é a",
+          "after": "|",
+          "result": "é |a|"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "(?:ab)+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "abab"
+            ]
+          }
+        },
+        {
+          "text": "aba",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abab",
+          "match": {
+            "index": 0,
+            "groups": [
+              "abab"
+            ]
+          }
+        },
+        {
+          "text": "aba",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ab"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:(a)|b)?",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a",
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              null
+            ]
+          }
+        },
+        {
+          "text": "",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a",
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b",
+              null
+            ]
+          }
+        },
+        {
+          "text": "",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              null
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=a{2}|bcd)e",
+    "unicode": {
+      "matches": [
+        {
+          "text": "aae",
+          "match": {
+            "index": 2,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "bcde",
+          "match": {
+            "index": 3,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "abe",
+          "match": null
+        },
+        {
+          "text": "cde",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "aae",
+          "match": {
+            "index": 2,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "bcde",
+          "match": {
+            "index": 3,
+            "groups": [
+              "e"
+            ]
+          }
+        },
+        {
+          "text": "abe",
+          "match": null
+        },
+        {
+          "text": "cde",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<!a|bc)d",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ad",
+          "match": null
+        },
+        {
+          "text": "bcd",
+          "match": null
+        },
+        {
+          "text": "xd",
+          "match": {
+            "index": 1,
+            "groups": [
+              "d"
+            ]
+          }
+        },
+        {
+          "text": "d",
+          "match": {
+            "index": 0,
+            "groups": [
+              "d"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ad",
+          "match": null
+        },
+        {
+          "text": "bcd",
+          "match": null
+        },
+        {
+          "text": "xd",
+          "match": {
+            "index": 1,
+            "groups": [
+              "d"
+            ]
+          }
+        },
+        {
+          "text": "d",
+          "match": {
+            "index": 0,
+            "groups": [
+              "d"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=|a)b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b"
+            ]
+          }
+        },
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b"
+            ]
+          }
+        },
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=a$)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 1,
+            "groups": [
+              ""
+            ]
+          }
+        },
+        {
+          "text": "ba\n",
+          "match": {
+            "index": 2,
+            "groups": [
+              ""
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 1,
+            "groups": [
+              ""
+            ]
+          }
+        },
+        {
+          "text": "ba\n",
+          "match": {
+            "index": 2,
+            "groups": [
+              ""
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=\\bfo)o",
+    "unicode": {
+      "matches": [
+        {
+          "text": "foo",
+          "match": {
+            "index": 2,
+            "groups": [
+              "o"
+            ]
+          }
+        },
+        {
+          "text": "xfoo",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "foo",
+          "match": {
+            "index": 2,
+            "groups": [
+              "o"
+            ]
+          }
+        },
+        {
+          "text": "xfoo",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)^\\w$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "A",
+          "match": {
+            "index": 0,
+            "groups": [
+              "A"
+            ]
+          }
+        },
+        {
+          "text": "ſ",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ſ"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": null
+  },
+  {
+    "pattern": "[\\w-]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        },
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        },
+        {
+          "text": "!",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        },
+        {
+          "text": "é",
+          "match": null
+        },
+        {
+          "text": "!",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[-\\d]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        },
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        },
+        {
+          "text": "x",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        },
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        },
+        {
+          "text": "x",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\s-z]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "^\\d+(?=m$)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "12m",
+          "match": {
+            "index": 0,
+            "groups": [
+              "12"
+            ]
+          }
+        },
+        {
+          "text": "12mm",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "12m",
+          "match": {
+            "index": 0,
+            "groups": [
+              "12"
+            ]
+          }
+        },
+        {
+          "text": "12mm",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^a(?!b)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": null
+        },
+        {
+          "text": "ac",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": null
+        },
+        {
+          "text": "ac",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "^a{2,}$",
+    "unicode": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aaa"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aaa"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{1,3}?",
+    "unicode": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\x41",
+    "unicode": {
+      "matches": [
+        {
+          "text": "A",
+          "match": {
+            "index": 0,
+            "groups": [
+              "A"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "A",
+          "match": {
+            "index": 0,
+            "groups": [
+              "A"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:-\\d{2})+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-12-34",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-12-34"
+            ]
+          }
+        },
+        {
+          "text": "-1",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-12-34",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-12-34"
+            ]
+          }
+        },
+        {
+          "text": "-1",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?s).",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\D]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "٣",
+          "match": {
+            "index": 0,
+            "groups": [
+              "٣"
+            ]
+          }
+        },
+        {
+          "text": "5",
+          "match": null
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[^\\D]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "٣",
+          "match": null
+        },
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[a\\W]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        },
+        {
+          "text": "b",
+          "match": null
+        },
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[^a\\W]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": null
+        },
+        {
+          "text": "-",
+          "match": null
+        },
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              "b"
+            ]
+          }
+        },
+        {
+          "text": "é",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\D\\W]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "5",
+          "match": null
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        },
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[^\\D\\W]",
+    "unicode": null,
+    "ascii": {
+      "matches": [
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": null
+        },
+        {
+          "text": "-",
+          "match": null
+        },
+        {
+          "text": "٣",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[^\\d]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "5",
+          "match": null
+        },
+        {
+          "text": "٣",
+          "match": null
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "5",
+          "match": null
+        },
+        {
+          "text": "٣",
+          "match": {
+            "index": 0,
+            "groups": [
+              "٣"
+            ]
+          }
+        },
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\w+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "naïve café 東京",
+          "match": {
+            "index": 0,
+            "groups": [
+              "naïve"
+            ]
+          }
+        },
+        {
+          "text": "___",
+          "match": {
+            "index": 0,
+            "groups": [
+              "___"
+            ]
+          }
+        },
+        {
+          "text": "ǅx",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ǅx"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "naïve café 東京",
+          "match": {
+            "index": 0,
+            "groups": [
+              "na"
+            ]
+          }
+        },
+        {
+          "text": "___",
+          "match": {
+            "index": 0,
+            "groups": [
+              "___"
+            ]
+          }
+        },
+        {
+          "text": "ǅx",
+          "match": {
+            "index": 1,
+            "groups": [
+              "x"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\W+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "naïve café",
+          "match": {
+            "index": 5,
+            "groups": [
+              " "
+            ]
+          }
+        },
+        {
+          "text": "a-b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "naïve café",
+          "match": {
+            "index": 2,
+            "groups": [
+              "ï"
+            ]
+          }
+        },
+        {
+          "text": "a-b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\S+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "  x᠎y",
+          "match": {
+            "index": 2,
+            "groups": [
+              "x"
+            ]
+          }
+        },
+        {
+          "text": "　z",
+          "match": {
+            "index": 1,
+            "groups": [
+              "z"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "  x᠎y",
+          "match": {
+            "index": 1,
+            "groups": [
+              " x᠎y"
+            ]
+          }
+        },
+        {
+          "text": "　z",
+          "match": {
+            "index": 0,
+            "groups": [
+              "　z"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\s+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a᠎b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "᠎"
+            ]
+          }
+        },
+        {
+          "text": "a　 b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "　 "
+            ]
+          }
+        },
+        {
+          "text": "a​b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a᠎b",
+          "match": null
+        },
+        {
+          "text": "a　 b",
+          "match": null
+        },
+        {
+          "text": "a​b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\B",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab cd",
+          "after": "|",
+          "result": "a|b c|d"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab cd",
+          "after": "|",
+          "result": "a|b c|d"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "\\Bé",
+    "unicode": {
+      "matches": [
+        {
+          "text": "aé",
+          "match": {
+            "index": 1,
+            "groups": [
+              "é"
+            ]
+          }
+        },
+        {
+          "text": "é",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "aé",
+          "match": null
+        },
+        {
+          "text": "é",
+          "match": {
+            "index": 0,
+            "groups": [
+              "é"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\d+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "١٢٣4",
+          "match": {
+            "index": 0,
+            "groups": [
+              "١٢٣4"
+            ]
+          }
+        },
+        {
+          "text": "٣",
+          "match": {
+            "index": 0,
+            "groups": [
+              "٣"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "١٢٣4",
+          "match": {
+            "index": 3,
+            "groups": [
+              "4"
+            ]
+          }
+        },
+        {
+          "text": "٣",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)s",
+    "unicode": {
+      "matches": [
+        {
+          "text": "S",
+          "match": {
+            "index": 0,
+            "groups": [
+              "S"
+            ]
+          }
+        },
+        {
+          "text": "ß",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "S",
+          "match": {
+            "index": 0,
+            "groups": [
+              "S"
+            ]
+          }
+        },
+        {
+          "text": "ß",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)[a-z]+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ABC",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ABC"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ABC",
+          "match": {
+            "index": 0,
+            "groups": [
+              "ABC"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)[^s]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "S",
+          "match": null
+        },
+        {
+          "text": "s",
+          "match": null
+        },
+        {
+          "text": "t",
+          "match": {
+            "index": 0,
+            "groups": [
+              "t"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "S",
+          "match": null
+        },
+        {
+          "text": "s",
+          "match": null
+        },
+        {
+          "text": "t",
+          "match": {
+            "index": 0,
+            "groups": [
+              "t"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?i)\\d",
+    "unicode": {
+      "matches": [
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "5",
+          "match": {
+            "index": 0,
+            "groups": [
+              "5"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\x{10000}-\\x{10FFFF}]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a😀",
+          "match": {
+            "index": 1,
+            "groups": [
+              "😀"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a😀",
+          "match": {
+            "index": 1,
+            "groups": [
+              "😀"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[z-a]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{3,2}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{2}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aa"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "aaa",
+          "match": {
+            "index": 0,
+            "groups": [
+              "aa"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{65535}",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)(k)",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "abcdefghijk",
+          "after": "\\11|\\10|\\1|\\12|\\111",
+          "result": "k|j|a|a2|k1"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "abcdefghijk",
+          "after": "\\11|\\10|\\1|\\12|\\111",
+          "result": "k|j|a|a2|k1"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "\\\\",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a\\b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "\\"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a\\b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "\\"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\/",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a/b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a/b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "/",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a/b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a/b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\.\\$\\^\\(\\)\\[\\]\\{\\}\\|\\*\\+\\?",
+    "unicode": {
+      "matches": [
+        {
+          "text": ".$^()[]{}|*+?",
+          "match": {
+            "index": 0,
+            "groups": [
+              ".$^()[]{}|*+?"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": ".$^()[]{}|*+?",
+          "match": {
+            "index": 0,
+            "groups": [
+              ".$^()[]{}|*+?"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[.$^()[{}|*+?/]+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "x.$^()[{}|*+?/y",
+          "match": {
+            "index": 1,
+            "groups": [
+              ".$^()[{}|*+?/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "x.$^()[{}|*+?/y",
+          "match": {
+            "index": 1,
+            "groups": [
+              ".$^()[{}|*+?/"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[a-]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\-a]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\]]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "]"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "]",
+          "match": {
+            "index": 0,
+            "groups": [
+              "]"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\n\\t]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "\t",
+          "match": {
+            "index": 0,
+            "groups": [
+              "\t"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "\t",
+          "match": {
+            "index": 0,
+            "groups": [
+              "\t"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\n\\r\\t\\f",
+    "unicode": {
+      "matches": [
+        {
+          "text": "\n\r\t\f",
+          "match": {
+            "index": 0,
+            "groups": [
+              "\n\r\t\f"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "\n\r\t\f",
+          "match": {
+            "index": 0,
+            "groups": [
+              "\n\r\t\f"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "\\#\\ \\&",
+    "unicode": {
+      "matches": [
+        {
+          "text": "# &",
+          "match": {
+            "index": 0,
+            "groups": [
+              "# &"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "# &",
+          "match": {
+            "index": 0,
+            "groups": [
+              "# &"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "()",
+    "unicode": {
+      "matches": [
+        {
+          "text": "x",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "x",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(|a)",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "",
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a|",
+    "unicode": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "b",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b-"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 0,
+            "groups": [
+              ""
+            ]
+          }
+        }
+      ],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b-"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "[&&]+",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a&&b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "&&"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a&&b",
+          "match": {
+            "index": 1,
+            "groups": [
+              "&&"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[--]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "-",
+          "match": {
+            "index": 0,
+            "groups": [
+              "-"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[~~]",
+    "unicode": {
+      "matches": [
+        {
+          "text": "~",
+          "match": {
+            "index": 0,
+            "groups": [
+              "~"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "~",
+          "match": {
+            "index": 0,
+            "groups": [
+              "~"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a{",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a{",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{x}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a{x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a{x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{2,x}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a{2,x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{2,x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a{2,x}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a{2,x}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "}",
+    "unicode": {
+      "matches": [
+        {
+          "text": "}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "}",
+          "match": {
+            "index": 0,
+            "groups": [
+              "}"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:a|bc)d",
+    "unicode": {
+      "matches": [
+        {
+          "text": "bcd",
+          "match": {
+            "index": 0,
+            "groups": [
+              "bcd"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "bcd",
+          "match": {
+            "index": 0,
+            "groups": [
+              "bcd"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?:a?)?",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a",
+          "match": {
+            "index": 0,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?=a)?",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<=a)*b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<=a{1})b",
+    "unicode": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "ab",
+          "match": {
+            "index": 1,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=[ab]{2})c",
+    "unicode": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c"
+            ]
+          }
+        },
+        {
+          "text": "ac",
+          "match": null
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "abc",
+          "match": {
+            "index": 2,
+            "groups": [
+              "c"
+            ]
+          }
+        },
+        {
+          "text": "ac",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=\\x{1F600})a",
+    "unicode": {
+      "matches": [
+        {
+          "text": "😀a",
+          "match": {
+            "index": 1,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "😀a",
+          "match": {
+            "index": 1,
+            "groups": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?<=\\s)\\S",
+    "unicode": {
+      "matches": [
+        {
+          "text": "a b",
+          "match": {
+            "index": 2,
+            "groups": [
+              "b"
+            ]
+          }
+        }
+      ],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [
+        {
+          "text": "a b",
+          "match": null
+        }
+      ],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "(?!$)",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "-a-b"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "$",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab\n",
+          "after": "-",
+          "result": "ab-\n-"
+        },
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "ab-"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab\n",
+          "after": "-",
+          "result": "ab-\n-"
+        },
+        {
+          "text": "ab",
+          "after": "-",
+          "result": "ab-"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "^",
+    "unicode": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab\nc",
+          "after": "-",
+          "result": "-ab\nc"
+        }
+      ]
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": [
+        {
+          "text": "ab\nc",
+          "after": "-",
+          "result": "-ab\nc"
+        }
+      ]
+    }
+  },
+  {
+    "pattern": "\\xZZ",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\x4",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\v",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\Qa.b\\E",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\A",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\z",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\e",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\cA",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\p{L}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\b]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<x>a)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?'x'a)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?P<x>a)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?=(a))",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<=(?:a))b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[a",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{70000}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\x{d800}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?s)a.b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a(?i)b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a++",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a?+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{2}+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?>a)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[[:alpha:]]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\h",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\R",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\g1",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\10",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\W]",
+    "unicode": null,
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "a{,3}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?(1)a|b)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?R)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a)?\\1b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<x>a)\\k<x>",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\w-z]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[a-\\d]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(a)|b)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "((a)|b){2}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a?)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a|b)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<=a+)b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<!a{1,2})b",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<=(a|bc))d",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?<n>x)|(?<n>y)",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(a)|b)\\E+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(a)|b)\\Q\\E+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\s\\E-z]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(a)|b)(?#x)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(a)|b){2,3}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a)?*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a)?{2}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a)??*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "x(?:|a)*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "x(?:|a)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "x(?:(?=a)|a)*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "x(?:(?<!b)|a)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:a?)*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:a*|b){2}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{ 2}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{2 }",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{1 , 3}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "a{ ,3}",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "^(?:a+)+$",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "^(?:[A-Za-z]+ ?)*$",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:a|b)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:a?a)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?:(?:a|b)c)+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "^[A-Za-z]+(?: [A-Za-z]+)*$",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "^*",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "$?",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a)?+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(a){0,1}+",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\b?a",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\b*a",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "\\B{2}a",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "(?i)\\bx",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": null
+  },
+  {
+    "pattern": "(?i)\\W",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": null
+  },
+  {
+    "pattern": "(?i)\\B",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": null
+  },
+  {
+    "pattern": "[\\S]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\D-z]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[a-\\s]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[\\d-]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\s]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[a\\-\\d]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[\\w\\-z]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[=x]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[.x]",
+    "unicode": {
+      "matches": [],
+      "replaced": []
+    },
+    "ascii": {
+      "matches": [],
+      "replaced": []
+    }
+  },
+  {
+    "pattern": "[[=x=]]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[[.x.]]",
+    "unicode": null,
+    "ascii": null
+  },
+  {
+    "pattern": "[x[:y]",
+    "unicode": null,
+    "ascii": null
+  }
+]
