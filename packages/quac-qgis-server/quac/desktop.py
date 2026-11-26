@@ -10,9 +10,10 @@ A project publishes one of two ways, chosen on its QUAC page:
   where it is, a layer whose data is not in the folder is left out, and each
   save writes the catalogue where the option is on.
 - Exporting a copy of every layer: the menu action and the algorithm copy
-  every layer's data into the folder in the formats ticked
-  (`copy_data.py`), from the menu in a background task, and then write the
-  catalogue. A save writes nothing.
+  every layer's data into the folder, a vector layer's in the formats ticked
+  and a raster layer's as a cloud-optimised GeoTIFF (`copy_data.py`), from
+  the menu in a background task, and then write the catalogue. A save writes
+  nothing.
 
 The save, the menu action and the Processing algorithm all write through
 `write_catalogue`:
@@ -49,7 +50,7 @@ from typing import Any, Iterator, Optional
 
 from dataclasses import dataclass, field
 
-from qgis.core import Qgis, QgsApplication, QgsCoordinateTransformContext, QgsFeedback, QgsMapLayer, QgsMessageLog, QgsPathResolver, QgsProject, QgsReadWriteContext, QgsTask, QgsVectorLayer
+from qgis.core import Qgis, QgsApplication, QgsCoordinateTransformContext, QgsFeedback, QgsMapLayer, QgsMessageLog, QgsPathResolver, QgsProject, QgsRasterLayer, QgsReadWriteContext, QgsTask, QgsVectorLayer
 from qgis.gui import QgsFileWidget, QgsOptionsPageWidget, QgsOptionsWidgetFactory
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit, QRadioButton, QVBoxLayout
@@ -220,8 +221,8 @@ def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
         return job
     for request in publication.to_copy:
         layer = project.mapLayer(request.layer_id)
-        if isinstance(layer, QgsVectorLayer) and layer.isValid():
-            job.sources.append(LayerSource(request.layer_id, layer.name(), layer.source(), layer.providerType(), request.hidden_fields))
+        if isinstance(layer, (QgsVectorLayer, QgsRasterLayer)) and layer.isValid():
+            job.sources.append(LayerSource(request.layer_id, layer.name(), layer.source(), layer.providerType(), request.hidden_fields, isinstance(layer, QgsRasterLayer)))
     return job
 
 
@@ -232,7 +233,8 @@ def finish_export(project: Any, job: ExportJob, copies: Copies) -> Publication:
         QgsMessageLog.logMessage(f'{project.baseName()}: the data of {layer.name() if layer is not None else layer_id} could not be copied: {reason}', LOG_TAG, _level('Warning'))
     placed = place_copies(copies, job.folder)
     publication = write_catalogue(project, job.folder, copies=placed, copy_failures=set(copies.failed))[1]
-    publication.geoparquet_fallback = job.geoparquet_fallback and bool(placed)
+    rasters = {source.layer_id for source in job.sources if source.raster}
+    publication.geoparquet_fallback = job.geoparquet_fallback and any(layer_id not in rasters for layer_id in placed)
     return publication
 
 
@@ -560,9 +562,9 @@ PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
 PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
 PORTOLAN_ADDRESS = 'https://portolan-sdi.org/'
 NO_FORMAT_NOTE = 'Tick a format to export.'
-NO_DATA_NOTE = "No format holds the layers' data."
-NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for each layer's data."
-NOT_PORTOLAN_HERE_NOTE = "Not a Portolan catalogue: this version of QGIS can't write GeoParquet, which Portolan needs for each layer's data."
+NO_DATA_NOTE = "No format holds the vector layers' data."
+NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for each vector layer's data."
+NOT_PORTOLAN_HERE_NOTE = "Not a Portolan catalogue: this version of QGIS can't write GeoParquet, which Portolan needs for each vector layer's data."
 
 
 class SettingsPage(QgsOptionsPageWidget):
@@ -679,9 +681,10 @@ class SettingsPage(QgsOptionsPageWidget):
     def _show_format_note(self) -> None:
         """
         Says what the ticked formats leave out, while exporting: no format at
-        all, no format for the layers' data, or no GeoParquet, which Portolan
-        needs for each layer's data, linked to Portolan's site. Nothing where
-        GeoParquet is ticked: the plugin does not check Portolan's other rules.
+        all, no format for the vector layers' data, or no GeoParquet, which
+        Portolan needs for each vector layer's data, linked to Portolan's site.
+        Nothing where GeoParquet is ticked: the plugin does not check Portolan's
+        other rules.
         """
         sentences = []
         if not any(box.isChecked() for box in (self.geoparquet, self.flatgeobuf, self.pmtiles)):
