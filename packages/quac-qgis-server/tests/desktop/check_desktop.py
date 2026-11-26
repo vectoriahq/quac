@@ -329,6 +329,16 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(project.write(), 'the project saves')
     check(files_under(publish) == before, 'a save of a project set to export changes nothing')
 
+    project.writeEntry('quac', 'catalogue/formats', [])
+    check(project.write(), 'the project saves with no format ticked')
+    refused = ''
+    try:
+        processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=Feedback())
+    except QgsProcessingException as error:
+        refused = str(error)
+    check('no format is ticked' in refused and files_under(publish) == before, f'with no format ticked, the export is refused and nothing changes: {refused}')
+    project.writeEntry('quac', 'catalogue/formats', ['geoparquet', 'flatgeobuf', 'pmtiles'])
+
     project.writeEntry('quac', 'catalogue/mode', 'link')
     check(project.write(), 'the project saves, set to link its data')
     check(not (publish / 'Roads.stac' / 'data').exists() or not any((publish / 'Roads.stac' / 'data').iterdir()), 'the copies are removed once the project links its data')
@@ -567,11 +577,20 @@ def main() -> int:
             image = page.grab()
             print(f'      device pixel ratio {image.devicePixelRatio()}, {image.width()} x {image.height()} pixels')
             check(image.save(screenshot), f'the page is saved as {screenshot}')
+        from quac.copy_data import GEOPARQUET, writable_formats
+
         page.export.setChecked(True)
-        for box in (page.geoparquet, page.flatgeobuf):
+        for box in (page.geoparquet, page.flatgeobuf, page.pmtiles):
             box.setChecked(False)
-        check(page.geoparquet.isChecked() or page.flatgeobuf.isChecked(), 'unticking every format leaves one ticked')
+        check(page.format_note.isVisibleTo(page) and page.format_note.text() == 'Tick a format to export.', f'with no format ticked, the page says to tick one: {page.format_note.text()}')
+        page.flatgeobuf.setChecked(True)
+        print('      note:', page.format_note.text())
+        check('Not a Portolan catalogue' in page.format_note.text() and 'href="https://portolan-sdi.org/"' in page.format_note.text() and page.format_note.openExternalLinks(), 'with FlatGeobuf alone, the page says the catalogue is not a Portolan catalogue, with a link to Portolan\'s site')
+        if GEOPARQUET in writable_formats():
+            page.geoparquet.setChecked(True)
+            check(not page.format_note.isVisibleTo(page), 'with GeoParquet ticked, the page says nothing more')
         page.link.setChecked(True)
+        check(not page.format_note.isVisibleTo(page), 'the note is hidden while linking')
         page.folder.setFilePath(str(home))
         page.apply()
         check(project.readEntry('quac', 'catalogue/folder', 'x')[0] == '', "choosing the project's own folder saves an empty folder setting")

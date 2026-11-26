@@ -133,12 +133,12 @@ def copy_formats(chosen: list[str]) -> tuple[list[CopyFormat], bool]:
     """
     The formats to copy in, from the ids the project ticks, the layer's data
     first, and whether GeoParquet was ticked and FlatGeobuf written in its
-    place, as this QGIS cannot write it. With none ticked, FlatGeobuf.
+    place, as this QGIS cannot write it. None where none is ticked.
     """
     writable = writable_formats()
     ids = [format_id for format_id in DATA_FORMAT_IDS if format_id in chosen and format_id in writable]
     fallback = GEOPARQUET in chosen and GEOPARQUET not in writable
-    if (fallback or not ids) and FLATGEOBUF not in ids:
+    if fallback and FLATGEOBUF not in ids:
         ids.append(FLATGEOBUF)
     if PMTILES in chosen and PMTILES in writable:
         ids.append(PMTILES)

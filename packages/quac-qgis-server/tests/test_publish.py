@@ -805,6 +805,14 @@ class AnExport(unittest.TestCase):
         linked = plan(parks_project(), existing=dict(publication.files))
         self.assertIn('Parks.stac/data/parks_1.pmtiles', linked.removals)
 
+    def test_publishes_a_layer_with_a_pmtiles_copy_alone_without_a_data_asset(self) -> None:
+        copies = {layer_id: [publish.CopiedData(f'Parks.stac/data/{layer_id}.pmtiles', 512, '1220' + '01' * 32)] for layer_id in PARKS_LAYERS}
+        publication = copy_plan(parks_project(), copies=copies)
+        self.assertEqual(publication.left_out, [])
+        trails = collection(publication, 'trails_3')[1]
+        self.assertEqual(list(trails['assets']), ['pmtiles'])
+        self.assertEqual([link['rel'] for link in trails['links'] if link['rel'] == 'pmtiles'], ['pmtiles'])
+
     def test_says_where_geoparquet_could_not_be_written(self) -> None:
         publication = copy_plan(parks_project(), copies=every_copy(*PARKS_LAYERS))
         publication.geoparquet_fallback = True
