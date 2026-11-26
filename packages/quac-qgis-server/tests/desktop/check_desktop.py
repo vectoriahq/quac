@@ -27,13 +27,14 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
    checking the project on screen is untouched;
 7. a project of its own holding a GeoPackage layer, and checks its primary
    key, its feature id filled by the data, and a text field's length;
-8. a project set to copy the data of a layer outside its folder: through
-   Project ▸ Export STAC catalogue with data, in QGIS's task manager, and the
-   Processing algorithm, checking the copy's format, its filter, the field
-   QGIS Server excludes left out, WGS84, its size and checksum in the
-   catalogue and the layer made read-only; a save keeping the copy; and the
-   copy removed once the project leaves such layers out. It prints the format
-   this QGIS copies data as;
+8. a project set to export a copy of every layer, with GeoParquet and
+   FlatGeobuf ticked, holding a layer outside its folder and one inside it:
+   through Project ▸ Write STAC catalogue now, in QGIS's task manager, and
+   the Processing algorithm, checking each layer is copied in each format
+   this QGIS writes, the filter, the field QGIS Server excludes left out,
+   WGS84, each copy's size and checksum in the catalogue and the layer made
+   read-only; a save writing nothing; and the copies removed once the project
+   links its data again. It prints the formats this QGIS writes;
 9. after `unload`, and checks nothing more is written, the menu action and the
    Processing provider are gone.
 
@@ -233,83 +234,97 @@ def check_field_facts(home: Path) -> None:
     project.clear()
 
 
-def check_export(home: Path, processing: Any, iface: Any, plugin: Any) -> None:
+def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now: Any) -> None:
     """
-    Saves a made-up project whose Roads layer is outside its folder, filtered
-    to the roads with `keep` = 1 and with `owner` excluded from QGIS Server, set
-    to copy such data in, and exports it from the menu and the algorithm.
+    Saves a made-up project set to export a copy of every layer, with
+    GeoParquet and FlatGeobuf ticked: Roads outside its folder, filtered to
+    the roads with `keep` = 1 and with `owner` excluded from QGIS Server, and
+    Benches inside it. Exports it from the menu and the algorithm.
     """
     import hashlib
     import time
 
-    from quac.copy_data import copy_format
+    from quac.copy_data import writable_formats
 
-    format_ = copy_format()
-    print('      copies data as:', format_)
+    writable = writable_formats()
+    print('      writes copies as:', list(writable))
     roads_file = write(home / 'outside' / 'roads.geojson', points([
         {'id': 1, 'name': 'Main road', 'keep': 1, 'owner': 'Example Council'},
         {'id': 2, 'name': 'Old track', 'keep': 0, 'owner': 'Example Trust'},
     ]))
     publish = home / 'publish'
-    publish.mkdir(parents=True)
+    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench'}]))
     project = QgsProject.instance()
     project.clear()
     roads = layer(project, roads_file, 'Roads', project.layerTreeRoot())
+    benches = layer(project, benches_file, 'Benches', project.layerTreeRoot())
     roads.setSubsetString('"keep" = 1')
     hide = getattr(getattr(Qgis, 'FieldConfigurationFlag', None), 'HideFromWfs', None) or QgsField.ConfigurationFlag.HideFromWfs
     roads.setFieldConfigurationFlags(roads.fields().indexOf('owner'), hide)
     project.writeEntry('quac', 'catalogue/folder', 'publish')
-    project.writeEntry('quac', 'catalogue/copy_data', True)
-    check(project.write(str(home / 'Roads.qgz')), 'the export project saves, set to copy data in')
-    copy_file = publish / 'Roads.stac' / 'data' / f'{roads.id()}.{format_.extension}'
+    project.writeEntry('quac', 'catalogue/mode', 'export')
+    project.writeEntry('quac', 'catalogue/formats', ['geoparquet', 'flatgeobuf'])
+    project.writeEntry('quac', 'catalogue/write_on_save', True)
+    check(project.write(str(home / 'Roads.qgz')), 'the export project saves, set to export a copy of every layer')
+    check(not (publish / 'Roads.stac.json').exists(), 'a save of a project set to export writes nothing')
+    extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb')) if format_id in writable]
 
-    def check_copy(how: str) -> dict[str, Any]:
+    def check_copies(how: str) -> None:
         root = json.loads((publish / 'Roads.stac.json').read_text(encoding='utf-8'))
-        child = next(link['href'] for link in root['links'] if link['rel'] == 'child')
-        document_path = posixpath.normpath(posixpath.join('.', child))
-        collection = json.loads((publish / document_path).read_text(encoding='utf-8'))
-        data = collection['assets']['data']
-        resolved = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(data['href'])))
-        check(resolved.resolve() == copy_file.resolve() and copy_file.is_file(), f'{how}: the data asset names the copy in Roads.stac/data: {data["href"]}')
-        check(data['file:size'] == copy_file.stat().st_size and data['file:checksum'] == '1220' + hashlib.sha256(copy_file.read_bytes()).hexdigest(), f'{how}: the asset gives the copy\'s size and checksum')
-        check(collection['quac:editable'] is False, f'{how}: the copied layer is read-only')
-        copied = QgsVectorLayer(str(copy_file), 'copy', 'ogr')
-        names = [field_.name() for field_ in copied.fields()]
-        check(copied.isValid() and copied.featureCount() == 1 and 'owner' not in names and 'name' in names, f'{how}: the copy holds the filtered road, without the excluded field: {names}, {copied.featureCount()}')
-        check(copied.crs().authid() == 'EPSG:4326', f'{how}: the copy is in WGS84: {copied.crs().authid()}')
-        check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
-        return collection
+        documents = {}
+        for link in root['links']:
+            if link['rel'] == 'child':
+                path = posixpath.normpath(link['href'])
+                documents[path] = json.loads((publish / path).read_text(encoding='utf-8'))
+        for name, copied_layer in (('Roads', roads), ('Benches', benches)):
+            document_path, collection = next((path, document) for path, document in documents.items() if document.get('title') == name)
+            check(collection['quac:editable'] is False, f'{how}: {name} is read-only')
+            assets = [collection['assets']['data'], *(asset for key, asset in collection['assets'].items() if key not in ('data',) and 'data' in asset.get('roles', []))]
+            files = [publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(asset['href']))) for asset in assets]
+            check([file_.suffix[1:] for file_ in files] == extensions, f'{how}: {name} is copied as {extensions}, the data first: {[file_.name for file_ in files]}')
+            for asset, file_ in zip(assets, files):
+                check(file_.is_file() and asset['file:size'] == file_.stat().st_size and asset['file:checksum'] == '1220' + hashlib.sha256(file_.read_bytes()).hexdigest(), f'{how}: {file_.name} is in Roads.stac/data, with its size and checksum')
+                copied = QgsVectorLayer(str(file_), 'copy', 'ogr')
+                names = [field_.name() for field_ in copied.fields()]
+                check(copied.isValid() and copied.crs().authid() == 'EPSG:4326', f'{how}: {file_.name} opens, in WGS84')
+                if name == 'Roads':
+                    check(copied.featureCount() == 1 and 'owner' not in names and 'name' in names, f'{how}: {file_.name} holds the filtered road, without the excluded field: {names}, {copied.featureCount()}')
+                    if file_.suffix == '.parquet':
+                        check_geoparquet(file_)
+            if name == 'Roads':
+                check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
 
+    if os.environ.get('QUAC_EXPECT_GEOPARQUET'):
+        check('geoparquet' in writable, f'this QGIS writes GeoParquet: {list(writable)}')
     iface.bar.messages.clear()
-    export = next(action for action in iface.project_menu.actions() if action.text() == 'Export STAC catalogue with data')
-    export.trigger()
+    write_now.trigger()
     waited = time.monotonic()
     while plugin._task is not None and time.monotonic() - waited < 120:
         QgsApplication.processEvents()
         time.sleep(0.05)
     print('      message:', iface.bar.messages[-1][1] if iface.bar.messages else None)
     check(plugin._task is None, 'the export task finishes')
-    check_copy('from the menu')
-    if os.environ.get('QUAC_EXPECT_GEOPARQUET'):
-        check(format_.geoparquet, f'this QGIS copies data as GeoParquet: {format_}')
-    if format_.geoparquet:
-        check_geoparquet(copy_file)
-    check(iface.bar.messages and iface.bar.messages[-1][1].startswith('Exported the STAC catalogue Roads.stac.json. Copied the data of one layer: Roads.'), 'the message bar says what was exported and copied')
+    check_copies('from the menu')
+    expected = 'Exported the STAC catalogue Roads.stac.json. Copied the data of 2 layers.'
+    if 'geoparquet' not in writable:
+        expected += " The data was copied as FlatGeobuf, because this version of QGIS can't write GeoParquet."
+    check(bool(iface.bar.messages) and iface.bar.messages[-1][1] == expected, f'the message bar says what was exported: {expected}')
 
-    copy_file.unlink()
-    feedback = Feedback()
-    result = processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=feedback)
+    for file_ in (publish / 'Roads.stac' / 'data').iterdir():
+        file_.unlink()
+    result = processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=Feedback())
     print('      result:', result)
-    check(result['LAYERS_COPIED'] == 1 and result['LAYERS_LEFT_OUT'] == 0, 'the algorithm copies the data, as Copy data is ticked by default')
-    check_copy('from the algorithm')
+    check(result['LAYERS_COPIED'] == 2 and result['LAYERS_LEFT_OUT'] == 0, 'the algorithm exports, as the project is set to')
+    check_copies('from the algorithm')
 
-    project.writeEntry('quac', 'catalogue/write_on_save', True)
-    check(project.write(), 'the project saves with writing on save on')
-    check_copy('after a save')
+    before = files_under(publish)
+    check(project.write(), 'the project saves')
+    check(files_under(publish) == before, 'a save of a project set to export changes nothing')
 
-    project.writeEntry('quac', 'catalogue/copy_data', False)
-    check(project.write(), 'the project saves, set to leave such layers out')
-    check(not copy_file.exists(), 'the copy is removed once the project leaves such layers out')
+    project.writeEntry('quac', 'catalogue/mode', 'link')
+    check(project.write(), 'the project saves, set to link its data')
+    check(not (publish / 'Roads.stac' / 'data').exists() or not any((publish / 'Roads.stac' / 'data').iterdir()), 'the copies are removed once the project links its data')
+    check((publish / 'benches.geojson').is_file(), 'the data in the folder is untouched')
     project.clear()
 
 
@@ -383,7 +398,7 @@ def main() -> int:
         plugin.initGui()
         check(len(iface.factories) == 1, 'initGui registers the QUAC page of Project Properties')
         labels = [action.text() for action in iface.project_menu.actions()]
-        check(labels == ['Save', 'Save As…', 'Write STAC catalogue now', 'Export STAC catalogue with data', 'Close'], f'the Project menu has Write STAC catalogue now and Export STAC catalogue with data after Save As: {labels}')
+        check(labels == ['Save', 'Save As…', 'Write STAC catalogue now', 'Close'], f'the Project menu has Write STAC catalogue now after Save As: {labels}')
         write_now = iface.project_menu.actions()[2]
         provider = QgsApplication.processingRegistry().providerById('quac')
         algorithm = QgsApplication.processingRegistry().algorithmById('quac:writequaccatalogue')
@@ -530,6 +545,11 @@ def main() -> int:
             image = page.grab()
             print(f'      device pixel ratio {image.devicePixelRatio()}, {image.width()} x {image.height()} pixels')
             check(image.save(screenshot), f'the page is saved as {screenshot}')
+        page.export.setChecked(True)
+        for box in (page.geoparquet, page.flatgeobuf):
+            box.setChecked(False)
+        check(page.geoparquet.isChecked() or page.flatgeobuf.isChecked(), 'unticking every format leaves one ticked')
+        page.link.setChecked(True)
         page.folder.setFilePath(str(home))
         page.apply()
         check(project.readEntry('quac', 'catalogue/folder', 'x')[0] == '', "choosing the project's own folder saves an empty folder setting")
@@ -616,7 +636,7 @@ def main() -> int:
         check_field_facts(work / 'Sites Project')
 
         # 8. A project that copies the data of a layer outside its folder.
-        check_export(work / 'Export Project', processing, iface, plugin)
+        check_export(work / 'Export Project', processing, iface, plugin, write_now)
         check(project.read(str(project_file)), 'the Parks project reads again after the export')
 
         # 9. After unload.

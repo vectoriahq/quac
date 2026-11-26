@@ -4,10 +4,11 @@ with its data (`desktop.export_catalogue`). `publish.plan_publication` says
 which layers to copy; this writes each copy with QGIS and gives what the
 catalogue records of it.
 
-- The format is GeoParquet where this QGIS's GDAL writes it with the
-  bounding-box column Portolan asks for, and FlatGeobuf otherwise
-  (`copy_format`). GeoParquet's rows are sorted in space and compressed with
-  zstd where GDAL offers it.
+- The formats are the ones the project ticks, GeoParquet and FlatGeobuf
+  (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
+  it with the bounding-box column Portolan asks for, with its rows sorted in
+  space and compressed with zstd where GDAL offers them; where it cannot,
+  FlatGeobuf is written in its place. The first format is the layer's data.
 - A copy holds what the project shows: the layer's filter applies, as QGIS
   reads the layer, and the fields QGIS Server excludes are left out. Its
   geometry is in WGS84 (EPSG:4326).
@@ -38,14 +39,20 @@ from qgis.core import (
 from .publish import CopiedData, copy_path
 
 
+# The formats a copy can be written in, by id, in the order a layer's copies are listed: the first ticked is the layer's data.
+GEOPARQUET = 'geoparquet'
+FLATGEOBUF = 'flatgeobuf'
+FORMAT_IDS = (GEOPARQUET, FLATGEOBUF)
+
+
 @dataclass(frozen=True)
 class CopyFormat:
-    """The GDAL driver a copy is written with, its file extension, its layer creation options, and whether it is GeoParquet as Portolan asks."""
+    """A format a copy is written in: its id, the GDAL driver, its file extension and its layer creation options."""
 
+    id: str
     driver: str
     extension: str
     layer_options: tuple[str, ...]
-    geoparquet: bool
 
 
 @dataclass(frozen=True)
@@ -61,9 +68,9 @@ class LayerSource:
 
 @dataclass
 class Copies:
-    """What `copy_layers` made: each copy by layer id with its temporary file, and each failure with why."""
+    """What `copy_layers` made: each layer's copies by layer id, each with its temporary file, and each failure with why."""
 
-    made: dict[str, tuple[str, CopiedData]] = field(default_factory=dict)
+    made: dict[str, list[tuple[str, CopiedData]]] = field(default_factory=dict)
     failed: dict[str, str] = field(default_factory=dict)
     cancelled: bool = False
 
@@ -77,12 +84,14 @@ def _creation_options(driver_name: str) -> str:
     return driver.GetMetadataItem('DS_LAYER_CREATIONOPTIONLIST') or ''
 
 
-def copy_format() -> CopyFormat:
+def writable_formats() -> dict[str, CopyFormat]:
     """
-    GeoParquet where GDAL's Parquet driver writes the bounding-box column
-    (`WRITE_COVERING_BBOX`, GDAL 3.9 and later), with its rows sorted in space
-    (`SORT_BY_BBOX`) and zstd where offered; FlatGeobuf otherwise.
+    The formats this QGIS writes a copy in, by id: GeoParquet where GDAL's
+    Parquet driver writes the bounding-box column (`WRITE_COVERING_BBOX`, GDAL
+    3.9 and later), with its rows sorted in space (`SORT_BY_BBOX`) and zstd
+    where offered, and FlatGeobuf.
     """
+    formats: dict[str, CopyFormat] = {}
     options = _creation_options('Parquet')
     if 'WRITE_COVERING_BBOX' in options:
         layer_options = ['WRITE_COVERING_BBOX=YES']
@@ -90,8 +99,28 @@ def copy_format() -> CopyFormat:
             layer_options.append('SORT_BY_BBOX=YES')
         if 'ZSTD' in options:
             layer_options.append('COMPRESSION=ZSTD')
-        return CopyFormat('Parquet', 'parquet', tuple(layer_options), True)
-    return CopyFormat('FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',), False)
+        formats[GEOPARQUET] = CopyFormat(GEOPARQUET, 'Parquet', 'parquet', tuple(layer_options))
+    formats[FLATGEOBUF] = CopyFormat(FLATGEOBUF, 'FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',))
+    return formats
+
+
+def default_formats() -> list[str]:
+    """The formats a project ticks until it chooses: GeoParquet where this QGIS writes it, and FlatGeobuf otherwise."""
+    return [GEOPARQUET] if GEOPARQUET in writable_formats() else [FLATGEOBUF]
+
+
+def copy_formats(chosen: list[str]) -> tuple[list[CopyFormat], bool]:
+    """
+    The formats to copy in, from the ids the project ticks, the layer's data
+    first, and whether GeoParquet was ticked and FlatGeobuf written in its
+    place, as this QGIS cannot write it. With none ticked, FlatGeobuf.
+    """
+    writable = writable_formats()
+    ids = [format_id for format_id in FORMAT_IDS if format_id in chosen and format_id in writable]
+    fallback = GEOPARQUET in chosen and GEOPARQUET not in writable
+    if (fallback or not ids) and FLATGEOBUF not in ids:
+        ids.append(FLATGEOBUF)
+    return [writable[format_id] for format_id in ids], fallback
 
 
 def checksum(file_path: str) -> str:
@@ -107,32 +136,41 @@ def copy_layers(
     sources: list[LayerSource],
     folder: str,
     children_folder: str,
-    format_: CopyFormat,
+    formats: list[CopyFormat],
     transform_context: Optional[QgsCoordinateTransformContext] = None,
     feedback: Any = None,
 ) -> Copies:
     """
-    Copies each layer to a temporary file beside where its copy goes under
-    `folder`. Stops between layers where `feedback` is cancelled, and removes
-    what it made then.
+    Copies each layer in each format to a temporary file beside where its copy
+    goes under `folder`. Stops between copies where `feedback` is cancelled,
+    and removes what it made then.
     """
     copies = Copies()
     context = transform_context or QgsCoordinateTransformContext()
     for index, source in enumerate(sources):
-        if feedback is not None and feedback.isCanceled():
-            copies.cancelled = True
-            break
-        relative = copy_path(children_folder, source.layer_id, format_.extension)
-        target = os.path.join(folder, *relative.split('/'))
-        try:
-            temporary = _copy_one(source, target, format_, context, feedback)
-        except Exception as error:  # noqa: BLE001 - one layer's failure is reported and the export goes on
-            copies.failed[source.layer_id] = f'{type(error).__name__}: {error}'
+        made: list[tuple[str, CopiedData]] = []
+        for format_ in formats:
+            if feedback is not None and feedback.isCanceled():
+                copies.cancelled = True
+                break
+            relative = copy_path(children_folder, source.layer_id, format_.extension)
+            target = os.path.join(folder, *relative.split('/'))
+            try:
+                temporary = _copy_one(source, target, format_, context, feedback)
+            except Exception as error:  # noqa: BLE001 - one layer's failure is reported and the export goes on
+                copies.failed[source.layer_id] = f'{type(error).__name__}: {error}'
+                break
+            if temporary is None:
+                copies.cancelled = True
+                break
+            made.append((temporary, CopiedData(relative, os.path.getsize(temporary), checksum(temporary))))
+        if source.layer_id in copies.failed or copies.cancelled:
+            for temporary, _copied in made:
+                _remove(temporary)
+            if copies.cancelled:
+                break
             continue
-        if temporary is None:
-            copies.cancelled = True
-            break
-        copies.made[source.layer_id] = (temporary, CopiedData(relative, os.path.getsize(temporary), checksum(temporary)))
+        copies.made[source.layer_id] = made
         if feedback is not None:
             feedback.setProgress(100 * (index + 1) / len(sources))
     if copies.cancelled:
@@ -167,19 +205,21 @@ def _copy_one(source: LayerSource, target: str, format_: CopyFormat, context: Qg
     return temporary
 
 
-def place_copies(copies: Copies, folder: str) -> dict[str, CopiedData]:
+def place_copies(copies: Copies, folder: str) -> dict[str, list[CopiedData]]:
     """Moves each copy from its temporary file into place, over the earlier copy, and returns the copies by layer id."""
-    placed: dict[str, CopiedData] = {}
-    for layer_id, (temporary, copied) in copies.made.items():
-        os.replace(temporary, os.path.join(folder, *copied.path.split('/')))
-        placed[layer_id] = copied
+    placed: dict[str, list[CopiedData]] = {}
+    for layer_id, made in copies.made.items():
+        for temporary, copied in made:
+            os.replace(temporary, os.path.join(folder, *copied.path.split('/')))
+        placed[layer_id] = [copied for _temporary, copied in made]
     return placed
 
 
 def discard(copies: Copies) -> None:
     """Removes every temporary file the copies were written to."""
-    for temporary, _copied in copies.made.values():
-        _remove(temporary)
+    for made in copies.made.values():
+        for temporary, _copied in made:
+            _remove(temporary)
     copies.made.clear()
 
 

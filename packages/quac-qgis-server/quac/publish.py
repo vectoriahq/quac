@@ -84,14 +84,18 @@ from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling
 from .quac_server.parse.parse_data_source import wfs_source_signs_in
 from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
 from .quac_server.parse.read_project_file import read_project_xml
-from .quac_server.util.catalogue_file_formats import QML_STYLE_MEDIA_TYPE, declared_media_type_for_file
+from .quac_server.util.catalogue_file_formats import CATALOGUE_FILE_FORMATS, QML_STYLE_MEDIA_TYPE, declared_media_type_for_file
 
 # Where the project keeps the settings (`QgsProject.writeEntry`): on or off, and the folder relative to the project file.
 SETTINGS_SCOPE = 'quac'
 WRITE_ON_SAVE_KEY = 'catalogue/write_on_save'
 FOLDER_KEY = 'catalogue/folder'
-# Whether a layer whose data the chosen folder does not hold is copied in when the catalogue is exported.
-COPY_DATA_KEY = 'catalogue/copy_data'
+# How the project publishes: `link`, the default, links each layer's data where it is and writes on save;
+# `export` copies every layer's data into the chosen folder, in the formats `catalogue/formats` lists, when it is written.
+MODE_KEY = 'catalogue/mode'
+LINK = 'link'
+EXPORT = 'export'
+FORMATS_KEY = 'catalogue/formats'
 
 # The folder under the documents' folder that holds the copies.
 COPIES_FOLDER = 'data'
@@ -104,21 +108,15 @@ OUTSIDE_FOLDER = 'outside_folder'
 NOT_A_FILE = 'not_a_file'
 HOLDS_CREDENTIALS = 'holds_credentials'
 NOT_OPENED = 'not_opened'
-NO_COPY_YET = 'no_copy_yet'
+NOT_COPIED = 'not_copied'
 COPY_FAILED = 'copy_failed'
-
-# The Project menu's action that exports the catalogue with its data, as its messages name it.
-EXPORT_LABEL = 'Export STAC catalogue with data'
-
-# The reasons a vector layer's data is copied for, where the project copies data.
-_COPYABLE = (OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS)
 
 _REASONS = {
     OUTSIDE_FOLDER: 'its data file is outside the chosen folder',
     NOT_A_FILE: 'its data is not in a file, such as a layer held in a database',
     HOLDS_CREDENTIALS: 'its web address holds a user name or password',
     NOT_OPENED: 'QGIS could not open its data',
-    NO_COPY_YET: 'it has no copy yet',
+    NOT_COPIED: 'its data was not copied',
     COPY_FAILED: 'QGIS could not copy its data',
 }
 
@@ -127,7 +125,6 @@ _NEXT_STEPS = {
     NOT_A_FILE: 'To include a layer held in a database, save its data as a file in the chosen folder.',
     HOLDS_CREDENTIALS: 'To include a web layer, give it an address without a user name or password.',
     NOT_OPENED: 'To include a layer QGIS could not open, fix its data source in QGIS and save again.',
-    NO_COPY_YET: f'To copy their data, choose {EXPORT_LABEL} from the Project menu.',
     COPY_FAILED: 'The QUAC tab of the Log Messages panel says why each copy failed.',
 }
 
@@ -258,12 +255,13 @@ class Publication:
     dropped_settings: list[DroppedSetting] = field(default_factory=list)
     dropped_folders: list[DroppedFolder] = field(default_factory=list)
     dropped_for_hidden_fields: list[DroppedForHiddenField] = field(default_factory=list)
-    # Whether the copies were made for this publication, by an export, rather than carried from the previous one.
+    # Whether this is an export, which copies every layer's data.
     exported: bool = False
-    # The layers whose data this export copied, by title, and whether any was copied as FlatGeobuf, where GeoParquet could not be written.
+    # The layers whose data the export copied, by title.
     copied: list[str] = field(default_factory=list)
-    copied_as_flatgeobuf: bool = False
-    # The layers whose data the project copies and that have no copy: the ones an export copies.
+    # Whether the project asks for GeoParquet and this QGIS cannot write it, so the data was copied as FlatGeobuf (`desktop.py` sets it).
+    geoparquet_fallback: bool = False
+    # The layers an export copies: every vector layer QGIS opened.
     to_copy: list[CopyRequest] = field(default_factory=list)
     # Layers whose style was not written because its QML names a folder on this computer.
     skipped_styles: list[str] = field(default_factory=list)
@@ -344,8 +342,7 @@ def plan_publication(
     opened_layer_ids: Optional[set[str]] = None,
     wgs84_box: Optional[Callable[[MapExtent], Optional[BoundingBox]]] = None,
     data_file: Optional[Callable[[str], Optional[DataFile]]] = None,
-    copy_data: bool = False,
-    copies: Optional[dict[str, CopiedData]] = None,
+    copies: Optional[dict[str, list[CopiedData]]] = None,
     copy_failures: Optional[set[str]] = None,
 ) -> Publication:
     """
@@ -363,16 +360,13 @@ def plan_publication(
     `data_file` gives a data file's size and last change by its absolute path,
     or None where it cannot; with none given, a data asset carries neither.
 
-    With `copy_data`, a vector layer QGIS opened whose data the chosen folder
-    does not hold, in a file outside it, in a database or behind a sign-in, is
-    published from a copy of its data under `<project>.stac/data/` instead of
-    being left out. `copies` holds the copies an export made, by layer id;
-    None, as on a save, takes each layer's copy from the previous catalogue
-    where its file is still there (`data_file` says so). A layer with no copy
-    is left out, and named in `to_copy`; one whose id is in `copy_failures`,
-    whose copy the export tried and failed, is left out for that. A copied
-    layer is read-only, and the
-    fields QGIS Server excludes are left out of it, with whatever uses them.
+    With `copies`, an export: every vector layer QGIS opened, wherever its
+    data is, is published from the copies of its data an export made under
+    `<project>.stac/data/`, by layer id, the first in each list the layer's
+    data and any others copies in other formats. Every such layer is named in
+    `to_copy`; one with no copy is left out, for its copy failing where its
+    id is in `copy_failures`. A copied layer is read-only, and the fields
+    QGIS Server excludes are left out of it, with whatever uses them.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -397,11 +391,6 @@ def plan_publication(
     project_folder = path.normpath(project_folder)
     folder = path.normpath(folder)
 
-    carried: dict[str, CopiedData] = {}
-    if copy_data and copies is None and previous is not None:
-        for layer_id, copied in _previous_copies(root_file_name, previous, children_folder, read_existing).items():
-            if data_file is None or data_file(path.join(folder, *copied.path.split('/'))) is not None:
-                carried[layer_id] = copied
     publication.exported = copies is not None
 
     left_out_ids: set[str] = set()
@@ -416,19 +405,17 @@ def plan_publication(
             reason: Optional[str] = NOT_OPENED
         else:
             reason = _place_data(layer, collection, project_folder, folder, path, data_file)
-        if copy_data and reason in _COPYABLE and layer is not None and layer.type == 'vector':
-            copied = (copies if copies is not None else carried).get(collection['id'])
-            if copied is None:
-                publication.to_copy.append(CopyRequest(collection['id'], titles[collection['id']], frozenset(_hidden_fields_of(layer))))
-                reason = COPY_FAILED if copy_failures and collection['id'] in copy_failures else NO_COPY_YET
+        if copies is not None and reason != NOT_OPENED and layer is not None and layer.type == 'vector':
+            publication.to_copy.append(CopyRequest(collection['id'], titles[collection['id']], frozenset(_hidden_fields_of(layer))))
+            copied = copies.get(collection['id'])
+            if not copied:
+                reason = COPY_FAILED if copy_failures and collection['id'] in copy_failures else NOT_COPIED
             else:
                 _place_copy(collection, copied)
                 copied_hidden[collection['id']] = _hidden_fields_of(layer)
-                copy_paths.add(copied.path.lower())
+                copy_paths.update(copy.path.lower() for copy in copied)
+                publication.copied.append(titles[collection['id']])
                 reason = None
-                if copies is not None:
-                    publication.copied.append(titles[collection['id']])
-                    publication.copied_as_flatgeobuf = publication.copied_as_flatgeobuf or copied.path.lower().endswith('.fgb')
         if reason is not None:
             left_out_ids.add(collection['id'])
             publication.left_out.append(LeftOutLayer(collection.get('title', collection['id']), reason))
@@ -546,11 +533,11 @@ def message(publication: Publication) -> tuple[str, str]:
     sentences = [f"{'Exported' if publication.exported else 'Wrote'} the STAC catalogue {publication.root_file_name}."]
     if publication.copied:
         count = len(publication.copied)
-        sentences.append(f"Copied the data of {'one layer' if count == 1 else f'{count} layers'}: {', '.join(publication.copied)}.")
-    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.dropped_for_hidden_fields or publication.skipped_styles or publication.copied_as_flatgeobuf):
+        sentences.append(f"Copied the data of {'one layer' if count == 1 else f'{count} layers'}.")
+    if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.dropped_for_hidden_fields or publication.skipped_styles or publication.geoparquet_fallback):
         return 'info', ' '.join(sentences)
-    if publication.copied_as_flatgeobuf:
-        sentences.append("The data was copied as FlatGeobuf, because this QGIS can't write GeoParquet. Some STAC software expects GeoParquet.")
+    if publication.geoparquet_fallback:
+        sentences.append("The data was copied as FlatGeobuf, because this version of QGIS can't write GeoParquet.")
     if publication.left_out:
         count = len(publication.left_out)
         listed = ', '.join(f'{layer.name} ({_REASONS[layer.reason]})' for layer in publication.left_out)
@@ -575,7 +562,7 @@ def message(publication: Publication) -> tuple[str, str]:
         sentences.append(f'Relations and choices that use a field QGIS Server excludes, which a copy leaves out, were left out too: {listed}.')
     if publication.skipped_styles:
         sentences.append(f"The style of {', '.join(publication.skipped_styles)} was not written, because it names a folder on this computer.")
-    sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, COPY_FAILED, NO_COPY_YET, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
+    sentences += [_NEXT_STEPS[reason] for reason in (NOT_OPENED, COPY_FAILED, OUTSIDE_FOLDER, NOT_A_FILE, HOLDS_CREDENTIALS) if any(layer.reason == reason for layer in publication.left_out)]
     return 'warning', ' '.join(sentences)
 
 
@@ -726,27 +713,40 @@ def copy_path(children_folder: str, layer_id: str, extension: str) -> str:
     return f'{children_folder}/{COPIES_FOLDER}/{_safe_name(layer_id)}.{extension}'
 
 
-def _place_copy(collection: dict[str, Any], copied: CopiedData) -> None:
+def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
     """
-    Points a Collection's data asset at the copy of its data, by its path from
-    the chosen folder as `_place_data` writes a file's, and makes the layer
-    read-only: an edit to a copy is lost at the next export. The fields that
-    name where the layer's own data comes from are left out, as the copy is
-    the data.
+    Points a Collection's data asset, keyed `data`, at the first copy of its
+    data, and adds each other copy as an asset keyed by its format's id, such
+    as `flatgeobuf`, by its path from the chosen folder as `_place_data` writes
+    a file's. Makes the layer read-only, since an edit to a copy is lost at the
+    next export, and leaves out the fields that name where the layer's own
+    data comes from, as the copy is the data.
     """
-    asset: dict[str, Any] = {'href': f'./{encode_asset_path(copied.path)}', 'type': declared_media_type_for_file(copied.path, 'data'), 'roles': ['data']}
-    if copied.size > 0:
-        asset[FILE_SIZE_FIELD] = copied.size
-    asset[FILE_CHECKSUM_FIELD] = copied.checksum
-    if copied.updated:
-        asset['updated'] = copied.updated
-    collection['assets'] = {**{key: value for key, value in (collection.get('assets') or {}).items() if key != 'data'}, 'data': asset}
+    assets = {key: value for key, value in (collection.get('assets') or {}).items() if key != 'data'}
+    for index, copy in enumerate(copied):
+        asset: dict[str, Any] = {'href': f'./{encode_asset_path(copy.path)}', 'type': declared_media_type_for_file(copy.path, 'data'), 'roles': ['data']}
+        if copy.size > 0:
+            asset[FILE_SIZE_FIELD] = copy.size
+        asset[FILE_CHECKSUM_FIELD] = copy.checksum
+        if copy.updated:
+            asset['updated'] = copy.updated
+        if index == 0:
+            assets = {'data': asset, **assets}
+        else:
+            assets[_format_id(copy.path)] = asset
+    collection['assets'] = assets
     for key in _SOURCE_FIELDS:
         collection.pop(key, None)
     collection['quac:editable'] = False
     extensions = collection.setdefault('stac_extensions', [])
     if FILE_EXTENSION not in extensions:
         extensions.append(FILE_EXTENSION)
+
+
+def _format_id(file_path: str) -> str:
+    """The id of a data file's format by its extension, such as `flatgeobuf` for a `.fgb`."""
+    extension = file_path.rsplit('.', 1)[-1].lower()
+    return next((str(format_['id']) for format_ in CATALOGUE_FILE_FORMATS if extension in format_['extensions']), extension)
 
 
 def _relation_uses_hidden(relation: Any, child_hidden: set[str], parent_hidden: set[str]) -> bool:
@@ -960,28 +960,6 @@ def _previously_linked(root_file_name: str, root: dict[str, Any], children_folde
                     if target is not None:
                         linked.add(target)
     return linked
-
-
-def _previous_copies(root_file_name: str, root: dict[str, Any], children_folder: str, read_existing: Callable[[str], Optional[bytes]]) -> dict[str, CopiedData]:
-    """Each copy the previous catalogue published, by layer id: a Collection's data asset under `<project>.stac/data/`."""
-    copies: dict[str, CopiedData] = {}
-    for document_path, document in _previous_documents(root_file_name, root, children_folder, read_existing):
-        data = (document.get('assets') or {}).get('data') if document is not None and document.get('type') == 'Collection' else None
-        if not isinstance(data, dict) or not isinstance(document.get('id'), str):
-            continue
-        target = _resolve_inside(data.get('href'), document_path, children_folder)
-        if target is None or not target.startswith(f'{children_folder}/{COPIES_FOLDER}/'):
-            continue
-        size = data.get(FILE_SIZE_FIELD)
-        checksum = data.get(FILE_CHECKSUM_FIELD)
-        updated = data.get('updated')
-        copies[document['id']] = CopiedData(
-            target,
-            size if isinstance(size, int) and not isinstance(size, bool) else 0,
-            checksum if isinstance(checksum, str) else '',
-            updated if isinstance(updated, str) else None,
-        )
-    return copies
 
 
 def _resolve_inside(href: Any, document_path: str, children_folder: str) -> Optional[str]:
