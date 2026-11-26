@@ -1,7 +1,9 @@
 """
 The QUAC Processing provider and its one algorithm, Write QUAC catalogue
-(`quac:writequaccatalogue`), which writes a project file's catalogue as the
-save does (`desktop.write_catalogue`), from a project of its own.
+(`quac:writequaccatalogue`), which exports a project file's catalogue with its
+data as Project ▸ Export STAC catalogue with data does
+(`desktop.export_catalogue`), or, with Copy data off, writes it as the save
+does (`desktop.write_catalogue`), from a project of its own.
 
 Each run reads its project file into a new `QgsProject`, never the one on
 screen, and releases its layers before it returns, so the runs of QGIS's batch
@@ -20,19 +22,22 @@ from qgis.core import (
     QgsProcessingException,
     QgsProcessingOutputFile,
     QgsProcessingOutputNumber,
+    QgsProcessingParameterBoolean,
     QgsProcessingParameterFile,
     QgsProcessingProvider,
 )
 from qgis.PyQt.QtGui import QIcon
 
-from .desktop import ICON, FolderMissing, ProjectUnreadable, saved_as_file, saved_project, write_catalogue
+from .desktop import ICON, FolderMissing, ProjectUnreadable, export_catalogue, saved_as_file, saved_project, write_catalogue
 from .publish import catalogue_names, message
 
 PROJECT = 'PROJECT'
 FOLDER = 'FOLDER'
+COPY_DATA = 'COPY_DATA'
 ROOT_FILE = 'ROOT_FILE'
 LAYERS_WRITTEN = 'LAYERS_WRITTEN'
 LAYERS_LEFT_OUT = 'LAYERS_LEFT_OUT'
+LAYERS_COPIED = 'LAYERS_COPIED'
 
 HELP = (
     'Writes a QGIS project\'s STAC catalogue, as saving the project with the QUAC option on does: '
@@ -43,6 +48,8 @@ HELP = (
     'or from the command line with qgis_process.\n\n'
     'A layer is left out where its data file is outside the folder, where its data is held in a database, '
     'where QGIS could not open its data (a WMS, WMTS or XYZ layer is written all the same), or where its web address holds a user name or password. '
+    'Where the project\'s QUAC page is set to copy the data of such layers in, Copy data, ticked by default, copies each into the Parks.stac/data folder first, '
+    'as GeoParquet where this QGIS can write it as Portolan asks and as FlatGeobuf otherwise, so the run can be scheduled. '
     'The log names each layer left out, and what to do to include it.'
 )
 
@@ -111,24 +118,34 @@ class WriteCatalogue(QgsProcessingAlgorithm):
             _flag('ProcessingFileParameterBehavior', 'Folder', 'Folder'),
             optional=True,
         ))
+        self.addParameter(QgsProcessingParameterBoolean(
+            COPY_DATA,
+            "Copy data, where the project's QUAC page is set to copy it in",
+            defaultValue=True,
+        ))
         self.addOutput(QgsProcessingOutputFile(ROOT_FILE, 'Root file'))
         self.addOutput(QgsProcessingOutputNumber(LAYERS_WRITTEN, 'Layers written'))
         self.addOutput(QgsProcessingOutputNumber(LAYERS_LEFT_OUT, 'Layers left out'))
+        self.addOutput(QgsProcessingOutputNumber(LAYERS_COPIED, 'Layers copied'))
 
     def processAlgorithm(self, parameters: Any, context: Any, feedback: Any) -> dict[str, Any]:  # noqa: N802 - the name QGIS calls
         file_name = self.parameterAsFile(parameters, PROJECT, context)
         folder = self.parameterAsFile(parameters, FOLDER, context) or None
+        copy_data = self.parameterAsBoolean(parameters, COPY_DATA, context)
         if not file_name or not file_name.lower().endswith(('.qgs', '.qgz')) or not os.path.isfile(file_name):
             raise QgsProcessingException(f'{file_name or "No project file was given"} is not a QGIS project file. Choose a .qgz or .qgs file.')
         try:
             with saved_project(os.path.abspath(file_name)) as project:
                 if not saved_as_file(project):
                     raise QgsProcessingException(f'{file_name} is not a QGIS project file. Choose a .qgz or .qgs file.')
-                written_to, publication = write_catalogue(project, os.path.abspath(folder) if folder else None)
+                target = os.path.abspath(folder) if folder else None
+                written_to, publication = export_catalogue(project, target, feedback) if copy_data else write_catalogue(project, target)
         except ProjectUnreadable as unreadable:
             raise QgsProcessingException(f'The project {unreadable.file_name} could not be read: {unreadable.reason}. Open it in QGIS to check it, and run this again.') from None
         except FolderMissing as missing:
             raise QgsProcessingException(f'The STAC catalogue was not written, because its folder does not exist: {missing.folder}. Choose a folder that exists, or one on the QUAC page of the project\'s Project Properties.') from None
+        if publication is None:
+            raise QgsProcessingException('The export of the STAC catalogue was cancelled. Nothing was changed.')
         if publication.refusal is not None:
             raise QgsProcessingException(publication.refusal)
         level, text = message(publication)
@@ -141,4 +158,5 @@ class WriteCatalogue(QgsProcessingAlgorithm):
             ROOT_FILE: os.path.join(written_to, root_file_name),
             LAYERS_WRITTEN: publication.layer_count,
             LAYERS_LEFT_OUT: len(publication.left_out),
+            LAYERS_COPIED: len(publication.copied),
         }

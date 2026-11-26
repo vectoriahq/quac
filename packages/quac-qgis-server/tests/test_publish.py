@@ -733,6 +733,125 @@ class AnEarlierCatalogue(unittest.TestCase):
         self.assertEqual(publication.removals, [])
 
 
+def copy_plan(project: bytes, *, copies: Optional[dict[str, Any]] = None, existing: Optional[dict[str, bytes]] = None, data_file: Any = None, copy_data: bool = True, opened: Optional[set[str]] = None):
+    return publish.plan_publication('Parks.qgz', qgz(project), {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, (existing or {}).get, posixpath, opened_layer_ids=opened, data_file=data_file, copy_data=copy_data, copies=copies)
+
+
+TRAILS_COPY = publish.CopiedData('Parks.stac/data/trails_3.parquet', 4096, '1220' + 'ab' * 32, '2026-11-26T02:00:00Z')
+
+
+def database_layer(layer_id: str, name: str, flags: dict[str, str]) -> str:
+    """A PostgreSQL `<maplayer>` whose fields carry `configurationFlags`, by field name."""
+    fields = ''.join(f'<field configurationFlags={quoteattr(flag)} name={quoteattr(field)}/>' for field, flag in flags.items())
+    return f'''
+    <maplayer type="vector" geometry="Point" wkbType="Point" readOnly="0">
+      <id>{escape(layer_id)}</id>
+      <datasource>dbname='council' host=db.example.test user='reader' password='example-secret' table="public"."{escape(layer_id)}" (geom)</datasource>
+      <layername>{escape(name)}</layername>
+      <srs><spatialrefsys nativeFormat="Wkt"><authid>EPSG:4326</authid></spatialrefsys></srs>
+      <provider encoding="UTF-8">postgres</provider>
+      <fieldConfiguration>{fields}</fieldConfiguration>
+      <previewExpression>"owner"</previewExpression>
+    </maplayer>'''
+
+
+class CopiedData(unittest.TestCase):
+    def test_leaves_out_a_layer_with_no_copy_and_names_it_for_an_export(self) -> None:
+        publication = copy_plan(parks_project(), copies={})
+        self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.NO_COPY_YET)])
+        self.assertEqual(publication.to_copy, [publish.CopyRequest('trails_3', 'Trails')])
+
+    def test_points_a_copied_layer_at_its_copy_and_makes_it_read_only(self) -> None:
+        publication = copy_plan(parks_project(), copies={'trails_3': TRAILS_COPY})
+        self.assertEqual(publication.left_out, [])
+        name, trails = collection(publication, 'trails_3')
+        data = trails['assets']['data']
+        self.assertEqual(resolve(name, data['href']), 'Parks.stac/data/trails_3.parquet')
+        self.assertEqual({key: value for key, value in data.items() if key != 'href'}, {
+            'type': 'application/vnd.apache.parquet',
+            'roles': ['data'],
+            'file:size': 4096,
+            'file:checksum': '1220' + 'ab' * 32,
+            'updated': '2026-11-26T02:00:00Z',
+        })
+        self.assertFalse(trails['quac:editable'])
+        self.assertIn(publish.FILE_EXTENSION, trails['stac_extensions'])
+        self.assertEqual(publish.message(publication), ('info', 'Exported the STAC catalogue Parks.stac.json. Copied the data of one layer: Trails.'))
+
+    def test_says_where_data_was_copied_as_flatgeobuf(self) -> None:
+        copy = publish.CopiedData('Parks.stac/data/trails_3.fgb', 4096, '1220' + 'cd' * 32)
+        publication = copy_plan(parks_project(), copies={'trails_3': copy})
+        self.assertEqual(collection(publication, 'trails_3')[1]['assets']['data']['type'], 'application/vnd.flatgeobuf')
+        level, text = publish.message(publication)
+        self.assertEqual(level, 'warning')
+        self.assertIn("This QGIS can't write GeoParquet as Portolan asks, so the data was copied as FlatGeobuf", text)
+
+    def test_keeps_the_last_export_s_copy_on_a_save_while_its_file_is_there(self) -> None:
+        exported = copy_plan(parks_project(), copies={'trails_3': TRAILS_COPY})
+        on_disk = dict(exported.files)
+        there = lambda _path: publish.DataFile(4096, '2026-11-26T02:00:00Z')
+        saved = copy_plan(parks_project(), existing=on_disk, data_file=there)
+        self.assertEqual(saved.left_out, [])
+        self.assertFalse(saved.exported)
+        self.assertEqual(saved.copied, [])
+        self.assertEqual(collection(saved, 'trails_3')[1]['assets']['data'], collection(exported, 'trails_3')[1]['assets']['data'])
+        self.assertNotIn('Parks.stac/data/trails_3.parquet', saved.removals)
+        self.assertEqual(publish.message(saved), ('info', 'Wrote the STAC catalogue Parks.stac.json.'))
+
+        gone = copy_plan(parks_project(), existing=on_disk, data_file=lambda _path: None)
+        self.assertEqual(gone.left_out, [publish.LeftOutLayer('Trails', publish.NO_COPY_YET)])
+        level, text = publish.message(gone)
+        self.assertIn('Trails (it has no copy yet)', text)
+        self.assertIn('To copy the data in, choose Project ▸ Export STAC catalogue with data.', text)
+
+    def test_removes_the_copies_once_the_project_stops_copying(self) -> None:
+        exported = copy_plan(parks_project(), copies={'trails_3': TRAILS_COPY})
+        saved = copy_plan(parks_project(), existing=dict(exported.files), copy_data=False)
+        self.assertEqual(saved.left_out, [publish.LeftOutLayer('Trails', publish.OUTSIDE_FOLDER)])
+        self.assertIn('Parks.stac/data/trails_3.parquet', saved.removals)
+
+    def test_copies_a_database_layer_but_not_a_web_map_or_a_layer_qgis_could_not_open(self) -> None:
+        owners = database_layer('owners_5', 'Owners', {'owner': 'NoFlag'})
+        aerial = web_layer_xml('aerial_6', 'Aerial', 'layers=a&styles&url=https://editor:secret@maps.example.test/wms')
+        project = project_xml({}, [PARKS, KINDS, TRAILS, owners, aerial], top=(('parks_1', 'Parks'), ('kinds_4', 'Kinds'), ('trails_3', 'Trails'), ('owners_5', 'Owners'), ('aerial_6', 'Aerial')))
+        publication = copy_plan(project, copies={}, opened={'parks_1', 'kinds_4', 'owners_5', 'aerial_6'})
+        self.assertEqual(publication.to_copy, [publish.CopyRequest('owners_5', 'Owners')])
+        self.assertEqual(sorted((layer.name, layer.reason) for layer in publication.left_out), [
+            ('Aerial', publish.HOLDS_CREDENTIALS), ('Owners', publish.NO_COPY_YET), ('Trails', publish.NOT_OPENED),
+        ])
+
+    def test_leaves_the_fields_qgis_server_excludes_out_of_a_copy_with_what_uses_them(self) -> None:
+        owners = database_layer('owners_5', 'Owners', {'id': 'NoFlag', 'owner': 'HideFromWfs', 'parcel': 'NoFlag'})
+        sales = database_layer('sales_7', 'Sales', {'id': 'NoFlag', 'owner': 'NoFlag'})
+        project = with_parts(
+            project_xml({}, [owners, sales], top=(('owners_5', 'Owners'), ('sales_7', 'Sales'))),
+            f'<relations>{relation_xml("owner_sales", "Sales", "owners_5", "sales_7", "owner")}</relations>',
+        )
+        copies = {layer_id: publish.CopiedData(f'Parks.stac/data/{layer_id}.parquet', 10, '1220' + '00' * 32) for layer_id in ('owners_5', 'sales_7')}
+        publication = copy_plan(project, copies=copies)
+        owners_written = collection(publication, 'owners_5')[1]
+        self.assertEqual([column['name'] for column in owners_written['table:columns']], ['id', 'parcel'])
+        self.assertNotIn('quac:display_field', owners_written)
+        self.assertNotIn('quac:related_to', collection(publication, 'sales_7')[1])
+        self.assertEqual(publication.dropped_for_hidden_fields, [publish.DroppedForHiddenField('Sales', 'the relation Sales')])
+        self.assertIn('The relation Sales of Sales was left out, because it uses a field QGIS Server excludes, which the copy leaves out.', publication.warnings())
+        self.assertNotIn('example-secret', json.dumps(documents(publication)))
+
+    def test_names_a_layer_whose_copy_failed(self) -> None:
+        publication = publish.plan_publication('Parks.qgz', qgz(parks_project()), {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, copy_data=True, copies={}, copy_failures={'trails_3'})
+        self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.COPY_FAILED)])
+        self.assertIn('The QUAC tab of the Log Messages panel says why each copy failed.', publish.message(publication)[1])
+
+    def test_asks_for_a_copy_without_the_fields_qgis_server_excludes(self) -> None:
+        owners = database_layer('owners_5', 'Owners', {'id': 'NoFlag', 'owner': 'HideFromWms', 'parcel': 'NoFlag'})
+        publication = copy_plan(project_xml({}, [owners], top=(('owners_5', 'Owners'),)), copies={})
+        self.assertEqual(publication.to_copy, [publish.CopyRequest('owners_5', 'Owners', frozenset({'owner'}))])
+
+    def test_writes_each_copy_under_the_documents_folder_by_layer_id(self) -> None:
+        self.assertEqual(publish.copy_path('Parks.stac', 'trails_3', 'parquet'), 'Parks.stac/data/trails_3.parquet')
+        self.assertEqual(publish.copy_path('Parks.stac', 'a:b', 'fgb'), 'Parks.stac/data/a_b.fgb')
+
+
 class Message(unittest.TestCase):
     def test_names_the_root_file_when_everything_was_written(self) -> None:
         publication = plan(parks_project(trails=layer_xml('trails_3', 'Trails', './publish/vector/trails.geojson')))

@@ -8,7 +8,9 @@ name: QGIS Server
 # person's catalogue. The value labels demo then compares WFS, GetFeatureInfo
 # and the catalogue's quac:values. The reports are the run's summary. The
 # QGIS Desktop job saves a made-up project with the plugin's Desktop part in
-# the official QGIS image's Python (tests/desktop/check_desktop.py).
+# the official QGIS image's Python (tests/desktop/check_desktop.py), and the
+# GeoParquet job runs the same in conda-forge's QGIS, whose GDAL writes
+# GeoParquet.
 
 on:
   push:
@@ -67,6 +69,29 @@ jobs:
           docker run --rm -v "$PWD:/io" -w /io/packages/quac-qgis-server -e QT_QPA_PLATFORM=offscreen "${{ matrix.image }}" sh -c '
             core=$(find / -xdev -type f -path "*/qgis/core/__init__.py" 2>/dev/null | head -n 1)
             PYTHONPATH=$(dirname "$(dirname "$(dirname "$core")")") python3 tests/desktop/check_desktop.py'
+
+  qgis-desktop-geoparquet:
+    # The official images' GDAL has no Parquet driver, so the plugin copies data as FlatGeobuf there.
+    # conda-forge's QGIS with libgdal-arrow-parquet writes GeoParquet, as the Windows installers' GDAL does.
+    name: QGIS Desktop 3.44 LTR, GeoParquet
+    needs: reader
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mamba-org/setup-micromamba@add3a49764cedee8ee24e82dfde87f5bc2914462 # v2.0.7
+        with:
+          environment-name: qgis
+          create-args: qgis=3.44 libgdal-arrow-parquet pyarrow
+      - name: Copy data as GeoParquet with the plugin in QGIS Desktop's Python
+        working-directory: packages/quac-qgis-server
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QUAC_EXPECT_GEOPARQUET: "1"
+        run: python tests/desktop/check_desktop.py
 
   qgis-server:
     name: QGIS Server ${{ matrix.label }}

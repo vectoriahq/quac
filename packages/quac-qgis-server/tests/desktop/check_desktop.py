@@ -27,7 +27,14 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
    checking the project on screen is untouched;
 7. a project of its own holding a GeoPackage layer, and checks its primary
    key, its feature id filled by the data, and a text field's length;
-8. after `unload`, and checks nothing more is written, the menu action and the
+8. a project set to copy the data of a layer outside its folder: through
+   Project ▸ Export STAC catalogue with data, in QGIS's task manager, and the
+   Processing algorithm, checking the copy's format, its filter, the field
+   QGIS Server excludes left out, WGS84, its size and checksum in the
+   catalogue and the layer made read-only; a save keeping the copy; and the
+   copy removed once the project leaves such layers out. It prints the format
+   this QGIS copies data as;
+9. after `unload`, and checks nothing more is written, the menu action and the
    Processing provider are gone.
 
 It also draws the QUAC page of Project Properties and, given a path, saves it
@@ -59,6 +66,7 @@ sys.path.insert(0, str(PACKAGE))
 from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin  # noqa: E402
 
 from qgis.core import (  # noqa: E402
+    Qgis,
     QgsApplication,
     QgsAttributeEditorContainer,
     QgsAttributeEditorField,
@@ -69,6 +77,7 @@ from qgis.core import (  # noqa: E402
     QgsEditorWidgetSetup,
     QgsExpression,
     QgsFeature,
+    QgsField,
     QgsGeometry,
     QgsOptionalExpression,
     QgsPointXY,
@@ -224,6 +233,104 @@ def check_field_facts(home: Path) -> None:
     project.clear()
 
 
+def check_export(home: Path, processing: Any, iface: Any, plugin: Any) -> None:
+    """
+    Saves a made-up project whose Roads layer is outside its folder, filtered
+    to the roads with `keep` = 1 and with `owner` excluded from QGIS Server, set
+    to copy such data in, and exports it from the menu and the algorithm.
+    """
+    import hashlib
+    import time
+
+    from quac.copy_data import copy_format
+
+    format_ = copy_format()
+    print('      copies data as:', format_)
+    roads_file = write(home / 'outside' / 'roads.geojson', points([
+        {'id': 1, 'name': 'Main road', 'keep': 1, 'owner': 'Example Council'},
+        {'id': 2, 'name': 'Old track', 'keep': 0, 'owner': 'Example Trust'},
+    ]))
+    publish = home / 'publish'
+    publish.mkdir(parents=True)
+    project = QgsProject.instance()
+    project.clear()
+    roads = layer(project, roads_file, 'Roads', project.layerTreeRoot())
+    roads.setSubsetString('"keep" = 1')
+    hide = getattr(getattr(Qgis, 'FieldConfigurationFlag', None), 'HideFromWfs', None) or QgsField.ConfigurationFlag.HideFromWfs
+    roads.setFieldConfigurationFlags(roads.fields().indexOf('owner'), hide)
+    project.writeEntry('quac', 'catalogue/folder', 'publish')
+    project.writeEntry('quac', 'catalogue/copy_data', True)
+    check(project.write(str(home / 'Roads.qgz')), 'the export project saves, set to copy data in')
+    copy_file = publish / 'Roads.stac' / 'data' / f'{roads.id()}.{format_.extension}'
+
+    def check_copy(how: str) -> dict[str, Any]:
+        root = json.loads((publish / 'Roads.stac.json').read_text(encoding='utf-8'))
+        child = next(link['href'] for link in root['links'] if link['rel'] == 'child')
+        document_path = posixpath.normpath(posixpath.join('.', child))
+        collection = json.loads((publish / document_path).read_text(encoding='utf-8'))
+        data = collection['assets']['data']
+        resolved = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(data['href'])))
+        check(resolved.resolve() == copy_file.resolve() and copy_file.is_file(), f'{how}: the data asset names the copy in Roads.stac/data: {data["href"]}')
+        check(data['file:size'] == copy_file.stat().st_size and data['file:checksum'] == '1220' + hashlib.sha256(copy_file.read_bytes()).hexdigest(), f'{how}: the asset gives the copy\'s size and checksum')
+        check(collection['quac:editable'] is False, f'{how}: the copied layer is read-only')
+        copied = QgsVectorLayer(str(copy_file), 'copy', 'ogr')
+        names = [field_.name() for field_ in copied.fields()]
+        check(copied.isValid() and copied.featureCount() == 1 and 'owner' not in names and 'name' in names, f'{how}: the copy holds the filtered road, without the excluded field: {names}, {copied.featureCount()}')
+        check(copied.crs().authid() == 'EPSG:4326', f'{how}: the copy is in WGS84: {copied.crs().authid()}')
+        check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
+        return collection
+
+    iface.bar.messages.clear()
+    export = next(action for action in iface.project_menu.actions() if action.text() == 'Export STAC catalogue with data')
+    export.trigger()
+    waited = time.monotonic()
+    while plugin._task is not None and time.monotonic() - waited < 120:
+        QgsApplication.processEvents()
+        time.sleep(0.05)
+    print('      message:', iface.bar.messages[-1][1] if iface.bar.messages else None)
+    check(plugin._task is None, 'the export task finishes')
+    check_copy('from the menu')
+    if os.environ.get('QUAC_EXPECT_GEOPARQUET'):
+        check(format_.geoparquet, f'this QGIS copies data as GeoParquet: {format_}')
+    if format_.geoparquet:
+        check_geoparquet(copy_file)
+    check(iface.bar.messages and iface.bar.messages[-1][1].startswith('Exported the STAC catalogue Roads.stac.json. Copied the data of one layer: Roads.'), 'the message bar says what was exported and copied')
+
+    copy_file.unlink()
+    feedback = Feedback()
+    result = processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=feedback)
+    print('      result:', result)
+    check(result['LAYERS_COPIED'] == 1 and result['LAYERS_LEFT_OUT'] == 0, 'the algorithm copies the data, as Copy data is ticked by default')
+    check_copy('from the algorithm')
+
+    project.writeEntry('quac', 'catalogue/write_on_save', True)
+    check(project.write(), 'the project saves with writing on save on')
+    check_copy('after a save')
+
+    project.writeEntry('quac', 'catalogue/copy_data', False)
+    check(project.write(), 'the project saves, set to leave such layers out')
+    check(not copy_file.exists(), 'the copy is removed once the project leaves such layers out')
+    project.clear()
+
+
+def check_geoparquet(copy_file: Path) -> None:
+    """Checks a GeoParquet copy against Portolan's rules: GeoParquet 1.1 with a bounding-box covering column, zstd, and no row group over 150,000 rows."""
+    try:
+        import pyarrow.parquet as parquet
+    except ImportError:
+        print('      pyarrow is not installed, so the GeoParquet file itself is not read')
+        return
+    file_ = parquet.ParquetFile(str(copy_file))
+    geo = json.loads(file_.schema_arrow.metadata[b'geo'])
+    column = geo['columns'][geo['primary_column']]
+    print('      geo metadata:', geo['version'], column.get('covering'), column.get('encoding'))
+    check(geo['version'].startswith('1.1') and 'bbox' in (column.get('covering') or {}), f"the copy is GeoParquet 1.1 with a bounding-box covering column: {geo['version']}")
+    metadata = file_.metadata
+    compressions = {metadata.row_group(group).column(index).compression for group in range(metadata.num_row_groups) for index in range(metadata.num_columns)}
+    check(compressions == {'ZSTD'}, f'the copy is compressed with zstd: {compressions}')
+    check(all(metadata.row_group(group).num_rows <= 150000 for group in range(metadata.num_row_groups)), 'no row group holds more than 150,000 rows')
+
+
 def start_processing() -> Any:
     """QGIS's Processing framework, from QGIS's own `python/plugins` folder, started as a standalone script starts it."""
     plugins = Path(QgsApplication.pkgDataPath()) / 'python' / 'plugins'
@@ -276,7 +383,7 @@ def main() -> int:
         plugin.initGui()
         check(len(iface.factories) == 1, 'initGui registers the QUAC page of Project Properties')
         labels = [action.text() for action in iface.project_menu.actions()]
-        check(labels == ['Save', 'Save As…', 'Write STAC catalogue now', 'Close'], f'the Project menu has Write STAC catalogue now after Save As: {labels}')
+        check(labels == ['Save', 'Save As…', 'Write STAC catalogue now', 'Export STAC catalogue with data', 'Close'], f'the Project menu has Write STAC catalogue now and Export STAC catalogue with data after Save As: {labels}')
         write_now = iface.project_menu.actions()[2]
         provider = QgsApplication.processingRegistry().providerById('quac')
         algorithm = QgsApplication.processingRegistry().algorithmById('quac:writequaccatalogue')
@@ -479,8 +586,8 @@ def main() -> int:
         print('      results:', alpha, beta)
         print('      warning:', beta_feedback.warnings)
         batch_files = files_under(batch)
-        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
-        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
+        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0, 'LAYERS_COPIED': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
+        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1, 'LAYERS_COPIED': 0}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
         for stem, title in (('Alpha', 'Sites'), ('Beta', 'Wells')):
             names = sorted(name for name in batch_files if name.startswith(f'{stem}.stac'))
             documents = [json.loads((batch / name).read_text(encoding='utf-8')) for name in names if name.endswith('.json')]
@@ -508,7 +615,11 @@ def main() -> int:
         # 7. A GeoPackage layer, in a project of its own.
         check_field_facts(work / 'Sites Project')
 
-        # 8. After unload.
+        # 8. A project that copies the data of a layer outside its folder.
+        check_export(work / 'Export Project', processing, iface, plugin)
+        check(project.read(str(project_file)), 'the Parks project reads again after the export')
+
+        # 9. After unload.
         project.writeEntry('quac', 'catalogue/write_on_save', True)
         plugin.unload()
         check(iface.factories == [], 'unload unregisters the page')
