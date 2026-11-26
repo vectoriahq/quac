@@ -732,16 +732,20 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
     a file's. A PMTiles copy is registered as Portolan does, by a
     `rel: "pmtiles"` link (web-map-links v1.3.0) naming its tile layer, and an
     asset keyed `pmtiles` with the `visual` role, which gives its size and
-    checksum. Makes the layer read-only, since an edit to a copy is lost at the
-    next export, and leaves out the fields that name where the layer's own
-    data comes from, as the copy is the data.
+    checksum. A CSV copy, a table for spreadsheets holding a point layer's X
+    and Y and no other geometry, is never the layer's data: it is keyed `csv`
+    with the `table` role, as QUAC's file formats name a CSV. Makes the layer
+    read-only, since an edit to a copy is lost at the next export, and leaves
+    out the fields that name where the layer's own data comes from, as the
+    copy is the data.
     """
     assets = {key: value for key, value in (collection.get('assets') or {}).items() if key != 'data'}
-    data_copies = [copy for copy in copied if not copy.path.lower().endswith('.pmtiles')]
+    data_copies = [copy for copy in copied if not copy.path.lower().endswith(('.pmtiles', '.csv'))]
     for copy in copied:
         href = f'./{encode_asset_path(copy.path)}'
         tiles = copy.path.lower().endswith('.pmtiles')
-        asset: dict[str, Any] = {'href': href, 'type': PMTILES_MEDIA_TYPE if tiles else declared_media_type_for_file(copy.path, PROJECT_DATA_ROLES), 'roles': ['visual' if tiles else 'data']}
+        table = copy.path.lower().endswith('.csv')
+        asset: dict[str, Any] = {'href': href, 'type': PMTILES_MEDIA_TYPE if tiles else declared_media_type_for_file(copy.path, PROJECT_DATA_ROLES), 'roles': ['visual' if tiles else 'table' if table else 'data']}
         if copy.size > 0:
             asset[FILE_SIZE_FIELD] = copy.size
         asset[FILE_CHECKSUM_FIELD] = copy.checksum
@@ -750,7 +754,7 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
         if tiles:
             assets['pmtiles'] = asset
             collection['links'] = [*collection.get('links', []), {'rel': 'pmtiles', 'href': href, 'type': PMTILES_MEDIA_TYPE, 'pmtiles:layers': [copy_layer_name(collection['id'])]}]
-        elif copy is data_copies[0]:
+        elif data_copies and copy is data_copies[0]:
             assets = {'data': asset, **assets}
         else:
             assets[_format_id(copy.path)] = asset
@@ -967,7 +971,7 @@ def _previously_linked(root_file_name: str, root: dict[str, Any], children_folde
     """
     The files under `children_folder` the previous catalogue linked: each
     document a `child` link names, from the root down, and each style asset
-    and copied data and PMTiles asset of a Collection among them.
+    and copied data, PMTiles and CSV asset of a Collection among them.
     """
     linked: set[str] = set()
     for document_path, document in _previous_documents(root_file_name, root, children_folder, read_existing):
@@ -976,7 +980,7 @@ def _previously_linked(root_file_name: str, root: dict[str, Any], children_folde
         if document is not None and document.get('type') == 'Collection' and isinstance(document.get('assets'), dict):
             for asset in document['assets'].values():
                 roles = (asset.get('roles') or []) if isinstance(asset, dict) else []
-                if 'style' in roles or 'data' in roles or 'visual' in roles:
+                if any(role in roles for role in ('style', 'data', 'visual', 'table')):
                     target = _resolve_inside(asset.get('href'), document_path, children_folder)
                     if target is not None:
                         linked.add(target)

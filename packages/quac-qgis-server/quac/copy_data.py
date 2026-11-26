@@ -5,8 +5,8 @@ which layers to copy; this writes each copy with QGIS and gives what the
 catalogue records of it.
 
 - The formats are the ones the project ticks, GeoParquet, FlatGeobuf,
-  GeoPackage, GeoJSON and CSV for the layer's data and PMTiles for viewing it
-  on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
+  GeoPackage and GeoJSON for the layer's data, CSV as a table for
+  spreadsheets, and PMTiles for viewing it on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
   it with the bounding-box column Portolan asks for, with its rows sorted in
   space and compressed with zstd where GDAL offers them; where it cannot,
   FlatGeobuf is written in its place. The first format is the layer's data.
@@ -136,8 +136,8 @@ def writable_formats() -> dict[str, CopyFormat]:
     formats[FLATGEOBUF] = CopyFormat(FLATGEOBUF, 'FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',))
     formats[GEOPACKAGE] = CopyFormat(GEOPACKAGE, 'GPKG', 'gpkg', ())
     formats[GEOJSON] = CopyFormat(GEOJSON, 'GeoJSON', 'geojson', ('RFC7946=YES',))
-    # The geometry columns are chosen for each layer (`_csv_geometry`).
-    formats[CSV] = CopyFormat(CSV, 'CSV', 'csv', ())
+    # A table for spreadsheets: a byte order mark, so Excel reads it as UTF-8, and X and Y columns for a point layer alone (`_csv_geometry`).
+    formats[CSV] = CopyFormat(CSV, 'CSV', 'csv', ('WRITE_BOM=YES',))
     if tippecanoe() is not None or _creation_options('PMTiles'):
         formats[PMTILES] = CopyFormat(PMTILES, 'PMTiles', 'pmtiles', ())
     return formats
@@ -255,10 +255,8 @@ def _copy_one(source: LayerSource, target: str, format_: CopyFormat, context: Qg
 
 
 def _csv_geometry(layer: QgsVectorLayer) -> list[str]:
-    """A CSV copy's geometry: a point layer's as `X` and `Y` columns, other geometry as text in a `WKT` column, and none for a table."""
-    if not layer.isSpatial():
-        return []
-    return ['GEOMETRY=AS_XY'] if QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point' else ['GEOMETRY=AS_WKT']
+    """A CSV copy's geometry: a point layer's as `X` and `Y` columns, and none for any other layer, a multipoint one among them."""
+    return ['GEOMETRY=AS_XY'] if layer.isSpatial() and QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point' else []
 
 
 def _write(layer: QgsVectorLayer, source: LayerSource, temporary: str, driver: str, layer_options: list[str], dataset_options: list[str], crs: str, context: QgsCoordinateTransformContext, feedback: Any, layer_name: str = '') -> Optional[str]:

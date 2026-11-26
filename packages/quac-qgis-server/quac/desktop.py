@@ -560,7 +560,7 @@ class SettingsPageFactory(QgsOptionsWidgetFactory):
 GEOPARQUET_UNAVAILABLE = "This version of QGIS can't write GeoParquet."
 PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
 PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
-CSV_GEOMETRY = 'Points become X and Y columns. Other shapes are written as WKT text.'
+CSV_PURPOSE = 'A table for spreadsheets. Point layers get X and Y columns.'
 PORTOLAN_ADDRESS = 'https://portolan-sdi.org/'
 NO_FORMAT_NOTE = 'Tick a format to export.'
 NO_DATA_NOTE = "No format holds the vector layers' data."
@@ -608,7 +608,7 @@ class SettingsPage(QgsOptionsPageWidget):
         self.geopackage = QCheckBox('GeoPackage')
         self.geojson = QCheckBox('GeoJSON')
         self.csv = QCheckBox('CSV')
-        self.csv.setToolTip(CSV_GEOMETRY)
+        self.csv.setToolTip(CSV_PURPOSE)
         self._format_boxes = {GEOPARQUET: self.geoparquet, FLATGEOBUF: self.flatgeobuf, GEOPACKAGE: self.geopackage, GEOJSON: self.geojson, CSV: self.csv}
         for format_id, box in self._format_boxes.items():
             box.setChecked(format_id in chosen and format_id in writable)
@@ -692,8 +692,8 @@ class SettingsPage(QgsOptionsPageWidget):
         other rules.
         """
         sentences = []
-        data_ticked = any(box.isChecked() for box in self._format_boxes.values())
-        if not data_ticked and not self.pmtiles.isChecked():
+        data_ticked = any(box.isChecked() for format_id, box in self._format_boxes.items() if format_id != CSV)
+        if not data_ticked and not self.csv.isChecked() and not self.pmtiles.isChecked():
             sentences.append(NO_FORMAT_NOTE)
         elif not self.geoparquet.isChecked():
             if not data_ticked:

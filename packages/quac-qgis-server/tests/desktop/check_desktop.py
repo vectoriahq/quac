@@ -275,8 +275,12 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     project.writeEntry('quac', 'catalogue/write_on_save', True)
     check(project.write(str(home / 'Roads.qgz')), 'the export project saves, set to export a copy of every layer')
     check(not (publish / 'Roads.stac.json').exists(), 'a save of a project set to export writes nothing')
-    extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb'), ('geopackage', 'gpkg'), ('geojson', 'geojson'), ('csv', 'csv')) if format_id in writable]
-    check(_csv_geometry(QgsVectorLayer('Point?crs=EPSG:4326', 'p', 'memory')) == ['GEOMETRY=AS_XY'] and _csv_geometry(QgsVectorLayer('MultiPoint?crs=EPSG:4326', 'm', 'memory')) == ['GEOMETRY=AS_WKT'] and _csv_geometry(QgsVectorLayer('LineString?crs=EPSG:4326', 'l', 'memory')) == ['GEOMETRY=AS_WKT'] and _csv_geometry(QgsVectorLayer('None', 't', 'memory')) == [], 'a CSV copy writes points as X and Y, other geometry as WKT, and a table without geometry columns')
+    extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb'), ('geopackage', 'gpkg'), ('geojson', 'geojson')) if format_id in writable]
+    check(
+        _csv_geometry(QgsVectorLayer('Point?crs=EPSG:4326', 'p', 'memory')) == ['GEOMETRY=AS_XY']
+        and all(_csv_geometry(QgsVectorLayer(kind, 'other', 'memory')) == [] for kind in ('MultiPoint?crs=EPSG:4326', 'LineString?crs=EPSG:4326', 'Polygon?crs=EPSG:4326', 'None')),
+        'a CSV copy writes a point layer as X and Y columns, and no geometry for any other layer',
+    )
 
     def check_copies(how: str) -> None:
         root = json.loads((publish / 'Roads.stac.json').read_text(encoding='utf-8'))
@@ -295,10 +299,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
                 check(file_.is_file() and asset['file:size'] == file_.stat().st_size and asset['file:checksum'] == '1220' + hashlib.sha256(file_.read_bytes()).hexdigest(), f'{how}: {file_.name} is in Roads.stac/data, with its size and checksum')
                 copied = QgsVectorLayer(str(file_), 'copy', 'ogr')
                 names = [field_.name() for field_ in copied.fields()]
-                if file_.suffix == '.csv':
-                    check(copied.isValid() and {'X', 'Y'} <= set(names) and asset['type'] == 'text/csv', f'{how}: {file_.name} opens, with the points as X and Y columns: {names}')
-                else:
-                    check(copied.isValid() and copied.crs().authid() == 'EPSG:4326', f'{how}: {file_.name} opens, in WGS84')
+                check(copied.isValid() and copied.crs().authid() == 'EPSG:4326', f'{how}: {file_.name} opens, in WGS84')
                 if file_.suffix in ('.gpkg', '.fgb'):
                     dataset = ogr.Open(str(file_))
                     inner = dataset.GetLayer(0).GetName()
@@ -307,7 +308,13 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
                     check(copied.featureCount() == 1 and 'owner' not in names and 'name' in names, f'{how}: {file_.name} holds the filtered road, without the excluded field: {names}, {copied.featureCount()}')
                     if file_.suffix == '.parquet':
                         check_geoparquet(file_)
+            table = collection['assets'].get('csv', {})
+            table_file = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(table.get('href', 'missing'))))
+            check(table.get('roles') == ['table'] and table.get('type') == 'text/csv' and table_file.is_file() and table['file:checksum'] == '1220' + hashlib.sha256(table_file.read_bytes()).hexdigest(), f'{how}: {name} has a CSV copy, a table asset with its checksum')
+            header = table_file.read_bytes().split(b'\n', 1)[0]
+            check(header.startswith(b'\xef\xbb\xbfX,Y,'), f'{how}: the CSV starts with a byte order mark and the X and Y columns: {header!r}')
             if name == 'Roads':
+                check(b'owner' not in header and len(table_file.read_bytes().strip().split(b'\n')) == 2, f'{how}: the CSV holds the filtered road, without the excluded field')
                 check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
             if 'pmtiles' in writable:
                 check_pmtiles(how, name, collection, document_path, publish)
@@ -648,7 +655,7 @@ def main() -> int:
         check('Not a Portolan catalogue' in page.format_note.text() and 'href="https://portolan-sdi.org/"' in page.format_note.text() and page.format_note.openExternalLinks(), 'with FlatGeobuf alone, the page says the catalogue is not a Portolan catalogue, with a link to Portolan\'s site')
         page.flatgeobuf.setChecked(False)
         page.csv.setChecked(True)
-        check('No format holds' not in page.format_note.text() and 'Not a Portolan catalogue' in page.format_note.text(), f'with CSV alone, the page counts it as holding the data, and says the catalogue is not a Portolan catalogue: {page.format_note.text()}')
+        check(page.format_note.text().startswith("No format holds the vector layers' data."), f'with CSV alone, the page says no format holds the data: {page.format_note.text()}')
         if GEOPARQUET in writable_formats():
             page.geoparquet.setChecked(True)
             check(not page.format_note.isVisibleTo(page), 'with GeoParquet ticked, the page says nothing more')
