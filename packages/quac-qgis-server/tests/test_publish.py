@@ -62,7 +62,7 @@ def layer_xml(layer_id: str, name: str, source: str, provider: str = 'ogr', fiel
 
 
 def web_layer_xml(layer_id: str, name: str, source: str, provider: str = 'wms') -> str:
-    """One raster `<maplayer>` read from a web map service."""
+    """One raster `<maplayer>`, read from a web map service unless `provider` names another."""
     return f'''
     <maplayer type="raster" hasScaleBasedVisibilityFlag="0" maxScale="0" minScale="100000000">
       <id>{escape(layer_id)}</id>
@@ -818,7 +818,7 @@ class AnExport(unittest.TestCase):
         publication.geoparquet_fallback = True
         level, text = publish.message(publication)
         self.assertEqual(level, 'warning')
-        self.assertIn("The data was copied as FlatGeobuf, because this version of QGIS can't write GeoParquet.", text)
+        self.assertIn("The vector layers were copied as FlatGeobuf, because this version of QGIS can't write GeoParquet.", text)
 
     def test_names_a_layer_whose_copy_failed(self) -> None:
         publication = copy_plan(parks_project(), copies=every_copy('parks_1', 'playgrounds_2', 'kinds_4'), failures={'trails_3'})
@@ -839,6 +839,25 @@ class AnExport(unittest.TestCase):
         self.assertEqual([request.layer_id for request in publication.to_copy], ['parks_1', 'kinds_4', 'owners_5'])
         self.assertEqual(publication.left_out, [publish.LeftOutLayer('Trails', publish.NOT_OPENED)])
         self.assertEqual([link['rel'] for link in collection(publication, 'aerial_6')[1]['links'] if link['rel'] == 'wms'], ['wms'])
+
+    def test_copies_a_raster_layer_as_a_cog_wherever_its_data_is(self) -> None:
+        elevation = web_layer_xml('elevation_8', 'Elevation', '../Shared data/elevation.tif', provider='gdal')
+        depths = web_layer_xml('depths_9', 'Depths', "dbname='survey' host=db.example.test table=\"public\".\"depths\" (rast)", provider='postgresraster')
+        aerial = web_layer_xml('aerial_6', 'Aerial', 'layers=a&styles&url=https://maps.example.test/wms')
+        project = project_xml({}, [PARKS, KINDS, elevation, depths, aerial], top=(('parks_1', 'Parks'), ('kinds_4', 'Kinds'), ('elevation_8', 'Elevation'), ('depths_9', 'Depths'), ('aerial_6', 'Aerial')))
+        copies = every_copy('parks_1', 'kinds_4')
+        for layer_id in ('elevation_8', 'depths_9'):
+            copies[layer_id] = [publish.CopiedData(f'Parks.stac/data/{layer_id}.tif', 8192, '1220' + '23' * 32)]
+        publication = copy_plan(project, copies=copies)
+        self.assertEqual([request.layer_id for request in publication.to_copy], ['parks_1', 'kinds_4', 'elevation_8', 'depths_9'])
+        self.assertEqual(publication.left_out, [])
+        for layer_id in ('elevation_8', 'depths_9'):
+            name, written = collection(publication, layer_id)
+            data = written['assets']['data']
+            self.assertEqual((resolve(name, data['href']), data['type'], data['roles']), (f'Parks.stac/data/{layer_id}.tif', 'image/tiff; application=geotiff; profile=cloud-optimized', ['data']))
+            self.assertFalse(written['quac:editable'])
+        self.assertNotIn('survey', json.dumps(documents(publication)))
+        self.assertEqual(publish.message(publication), ('info', 'Exported the STAC catalogue Parks.stac.json. Copied the data of 4 layers.'))
 
     def test_leaves_the_fields_qgis_server_excludes_out_of_a_copy_with_what_uses_them(self) -> None:
         owners = database_layer('owners_5', 'Owners', {'id': 'NoFlag', 'owner': 'HideFromWfs', 'parcel': 'NoFlag'})

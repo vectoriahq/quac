@@ -16,6 +16,9 @@ catalogue records of it.
 - A copy holds what the project shows: the layer's filter applies, as QGIS
   reads the layer, and the fields QGIS Server excludes are left out. Its
   geometry is in WGS84 (EPSG:4326).
+- A raster layer is copied as a cloud-optimised GeoTIFF whatever the formats
+  ticked (`_write_cog`): its cell values as QGIS reads them, in its own
+  coordinate system, with overviews and each band's statistics in the file.
 - Each copy is written to a temporary file beside where it goes, and moved
   into place only once every copy is made (`place_copies`), so a cancelled
   export changes nothing.
@@ -35,10 +38,16 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from qgis.core import (
+    Qgis,
     QgsCoordinateReferenceSystem,
     QgsFeatureRequest,
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
+    QgsRasterBlockFeedback,
+    QgsRasterDataProvider,
+    QgsRasterFileWriter,
+    QgsRasterLayer,
+    QgsRasterPipe,
     QgsVectorFileWriter,
     QgsVectorLayer,
 )
@@ -55,6 +64,11 @@ PMTILES = 'pmtiles'
 FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, PMTILES)
 # The formats a layer's data is written in; PMTiles is a copy for viewing.
 DATA_FORMAT_IDS = (GEOPARQUET, FLATGEOBUF)
+# A raster layer's one copy, and its file extension.
+COG = 'cog'
+COG_EXTENSION = 'tif'
+# DEFLATE with a predictor, lossless; a BigTIFF only where the file may pass 4 GB.
+_COG_OPTIONS = ('COMPRESS=DEFLATE', 'PREDICTOR=YES', 'BIGTIFF=IF_SAFER')
 
 
 @dataclass(frozen=True)
@@ -76,6 +90,7 @@ class LayerSource:
     source: str
     provider: str
     hidden_fields: frozenset[str] = frozenset()
+    raster: bool = False
 
 
 @dataclass
@@ -163,22 +178,25 @@ def copy_layers(
     feedback: Any = None,
 ) -> Copies:
     """
-    Copies each layer in each format to a temporary file beside where its copy
-    goes under `folder`. Stops between copies where `feedback` is cancelled,
-    and removes what it made then.
+    Copies each vector layer in each format, and each raster layer as a COG,
+    to a temporary file beside where its copy goes under `folder`. Stops
+    between copies where `feedback` is cancelled, and removes what it made
+    then.
     """
     copies = Copies()
     context = transform_context or QgsCoordinateTransformContext()
     for index, source in enumerate(sources):
         made: list[tuple[str, CopiedData]] = []
-        for format_ in formats:
+        for format_ in (_COG_FORMAT,) if source.raster else formats:
             if feedback is not None and feedback.isCanceled():
                 copies.cancelled = True
                 break
             relative = copy_path(children_folder, source.layer_id, format_.extension)
             target = os.path.join(folder, *relative.split('/'))
             try:
-                if format_.id == PMTILES:
+                if format_.id == COG:
+                    temporary = _write_cog(source, target, feedback)
+                elif format_.id == PMTILES:
                     temporary = _write_pmtiles(source, target, context, feedback)
                 else:
                     temporary = _copy_one(source, target, format_, context, feedback)
@@ -358,6 +376,81 @@ def _write_pmtiles(source: LayerSource, target: str, context: QgsCoordinateTrans
         _remove(features)
 
 
+_COG_FORMAT = CopyFormat(COG, 'COG', COG_EXTENSION, ())
+
+
+def _write_cog(source: LayerSource, target: str, feedback: Any) -> Optional[str]:
+    """
+    Writes a raster layer's copy as a cloud-optimised GeoTIFF to a temporary
+    file beside `target`, and returns its path, or None where `feedback` was
+    cancelled. QGIS writes the cell values its provider reads to a tiled
+    GeoTIFF, GDAL works out each band's statistics into it, and GDAL's COG
+    driver copies that with overviews.
+    """
+    from osgeo import gdal
+
+    if gdal.GetDriverByName('COG') is None:
+        raise RuntimeError("this version of QGIS can't write a cloud-optimised GeoTIFF")
+    layer = QgsRasterLayer(source.source, source.name, source.provider)
+    if not layer.isValid():
+        raise RuntimeError(f'QGIS could not open {source.name} from its source')
+    provider = layer.dataProvider()
+    if not provider.capabilities() & _SIZE:
+        raise RuntimeError(f'{source.name} gives an image to draw rather than cells to copy, as a map service does')
+    temporary = _temporary_beside(target, COG_EXTENSION)
+    cells = _temporary_beside(target, 'cells.tif')
+    cells_feedback = None
+    try:
+        writer = QgsRasterFileWriter(cells)
+        writer.setOutputFormat('GTiff')
+        (getattr(writer, 'setCreationOptions', None) or writer.setCreateOptions)(['TILED=YES', 'COMPRESS=DEFLATE', 'BIGTIFF=IF_SAFER'])
+        pipe = QgsRasterPipe()
+        if not pipe.set(provider.clone()):
+            raise RuntimeError(f'QGIS could not read the cells of {source.name}')
+        # `writeRaster` takes a raster block feedback, which follows the export's: its cancel, and its progress for the first half.
+        if feedback is not None and feedback.isCanceled():
+            return None
+        cells_feedback = QgsRasterBlockFeedback()
+        if feedback is not None:
+            feedback.canceled.connect(cells_feedback.cancel)
+            cells_feedback.progressChanged.connect(lambda done: feedback.setProgress(done / 2))
+        error = writer.writeRaster(pipe, provider.xSize(), provider.ySize(), provider.extent(), provider.crs(), QgsCoordinateTransformContext(), cells_feedback)
+        if feedback is not None and feedback.isCanceled():
+            return None
+        if error != _RASTER_NO_ERROR:
+            raise RuntimeError(f'QGIS could not write the cells of {source.name}: {error}')
+        dataset = gdal.Open(cells, gdal.GA_Update)
+        if dataset is None:
+            raise RuntimeError(f'GDAL could not read the cells of {source.name}: {gdal.GetLastErrorMsg()}')
+        for band in range(1, dataset.RasterCount + 1):
+            dataset.GetRasterBand(band).ComputeStatistics(False)
+        dataset = None
+
+        def progress(done: float, _message: Any, _data: Any) -> int:
+            if feedback is None:
+                return 1
+            feedback.setProgress(50 + 50 * done)
+            return 0 if feedback.isCanceled() else 1
+
+        copied = gdal.Translate(temporary, cells, format='COG', creationOptions=list(_COG_OPTIONS), callback=progress)
+        failure = gdal.GetLastErrorMsg()
+        written = copied is not None
+        # Letting go of the dataset closes the file.
+        copied = None
+        if feedback is not None and feedback.isCanceled():
+            _remove(temporary)
+            return None
+        if not written:
+            _remove(temporary)
+            raise RuntimeError(f'GDAL could not write {source.name} as a cloud-optimised GeoTIFF: {failure}')
+        return temporary
+    finally:
+        if cells_feedback is not None and feedback is not None:
+            feedback.canceled.disconnect(cells_feedback.cancel)
+        _remove(cells)
+        _remove(f'{cells}.aux.xml')
+
+
 def place_copies(copies: Copies, folder: str) -> dict[str, list[CopiedData]]:
     """Moves each copy from its temporary file into place, over the earlier copy, and returns the copies by layer id."""
     placed: dict[str, list[CopiedData]] = {}
@@ -378,6 +471,10 @@ def discard(copies: Copies) -> None:
 
 # `QProcess.NotRunning` in Qt 5, and in the scoped `ProcessState` in Qt 6.
 _NOT_RUNNING = QProcess.NotRunning if hasattr(QProcess, 'NotRunning') else QProcess.ProcessState.NotRunning
+
+# `QgsRasterDataProvider.Size` and `QgsRasterFileWriter.NoError` in QGIS 3, and in the scoped `RasterInterfaceCapability` and `RasterFileWriterResult` in QGIS 4.
+_SIZE = QgsRasterDataProvider.Size if hasattr(QgsRasterDataProvider, 'Size') else Qgis.RasterInterfaceCapability.Size
+_RASTER_NO_ERROR = QgsRasterFileWriter.NoError if hasattr(QgsRasterFileWriter, 'NoError') else Qgis.RasterFileWriterResult.Success
 
 # `QgsVectorFileWriter.NoError` in QGIS 3, and in the scoped `WriterError` in QGIS 4.
 _NO_ERROR = QgsVectorFileWriter.NoError if hasattr(QgsVectorFileWriter, 'NoError') else QgsVectorFileWriter.WriterError.NoError

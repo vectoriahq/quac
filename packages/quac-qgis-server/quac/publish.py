@@ -260,9 +260,9 @@ class Publication:
     exported: bool = False
     # The layers whose data the export copied, by title.
     copied: list[str] = field(default_factory=list)
-    # Whether the project asks for GeoParquet and this QGIS cannot write it, so the data was copied as FlatGeobuf (`desktop.py` sets it).
+    # Whether the project asks for GeoParquet and this QGIS cannot write it, so the vector layers were copied as FlatGeobuf (`desktop.py` sets it).
     geoparquet_fallback: bool = False
-    # The layers an export copies: every vector layer QGIS opened.
+    # The layers an export copies: every vector layer QGIS opened, and every raster layer but a WMS, WMTS or XYZ one.
     to_copy: list[CopyRequest] = field(default_factory=list)
     # Layers whose style was not written because its QML names a folder on this computer.
     skipped_styles: list[str] = field(default_factory=list)
@@ -361,8 +361,9 @@ def plan_publication(
     `data_file` gives a data file's size and last change by its absolute path,
     or None where it cannot; with none given, a data asset carries neither.
 
-    With `copies`, an export: every vector layer QGIS opened, wherever its
-    data is, is published from the copies of its data an export made under
+    With `copies`, an export: every vector layer QGIS opened, and every
+    raster layer other than a WMS, WMTS or XYZ layer, wherever its data is, is
+    published from the copies of its data an export made under
     `<project>.stac/data/`, by layer id, the first in each list the layer's
     data and any others copies in other formats. Every such layer is named in
     `to_copy`; one with no copy is left out, for its copy failing where its
@@ -406,7 +407,7 @@ def plan_publication(
             reason: Optional[str] = NOT_OPENED
         else:
             reason = _place_data(layer, collection, project_folder, folder, path, data_file)
-        if copies is not None and reason != NOT_OPENED and layer is not None and layer.type == 'vector':
+        if copies is not None and reason != NOT_OPENED and layer is not None and (layer.type == 'vector' or (layer.type == 'raster' and not web_map)):
             publication.to_copy.append(CopyRequest(collection['id'], titles[collection['id']], frozenset(_hidden_fields_of(layer))))
             copied = copies.get(collection['id'])
             if not copied:
@@ -538,7 +539,7 @@ def message(publication: Publication) -> tuple[str, str]:
     if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.dropped_for_hidden_fields or publication.skipped_styles or publication.geoparquet_fallback):
         return 'info', ' '.join(sentences)
     if publication.geoparquet_fallback:
-        sentences.append("The data was copied as FlatGeobuf, because this version of QGIS can't write GeoParquet.")
+        sentences.append("The vector layers were copied as FlatGeobuf, because this version of QGIS can't write GeoParquet.")
     if publication.left_out:
         count = len(publication.left_out)
         listed = ', '.join(f'{layer.name} ({_REASONS[layer.reason]})' for layer in publication.left_out)

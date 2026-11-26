@@ -237,9 +237,10 @@ def check_field_facts(home: Path) -> None:
 def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now: Any) -> None:
     """
     Saves a made-up project set to export a copy of every layer, with
-    GeoParquet and FlatGeobuf ticked: Roads outside its folder, filtered to
-    the roads with `keep` = 1 and with `owner` excluded from QGIS Server, and
-    Benches inside it. Exports it from the menu and the algorithm.
+    GeoParquet, FlatGeobuf and PMTiles ticked: Roads outside its folder,
+    filtered to the roads with `keep` = 1 and with `owner` excluded from QGIS
+    Server, Benches inside it, and Elevation, a raster outside it. Exports it
+    from the menu and the algorithm.
     """
     import hashlib
     import time
@@ -258,6 +259,10 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     project.clear()
     roads = layer(project, roads_file, 'Roads', project.layerTreeRoot())
     benches = layer(project, benches_file, 'Benches', project.layerTreeRoot())
+    elevation_file = elevation_raster(home / 'outside' / 'elevation.tif')
+    elevation = QgsRasterLayer(str(elevation_file), 'Elevation', 'gdal')
+    check(elevation.isValid(), 'the made-up raster opens')
+    project.addMapLayer(elevation)
     roads.setSubsetString('"keep" = 1')
     hide = getattr(getattr(Qgis, 'FieldConfigurationFlag', None), 'HideFromWfs', None) or QgsField.ConfigurationFlag.HideFromWfs
     roads.setFieldConfigurationFlags(roads.fields().indexOf('owner'), hide)
@@ -295,6 +300,13 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
                 check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
             if 'pmtiles' in writable:
                 check_pmtiles(how, name, collection, document_path, publish)
+        document_path, collection = next((path, document) for path, document in documents.items() if document.get('title') == 'Elevation')
+        data = collection['assets']['data']
+        file_ = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(data['href'])))
+        check(collection['quac:editable'] is False and 'pmtiles' not in collection['assets'], f'{how}: Elevation is read-only, with no PMTiles copy')
+        check(file_.name == f'{elevation.id()}.tif' and data['type'] == 'image/tiff; application=geotiff; profile=cloud-optimized', f'{how}: Elevation is copied as a COG: {file_.name}, {data["type"]}')
+        check(file_.is_file() and data['file:size'] == file_.stat().st_size and data['file:checksum'] == '1220' + hashlib.sha256(file_.read_bytes()).hexdigest(), f'{how}: {file_.name} is in Roads.stac/data, with its size and checksum')
+        check_cog(how, file_)
 
     if os.environ.get('QUAC_EXPECT_GEOPARQUET'):
         check('geoparquet' in writable, f'this QGIS writes GeoParquet: {list(writable)}')
@@ -307,9 +319,9 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     print('      message:', iface.bar.messages[-1][1] if iface.bar.messages else None)
     check(plugin._task is None, 'the export task finishes')
     check_copies('from the menu')
-    expected = 'Exported the STAC catalogue Roads.stac.json. Copied the data of 2 layers.'
+    expected = 'Exported the STAC catalogue Roads.stac.json. Copied the data of 3 layers.'
     if 'geoparquet' not in writable:
-        expected += " The data was copied as FlatGeobuf, because this version of QGIS can't write GeoParquet."
+        expected += " The vector layers were copied as FlatGeobuf, because this version of QGIS can't write GeoParquet."
     check(bool(iface.bar.messages) and iface.bar.messages[-1][1] == expected, f'the message bar says what was exported: {expected}')
 
     for file_ in (publish / 'Roads.stac' / 'data').iterdir():
@@ -321,7 +333,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     quac.copy_data.tippecanoe = lambda: None
     result = processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=Feedback())
     print('      result:', result)
-    check(result['LAYERS_COPIED'] == 2 and result['LAYERS_LEFT_OUT'] == 0, 'the algorithm exports, as the project is set to')
+    check(result['LAYERS_COPIED'] == 3 and result['LAYERS_LEFT_OUT'] == 0, 'the algorithm exports, as the project is set to')
     check_copies('from the algorithm' + (' (GDAL)' if with_tippecanoe() else ''))
     quac.copy_data.tippecanoe = with_tippecanoe
 
@@ -344,6 +356,39 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(not (publish / 'Roads.stac' / 'data').exists() or not any((publish / 'Roads.stac' / 'data').iterdir()), 'the copies are removed once the project links its data')
     check((publish / 'benches.geojson').is_file(), 'the data in the folder is untouched')
     project.clear()
+
+
+def elevation_raster(path: Path) -> Path:
+    """A made-up one-band raster of 1,024 by 1,024 cells in EPSG:28355, rising to the east, with its first row no data."""
+    from array import array
+
+    from osgeo import gdal, osr
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    dataset = gdal.GetDriverByName('GTiff').Create(str(path), 1024, 1024, 1, gdal.GDT_Byte)
+    dataset.SetGeoTransform((390000, 5, 0, 6460000, 0, -5))
+    system = osr.SpatialReference()
+    system.ImportFromEPSG(28355)
+    dataset.SetProjection(system.ExportToWkt())
+    band = dataset.GetRasterBand(1)
+    band.SetNoDataValue(255)
+    cells = array('B', [255] * 1024 + [column // 5 for _row in range(1023) for column in range(1024)])
+    band.WriteRaster(0, 0, 1024, 1024, cells.tobytes())
+    dataset = None
+    return path
+
+
+def check_cog(how: str, copy_file: Path) -> None:
+    """Checks a raster's COG copy: GDAL reads it as a COG, with overviews and its band's statistics in the file, in its own coordinate system, keeping its no-data value."""
+    from osgeo import gdal
+
+    dataset = gdal.Open(str(copy_file))
+    band = dataset.GetRasterBand(1)
+    statistics = {key: value for key, value in band.GetMetadata().items() if key.startswith('STATISTICS_')}
+    print('      COG:', dataset.GetMetadata('IMAGE_STRUCTURE'), band.GetOverviewCount(), statistics)
+    check(dataset.GetMetadata('IMAGE_STRUCTURE').get('LAYOUT') == 'COG' and band.GetOverviewCount() >= 1, f'{how}: the copy is a COG with overviews')
+    check(statistics.get('STATISTICS_MINIMUM') == '0' and statistics.get('STATISTICS_MAXIMUM') == '204', f'{how}: the COG holds its band statistics, the no-data cells left out: {statistics}')
+    check(dataset.GetSpatialRef().GetAuthorityCode(None) == '28355' and band.GetNoDataValue() == 255, f'{how}: the COG keeps its coordinate system and no-data value')
 
 
 def check_pmtiles(how: str, name: str, collection: dict[str, Any], document_path: str, publish: Path) -> None:
