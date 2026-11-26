@@ -53,7 +53,7 @@ from dataclasses import dataclass, field
 from qgis.core import Qgis, QgsApplication, QgsCoordinateTransformContext, QgsFeedback, QgsMapLayer, QgsMessageLog, QgsPathResolver, QgsProject, QgsRasterLayer, QgsReadWriteContext, QgsTask, QgsVectorLayer
 from qgis.gui import QgsFileWidget, QgsOptionsPageWidget, QgsOptionsWidgetFactory
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QHBoxLayout, QLabel, QLineEdit, QRadioButton, QVBoxLayout
+from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QGridLayout, QLabel, QLineEdit, QRadioButton, QVBoxLayout
 from qgis.PyQt.QtXml import QDomDocument
 
 try:
@@ -61,7 +61,7 @@ try:
 except ImportError:
     from qgis.PyQt.QtWidgets import QAction  # Qt 5, QGIS 3
 
-from .copy_data import FLATGEOBUF, FORMAT_IDS, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
+from .copy_data import CSV, FLATGEOBUF, FORMAT_IDS, GEOJSON, GEOPACKAGE, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
 from .publish import (
     EXPORT,
     FOLDER_KEY,
@@ -560,6 +560,7 @@ class SettingsPageFactory(QgsOptionsWidgetFactory):
 GEOPARQUET_UNAVAILABLE = "This version of QGIS can't write GeoParquet."
 PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
 PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
+CSV_GEOMETRY = 'Points become X and Y columns. Other shapes are written as WKT text.'
 PORTOLAN_ADDRESS = 'https://portolan-sdi.org/'
 NO_FORMAT_NOTE = 'Tick a format to export.'
 NO_DATA_NOTE = "No format holds the vector layers' data."
@@ -604,7 +605,11 @@ class SettingsPage(QgsOptionsPageWidget):
         chosen = read_formats(project)
         self.geoparquet = QCheckBox('GeoParquet')
         self.flatgeobuf = QCheckBox('FlatGeobuf')
-        self._format_boxes = {GEOPARQUET: self.geoparquet, FLATGEOBUF: self.flatgeobuf}
+        self.geopackage = QCheckBox('GeoPackage')
+        self.geojson = QCheckBox('GeoJSON')
+        self.csv = QCheckBox('CSV')
+        self.csv.setToolTip(CSV_GEOMETRY)
+        self._format_boxes = {GEOPARQUET: self.geoparquet, FLATGEOBUF: self.flatgeobuf, GEOPACKAGE: self.geopackage, GEOJSON: self.geojson, CSV: self.csv}
         for format_id, box in self._format_boxes.items():
             box.setChecked(format_id in chosen and format_id in writable)
         self._geoparquet_writable = GEOPARQUET in writable
@@ -615,11 +620,10 @@ class SettingsPage(QgsOptionsPageWidget):
         self._pmtiles_writable = PMTILES in writable
         self.pmtiles.setChecked(PMTILES in chosen and self._pmtiles_writable)
         self.pmtiles.setToolTip(PMTILES_PURPOSE if self._pmtiles_writable else PMTILES_UNAVAILABLE)
-        formats = QHBoxLayout()
-        formats.addWidget(self.geoparquet)
-        formats.addWidget(self.flatgeobuf)
-        formats.addWidget(self.pmtiles)
-        formats.addStretch(1)
+        formats = QGridLayout()
+        for index, box in enumerate((self.geoparquet, self.flatgeobuf, self.pmtiles, self.geopackage, self.geojson, self.csv)):
+            formats.addWidget(box, index // 3, index % 3)
+        formats.setColumnStretch(3, 1)
 
         link_options = QVBoxLayout()
         link_options.setContentsMargins(24, 0, 0, 0)
@@ -636,7 +640,7 @@ class SettingsPage(QgsOptionsPageWidget):
         format_choice.addLayout(formats)
         format_choice.addWidget(self.format_note)
         export_options.addRow('Formats', format_choice)
-        for box in (self.geoparquet, self.flatgeobuf, self.pmtiles):
+        for box in (*self._format_boxes.values(), self.pmtiles):
             box.toggled.connect(self._show_format_note)
 
         self.not_saved = QLabel('Save the project as a .qgz or .qgs file first. A STAC catalogue is written only for a project saved as a file.')
@@ -664,7 +668,7 @@ class SettingsPage(QgsOptionsPageWidget):
         self.link.toggled.connect(self._enable_options)
         self._enable_options()
         if not self._saved_as_file:
-            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, self.geoparquet, self.flatgeobuf, self.pmtiles):
+            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, *self._format_boxes.values(), self.pmtiles):
                 control.setEnabled(False)
 
     def _enable_options(self) -> None:
@@ -673,7 +677,8 @@ class SettingsPage(QgsOptionsPageWidget):
         for control in (self.link_note, self.write_on_save):
             control.setEnabled(linking)
         self.export_note.setEnabled(not linking)
-        self.flatgeobuf.setEnabled(not linking)
+        for box in (self.flatgeobuf, self.geopackage, self.geojson, self.csv):
+            box.setEnabled(not linking)
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
         self.pmtiles.setEnabled(not linking and self._pmtiles_writable)
         self._show_format_note()
@@ -687,10 +692,11 @@ class SettingsPage(QgsOptionsPageWidget):
         other rules.
         """
         sentences = []
-        if not any(box.isChecked() for box in (self.geoparquet, self.flatgeobuf, self.pmtiles)):
+        data_ticked = any(box.isChecked() for box in self._format_boxes.values())
+        if not data_ticked and not self.pmtiles.isChecked():
             sentences.append(NO_FORMAT_NOTE)
         elif not self.geoparquet.isChecked():
-            if not self.flatgeobuf.isChecked():
+            if not data_ticked:
                 sentences.append(NO_DATA_NOTE)
             sentences.append(f'{NOT_PORTOLAN_NOTE if self._geoparquet_writable else NOT_PORTOLAN_HERE_NOTE} <a href="{PORTOLAN_ADDRESS}">About Portolan</a>')
         self.format_note.setText(' '.join(sentences))

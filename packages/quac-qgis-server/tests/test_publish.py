@@ -790,6 +790,20 @@ class AnExport(unittest.TestCase):
         extra = parks['assets']['flatgeobuf']
         self.assertEqual((resolve(name, extra['href']), extra['type'], extra['roles']), ('Parks.stac/data/parks_1.fgb', 'application/vnd.flatgeobuf', ['data']))
 
+    def test_adds_geopackage_geojson_and_csv_copies_keyed_by_format(self) -> None:
+        copies = every_copy(*PARKS_LAYERS)
+        copies['parks_1'] = [parquet('parks_1')] + [publish.CopiedData(f'Parks.stac/data/parks_1.{extension}', 2048, '1220' + 'cd' * 32) for extension in ('gpkg', 'geojson', 'csv')]
+        name, parks = collection(copy_plan(parks_project(), copies=copies), 'parks_1')
+        self.assertEqual(list(parks['assets']), ['data', 'geopackage', 'geojson', 'csv'])
+        self.assertEqual(
+            [(resolve(name, parks['assets'][key]['href']), parks['assets'][key]['type'], parks['assets'][key]['roles']) for key in ('geopackage', 'geojson', 'csv')],
+            [
+                ('Parks.stac/data/parks_1.gpkg', 'application/geopackage+sqlite3', ['data']),
+                ('Parks.stac/data/parks_1.geojson', 'application/geo+json', ['data']),
+                ('Parks.stac/data/parks_1.csv', 'text/csv', ['data']),
+            ],
+        )
+
     def test_registers_a_pmtiles_copy_by_a_link_and_a_visual_asset(self) -> None:
         copies = every_copy(*PARKS_LAYERS)
         copies['parks_1'] = [parquet('parks_1'), publish.CopiedData('Parks.stac/data/parks_1.pmtiles', 1024, '1220' + 'ef' * 32)]

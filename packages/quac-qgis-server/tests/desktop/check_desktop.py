@@ -237,7 +237,7 @@ def check_field_facts(home: Path) -> None:
 def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now: Any) -> None:
     """
     Saves a made-up project set to export a copy of every layer, with
-    GeoParquet, FlatGeobuf and PMTiles ticked: Roads outside its folder,
+    every format ticked: Roads outside its folder,
     filtered to the roads with `keep` = 1 and with `owner` excluded from QGIS
     Server, Benches inside it, and Elevation, a raster outside it. Exports it
     from the menu and the algorithm.
@@ -245,7 +245,10 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     import hashlib
     import time
 
-    from quac.copy_data import writable_formats
+    from osgeo import ogr
+
+    from quac.copy_data import _csv_geometry, writable_formats
+    from quac.publish import copy_layer_name
 
     writable = writable_formats()
     print('      writes copies as:', list(writable))
@@ -268,11 +271,12 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     roads.setFieldConfigurationFlags(roads.fields().indexOf('owner'), hide)
     project.writeEntry('quac', 'catalogue/folder', 'publish')
     project.writeEntry('quac', 'catalogue/mode', 'export')
-    project.writeEntry('quac', 'catalogue/formats', ['geoparquet', 'flatgeobuf', 'pmtiles'])
+    project.writeEntry('quac', 'catalogue/formats', EVERY_FORMAT)
     project.writeEntry('quac', 'catalogue/write_on_save', True)
     check(project.write(str(home / 'Roads.qgz')), 'the export project saves, set to export a copy of every layer')
     check(not (publish / 'Roads.stac.json').exists(), 'a save of a project set to export writes nothing')
-    extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb')) if format_id in writable]
+    extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb'), ('geopackage', 'gpkg'), ('geojson', 'geojson'), ('csv', 'csv')) if format_id in writable]
+    check(_csv_geometry(QgsVectorLayer('Point?crs=EPSG:4326', 'p', 'memory')) == ['GEOMETRY=AS_XY'] and _csv_geometry(QgsVectorLayer('MultiPoint?crs=EPSG:4326', 'm', 'memory')) == ['GEOMETRY=AS_WKT'] and _csv_geometry(QgsVectorLayer('LineString?crs=EPSG:4326', 'l', 'memory')) == ['GEOMETRY=AS_WKT'] and _csv_geometry(QgsVectorLayer('None', 't', 'memory')) == [], 'a CSV copy writes points as X and Y, other geometry as WKT, and a table without geometry columns')
 
     def check_copies(how: str) -> None:
         root = json.loads((publish / 'Roads.stac.json').read_text(encoding='utf-8'))
@@ -291,7 +295,14 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
                 check(file_.is_file() and asset['file:size'] == file_.stat().st_size and asset['file:checksum'] == '1220' + hashlib.sha256(file_.read_bytes()).hexdigest(), f'{how}: {file_.name} is in Roads.stac/data, with its size and checksum')
                 copied = QgsVectorLayer(str(file_), 'copy', 'ogr')
                 names = [field_.name() for field_ in copied.fields()]
-                check(copied.isValid() and copied.crs().authid() == 'EPSG:4326', f'{how}: {file_.name} opens, in WGS84')
+                if file_.suffix == '.csv':
+                    check(copied.isValid() and {'X', 'Y'} <= set(names) and asset['type'] == 'text/csv', f'{how}: {file_.name} opens, with the points as X and Y columns: {names}')
+                else:
+                    check(copied.isValid() and copied.crs().authid() == 'EPSG:4326', f'{how}: {file_.name} opens, in WGS84')
+                if file_.suffix in ('.gpkg', '.fgb'):
+                    dataset = ogr.Open(str(file_))
+                    inner = dataset.GetLayer(0).GetName()
+                    check(inner == copy_layer_name(copied_layer.id()), f'{how}: {file_.name} names its layer by the layer id: {inner}')
                 if name == 'Roads':
                     check(copied.featureCount() == 1 and 'owner' not in names and 'name' in names, f'{how}: {file_.name} holds the filtered road, without the excluded field: {names}, {copied.featureCount()}')
                     if file_.suffix == '.parquet':
@@ -349,7 +360,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     except QgsProcessingException as error:
         refused = str(error)
     check('no format is ticked' in refused and files_under(publish) == before, f'with no format ticked, the export is refused and nothing changes: {refused}')
-    project.writeEntry('quac', 'catalogue/formats', ['geoparquet', 'flatgeobuf', 'pmtiles'])
+    project.writeEntry('quac', 'catalogue/formats', EVERY_FORMAT)
 
     project.writeEntry('quac', 'catalogue/mode', 'link')
     check(project.write(), 'the project saves, set to link its data')
@@ -389,6 +400,10 @@ def check_cog(how: str, copy_file: Path) -> None:
     check(dataset.GetMetadata('IMAGE_STRUCTURE').get('LAYOUT') == 'COG' and band.GetOverviewCount() >= 1, f'{how}: the copy is a COG with overviews')
     check(statistics.get('STATISTICS_MINIMUM') == '0' and statistics.get('STATISTICS_MAXIMUM') == '204', f'{how}: the COG holds its band statistics, the no-data cells left out: {statistics}')
     check(dataset.GetSpatialRef().GetAuthorityCode(None) == '28355' and band.GetNoDataValue() == 255, f'{how}: the COG keeps its coordinate system and no-data value')
+
+
+# Every format a vector layer's copy can be written in.
+EVERY_FORMAT = ['geoparquet', 'flatgeobuf', 'geopackage', 'geojson', 'csv', 'pmtiles']
 
 
 def check_pmtiles(how: str, name: str, collection: dict[str, Any], document_path: str, publish: Path) -> None:
@@ -625,12 +640,15 @@ def main() -> int:
         from quac.copy_data import GEOPARQUET, writable_formats
 
         page.export.setChecked(True)
-        for box in (page.geoparquet, page.flatgeobuf, page.pmtiles):
+        for box in (*page._format_boxes.values(), page.pmtiles):
             box.setChecked(False)
         check(page.format_note.isVisibleTo(page) and page.format_note.text() == 'Tick a format to export.', f'with no format ticked, the page says to tick one: {page.format_note.text()}')
         page.flatgeobuf.setChecked(True)
         print('      note:', page.format_note.text())
         check('Not a Portolan catalogue' in page.format_note.text() and 'href="https://portolan-sdi.org/"' in page.format_note.text() and page.format_note.openExternalLinks(), 'with FlatGeobuf alone, the page says the catalogue is not a Portolan catalogue, with a link to Portolan\'s site')
+        page.flatgeobuf.setChecked(False)
+        page.csv.setChecked(True)
+        check('No format holds' not in page.format_note.text() and 'Not a Portolan catalogue' in page.format_note.text(), f'with CSV alone, the page counts it as holding the data, and says the catalogue is not a Portolan catalogue: {page.format_note.text()}')
         if GEOPARQUET in writable_formats():
             page.geoparquet.setChecked(True)
             check(not page.format_note.isVisibleTo(page), 'with GeoParquet ticked, the page says nothing more')

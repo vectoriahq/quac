@@ -4,8 +4,9 @@ with its data (`desktop.export_catalogue`). `publish.plan_publication` says
 which layers to copy; this writes each copy with QGIS and gives what the
 catalogue records of it.
 
-- The formats are the ones the project ticks, GeoParquet and FlatGeobuf for
-  the layer's data and PMTiles for viewing it on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
+- The formats are the ones the project ticks, GeoParquet, FlatGeobuf,
+  GeoPackage, GeoJSON and CSV for the layer's data and PMTiles for viewing it
+  on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
   it with the bounding-box column Portolan asks for, with its rows sorted in
   space and compressed with zstd where GDAL offers them; where it cannot,
   FlatGeobuf is written in its place. The first format is the layer's data.
@@ -50,20 +51,24 @@ from qgis.core import (
     QgsRasterPipe,
     QgsVectorFileWriter,
     QgsVectorLayer,
+    QgsWkbTypes,
 )
 
 from qgis.PyQt.QtCore import QProcess
 
-from .publish import CopiedData, copy_path, tile_layer_name
+from .publish import CopiedData, copy_layer_name, copy_path
 
 
 # The formats a copy can be written in, by id, in the order a layer's copies are listed: the first ticked is the layer's data.
 GEOPARQUET = 'geoparquet'
 FLATGEOBUF = 'flatgeobuf'
+GEOPACKAGE = 'geopackage'
+GEOJSON = 'geojson'
+CSV = 'csv'
 PMTILES = 'pmtiles'
-FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, PMTILES)
+FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, GEOPACKAGE, GEOJSON, CSV, PMTILES)
 # The formats a layer's data is written in; PMTiles is a copy for viewing.
-DATA_FORMAT_IDS = (GEOPARQUET, FLATGEOBUF)
+DATA_FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, GEOPACKAGE, GEOJSON, CSV)
 # A raster layer's one copy, and its file extension.
 COG = 'cog'
 COG_EXTENSION = 'tif'
@@ -116,7 +121,8 @@ def writable_formats() -> dict[str, CopyFormat]:
     The formats this QGIS writes a copy in, by id: GeoParquet where GDAL's
     Parquet driver writes the bounding-box column (`WRITE_COVERING_BBOX`, GDAL
     3.9 and later), with its rows sorted in space (`SORT_BY_BBOX`) and zstd
-    where offered, and FlatGeobuf.
+    where offered, FlatGeobuf, GeoPackage, GeoJSON (RFC 7946) and CSV, and
+    PMTiles where tippecanoe or GDAL writes it.
     """
     formats: dict[str, CopyFormat] = {}
     options = _creation_options('Parquet')
@@ -128,6 +134,10 @@ def writable_formats() -> dict[str, CopyFormat]:
             layer_options.append('COMPRESSION=ZSTD')
         formats[GEOPARQUET] = CopyFormat(GEOPARQUET, 'Parquet', 'parquet', tuple(layer_options))
     formats[FLATGEOBUF] = CopyFormat(FLATGEOBUF, 'FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',))
+    formats[GEOPACKAGE] = CopyFormat(GEOPACKAGE, 'GPKG', 'gpkg', ())
+    formats[GEOJSON] = CopyFormat(GEOJSON, 'GeoJSON', 'geojson', ('RFC7946=YES',))
+    # The geometry columns are chosen for each layer (`_csv_geometry`).
+    formats[CSV] = CopyFormat(CSV, 'CSV', 'csv', ())
     if tippecanoe() is not None or _creation_options('PMTiles'):
         formats[PMTILES] = CopyFormat(PMTILES, 'PMTiles', 'pmtiles', ())
     return formats
@@ -154,7 +164,7 @@ def copy_formats(chosen: list[str]) -> tuple[list[CopyFormat], bool]:
     ids = [format_id for format_id in DATA_FORMAT_IDS if format_id in chosen and format_id in writable]
     fallback = GEOPARQUET in chosen and GEOPARQUET not in writable
     if fallback and FLATGEOBUF not in ids:
-        ids.append(FLATGEOBUF)
+        ids.insert(0, FLATGEOBUF)
     if PMTILES in chosen and PMTILES in writable:
         ids.append(PMTILES)
     return [writable[format_id] for format_id in ids], fallback
@@ -240,7 +250,15 @@ def _copy_one(source: LayerSource, target: str, format_: CopyFormat, context: Qg
     """Writes one layer's copy to a temporary file beside `target`, in WGS84, and returns its path, or None where `feedback` was cancelled during it."""
     layer = _open(source)
     temporary = _temporary_beside(target, format_.extension)
-    return _write(layer, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback)
+    options = list(format_.layer_options) + (_csv_geometry(layer) if format_.id == CSV else [])
+    return _write(layer, source, temporary, format_.driver, options, [], 'EPSG:4326', context, feedback, copy_layer_name(source.layer_id))
+
+
+def _csv_geometry(layer: QgsVectorLayer) -> list[str]:
+    """A CSV copy's geometry: a point layer's as `X` and `Y` columns, other geometry as text in a `WKT` column, and none for a table."""
+    if not layer.isSpatial():
+        return []
+    return ['GEOMETRY=AS_XY'] if QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point' else ['GEOMETRY=AS_WKT']
 
 
 def _write(layer: QgsVectorLayer, source: LayerSource, temporary: str, driver: str, layer_options: list[str], dataset_options: list[str], crs: str, context: QgsCoordinateTransformContext, feedback: Any, layer_name: str = '') -> Optional[str]:
@@ -333,14 +351,14 @@ def _feature_boxes(layer: QgsVectorLayer, source: LayerSource, context: QgsCoord
 def _write_pmtiles(source: LayerSource, target: str, context: QgsCoordinateTransformContext, feedback: Any) -> Optional[str]:
     """
     Writes a layer's PMTiles copy, its one tile layer named by
-    `tile_layer_name`, to a temporary file beside `target`, and returns its
+    `copy_layer_name`, to a temporary file beside `target`, and returns its
     path; None where `feedback` was cancelled, and an empty path for a layer
     with no geometry, which has no PMTiles copy.
     """
     layer = _open(source)
     if not layer.isSpatial():
         return ''
-    name = tile_layer_name(source.layer_id)
+    name = copy_layer_name(source.layer_id)
     temporary = _temporary_beside(target, 'pmtiles')
     program = tippecanoe()
     if program is None:
