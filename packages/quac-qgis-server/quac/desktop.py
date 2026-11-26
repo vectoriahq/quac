@@ -60,7 +60,7 @@ try:
 except ImportError:
     from qgis.PyQt.QtWidgets import QAction  # Qt 5, QGIS 3
 
-from .copy_data import FLATGEOBUF, GEOPARQUET, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
+from .copy_data import FLATGEOBUF, FORMAT_IDS, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
 from .publish import (
     EXPORT,
     FOLDER_KEY,
@@ -120,10 +120,11 @@ def read_mode(project: Any) -> str:
 
 
 def read_formats(project: Any) -> list[str]:
-    """The formats the project ticks for its copies, or the default where it ticks none."""
+    """The formats the project ticks for its copies, none among them, or the default where it has never chosen."""
     formats, found = project.readListEntry(SETTINGS_SCOPE, FORMATS_KEY, [])
-    chosen = [format_id for format_id in formats if format_id in (GEOPARQUET, FLATGEOBUF)] if found else []
-    return chosen or default_formats()
+    if not found:
+        return default_formats()
+    return [format_id for format_id in formats if format_id in FORMAT_IDS]
 
 
 def project_folder(project: Any) -> str:
@@ -210,8 +211,10 @@ class ExportJob:
 
 def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
     """Every layer an export of `project` copies, with the formats it ticks. Raises `FolderMissing` as `write_catalogue` does."""
-    planned_folder, publication = plan_catalogue(project, folder, copies={})
     formats, fallback = copy_formats(read_formats(project))
+    if not formats:
+        raise NoFormatTicked()
+    planned_folder, publication = plan_catalogue(project, folder, copies={})
     job = ExportJob(planned_folder, publication.children_folder, formats, fallback, transform_context=QgsCoordinateTransformContext(project.transformContext()))
     if publication.refusal is not None:
         return job
@@ -288,6 +291,13 @@ def saved_project(file_name: str) -> Iterator[Any]:
         yield project
     finally:
         project.clear()
+
+
+class NoFormatTicked(Exception):
+    """An export of a project that ticks no format, which would copy nothing."""
+
+
+NO_FORMAT_MESSAGE = 'The STAC catalogue was not exported, because no format is ticked. Tick a format on the QUAC page of Project Properties. Nothing was changed.'
 
 
 class FolderMissing(Exception):
@@ -479,6 +489,9 @@ class QuacDesktop:
         except FolderMissing as missing:
             self._show('warning', f'The STAC catalogue was not written, because its folder does not exist: {missing.folder}. Choose a folder on the QUAC page of Project Properties, and save again.')
             return False
+        except NoFormatTicked:
+            self._show('warning', NO_FORMAT_MESSAGE)
+            return False
         except Exception as error:  # noqa: BLE001 - a failure here must never reach the save
             QgsMessageLog.logMessage(f'The STAC catalogue for {project.baseName()} could not be written: {type(error).__name__}: {error}\n{traceback.format_exc()}', LOG_TAG, _level('Critical'))
             self._show('warning', failure_message)
@@ -543,6 +556,13 @@ class SettingsPageFactory(QgsOptionsWidgetFactory):
 
 
 GEOPARQUET_UNAVAILABLE = "This version of QGIS can't write GeoParquet."
+PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
+PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
+PORTOLAN_ADDRESS = 'https://portolan-sdi.org/'
+NO_FORMAT_NOTE = 'Tick a format to export.'
+NO_DATA_NOTE = "No format holds the layers' data."
+NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for each layer's data."
+NOT_PORTOLAN_HERE_NOTE = "Not a Portolan catalogue: this version of QGIS can't write GeoParquet, which Portolan needs for each layer's data."
 
 
 class SettingsPage(QgsOptionsPageWidget):
@@ -585,14 +605,18 @@ class SettingsPage(QgsOptionsPageWidget):
         self._format_boxes = {GEOPARQUET: self.geoparquet, FLATGEOBUF: self.flatgeobuf}
         for format_id, box in self._format_boxes.items():
             box.setChecked(format_id in chosen and format_id in writable)
-            box.toggled.connect(lambda ticked, box=box: self._keep_one_format(box, ticked))
         self._geoparquet_writable = GEOPARQUET in writable
         if not self._geoparquet_writable:
-            self.flatgeobuf.setChecked(True)
+            self.flatgeobuf.setChecked(self.flatgeobuf.isChecked() or GEOPARQUET in chosen)
             self.geoparquet.setToolTip(GEOPARQUET_UNAVAILABLE)
+        self.pmtiles = QCheckBox('PMTiles')
+        self._pmtiles_writable = PMTILES in writable
+        self.pmtiles.setChecked(PMTILES in chosen and self._pmtiles_writable)
+        self.pmtiles.setToolTip(PMTILES_PURPOSE if self._pmtiles_writable else PMTILES_UNAVAILABLE)
         formats = QHBoxLayout()
         formats.addWidget(self.geoparquet)
         formats.addWidget(self.flatgeobuf)
+        formats.addWidget(self.pmtiles)
         formats.addStretch(1)
 
         link_options = QVBoxLayout()
@@ -602,7 +626,16 @@ class SettingsPage(QgsOptionsPageWidget):
         export_options = QFormLayout()
         export_options.setContentsMargins(24, 0, 0, 0)
         export_options.addRow(self.export_note)
-        export_options.addRow('Formats', formats)
+        self.format_note = QLabel()
+        self.format_note.setWordWrap(True)
+        self.format_note.setOpenExternalLinks(True)
+        format_choice = QVBoxLayout()
+        format_choice.setSpacing(2)
+        format_choice.addLayout(formats)
+        format_choice.addWidget(self.format_note)
+        export_options.addRow('Formats', format_choice)
+        for box in (self.geoparquet, self.flatgeobuf, self.pmtiles):
+            box.toggled.connect(self._show_format_note)
 
         self.not_saved = QLabel('Save the project as a .qgz or .qgs file first. A STAC catalogue is written only for a project saved as a file.')
         self.not_saved.setWordWrap(True)
@@ -629,7 +662,7 @@ class SettingsPage(QgsOptionsPageWidget):
         self.link.toggled.connect(self._enable_options)
         self._enable_options()
         if not self._saved_as_file:
-            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, self.geoparquet, self.flatgeobuf):
+            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, self.geoparquet, self.flatgeobuf, self.pmtiles):
                 control.setEnabled(False)
 
     def _enable_options(self) -> None:
@@ -640,11 +673,25 @@ class SettingsPage(QgsOptionsPageWidget):
         self.export_note.setEnabled(not linking)
         self.flatgeobuf.setEnabled(not linking)
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
+        self.pmtiles.setEnabled(not linking and self._pmtiles_writable)
+        self._show_format_note()
 
-    def _keep_one_format(self, box: QCheckBox, ticked: bool) -> None:
-        """Keeps at least one format ticked: unticking the only one ticked ticks it again."""
-        if not ticked and not any(other.isChecked() for other in self._format_boxes.values()):
-            box.setChecked(True)
+    def _show_format_note(self) -> None:
+        """
+        Says what the ticked formats leave out, while exporting: no format at
+        all, no format for the layers' data, or no GeoParquet, which Portolan
+        needs for each layer's data, linked to Portolan's site. Nothing where
+        GeoParquet is ticked: the plugin does not check Portolan's other rules.
+        """
+        sentences = []
+        if not any(box.isChecked() for box in (self.geoparquet, self.flatgeobuf, self.pmtiles)):
+            sentences.append(NO_FORMAT_NOTE)
+        elif not self.geoparquet.isChecked():
+            if not self.flatgeobuf.isChecked():
+                sentences.append(NO_DATA_NOTE)
+            sentences.append(f'{NOT_PORTOLAN_NOTE if self._geoparquet_writable else NOT_PORTOLAN_HERE_NOTE} <a href="{PORTOLAN_ADDRESS}">About Portolan</a>')
+        self.format_note.setText(' '.join(sentences))
+        self.format_note.setVisible(self.export.isChecked() and bool(sentences))
 
     def apply(self) -> None:
         if not self._saved_as_file:
@@ -653,4 +700,4 @@ class SettingsPage(QgsOptionsPageWidget):
         project.writeEntry(SETTINGS_SCOPE, MODE_KEY, EXPORT if self.export.isChecked() else LINK)
         project.writeEntry(SETTINGS_SCOPE, WRITE_ON_SAVE_KEY, self.write_on_save.isChecked())
         project.writeEntry(SETTINGS_SCOPE, FOLDER_KEY, folder_setting(project_folder(project), self.folder.filePath()))
-        project.writeEntry(SETTINGS_SCOPE, FORMATS_KEY, [format_id for format_id, box in self._format_boxes.items() if box.isChecked()])
+        project.writeEntry(SETTINGS_SCOPE, FORMATS_KEY, [format_id for format_id, box in (*self._format_boxes.items(), (PMTILES, self.pmtiles)) if box.isChecked()])

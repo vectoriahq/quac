@@ -27,7 +27,7 @@ from qgis.core import (
 )
 from qgis.PyQt.QtGui import QIcon
 
-from .desktop import ICON, FolderMissing, ProjectUnreadable, saved_as_file, saved_project, write_as_set
+from .desktop import ICON, NO_FORMAT_MESSAGE, FolderMissing, NoFormatTicked, ProjectUnreadable, saved_as_file, saved_project, write_as_set
 from .publish import catalogue_names, message
 
 PROJECT = 'PROJECT'
@@ -134,6 +134,8 @@ class WriteCatalogue(QgsProcessingAlgorithm):
                 written_to, publication = write_as_set(project, target, feedback)
         except ProjectUnreadable as unreadable:
             raise QgsProcessingException(f'The project {unreadable.file_name} could not be read: {unreadable.reason}. Open it in QGIS to check it, and run this again.') from None
+        except NoFormatTicked:
+            raise QgsProcessingException(NO_FORMAT_MESSAGE) from None
         except FolderMissing as missing:
             raise QgsProcessingException(f'The STAC catalogue was not written, because its folder does not exist: {missing.folder}. Choose a folder that exists, or one on the QUAC page of the project\'s Project Properties.') from None
         if publication is None:
