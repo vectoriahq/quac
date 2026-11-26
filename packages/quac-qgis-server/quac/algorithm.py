@@ -49,7 +49,7 @@ HELP = (
     'A layer is left out where its data file is outside the folder, where its data is held in a database, '
     'where QGIS could not open its data (a WMS, WMTS or XYZ layer is written all the same), or where its web address holds a user name or password. '
     'Where the project\'s QUAC page is set to copy the data of such layers in, Copy data, ticked by default, copies each into the Parks.stac/data folder first, '
-    'as GeoParquet where this QGIS can write it as Portolan asks and as FlatGeobuf otherwise, so the run can be scheduled. '
+    'as GeoParquet where this QGIS can write it and as FlatGeobuf otherwise, so the run can be scheduled. '
     'The log names each layer left out, and what to do to include it.'
 )
 

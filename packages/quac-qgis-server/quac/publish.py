@@ -127,7 +127,7 @@ _NEXT_STEPS = {
     NOT_A_FILE: 'To include a layer held in a database, save its data as a file in the chosen folder.',
     HOLDS_CREDENTIALS: 'To include a web layer, give it an address without a user name or password.',
     NOT_OPENED: 'To include a layer QGIS could not open, fix its data source in QGIS and save again.',
-    NO_COPY_YET: f'To copy the data in, choose Project ▸ {EXPORT_LABEL}.',
+    NO_COPY_YET: f'To copy their data, choose {EXPORT_LABEL} from the Project menu.',
     COPY_FAILED: 'The QUAC tab of the Log Messages panel says why each copy failed.',
 }
 
@@ -550,7 +550,7 @@ def message(publication: Publication) -> tuple[str, str]:
     if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.dropped_for_hidden_fields or publication.skipped_styles or publication.copied_as_flatgeobuf):
         return 'info', ' '.join(sentences)
     if publication.copied_as_flatgeobuf:
-        sentences.append("This QGIS can't write GeoParquet as Portolan asks, so the data was copied as FlatGeobuf, which Portolan does not accept as a layer's data.")
+        sentences.append("The data was copied as FlatGeobuf, because this QGIS can't write GeoParquet. Some STAC software expects GeoParquet.")
     if publication.left_out:
         count = len(publication.left_out)
         listed = ', '.join(f'{layer.name} ({_REASONS[layer.reason]})' for layer in publication.left_out)

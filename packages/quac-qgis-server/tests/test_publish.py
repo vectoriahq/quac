@@ -784,7 +784,7 @@ class CopiedData(unittest.TestCase):
         self.assertEqual(collection(publication, 'trails_3')[1]['assets']['data']['type'], 'application/vnd.flatgeobuf')
         level, text = publish.message(publication)
         self.assertEqual(level, 'warning')
-        self.assertIn("This QGIS can't write GeoParquet as Portolan asks, so the data was copied as FlatGeobuf", text)
+        self.assertIn("The data was copied as FlatGeobuf, because this QGIS can't write GeoParquet. Some STAC software expects GeoParquet.", text)
 
     def test_keeps_the_last_export_s_copy_on_a_save_while_its_file_is_there(self) -> None:
         exported = copy_plan(parks_project(), copies={'trails_3': TRAILS_COPY})
@@ -802,7 +802,7 @@ class CopiedData(unittest.TestCase):
         self.assertEqual(gone.left_out, [publish.LeftOutLayer('Trails', publish.NO_COPY_YET)])
         level, text = publish.message(gone)
         self.assertIn('Trails (it has no copy yet)', text)
-        self.assertIn('To copy the data in, choose Project ▸ Export STAC catalogue with data.', text)
+        self.assertIn('To copy their data, choose Export STAC catalogue with data from the Project menu.', text)
 
     def test_removes_the_copies_once_the_project_stops_copying(self) -> None:
         exported = copy_plan(parks_project(), copies={'trails_3': TRAILS_COPY})
