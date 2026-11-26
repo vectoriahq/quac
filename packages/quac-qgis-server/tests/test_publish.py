@@ -790,6 +790,21 @@ class AnExport(unittest.TestCase):
         extra = parks['assets']['flatgeobuf']
         self.assertEqual((resolve(name, extra['href']), extra['type'], extra['roles']), ('Parks.stac/data/parks_1.fgb', 'application/vnd.flatgeobuf', ['data']))
 
+    def test_registers_a_pmtiles_copy_by_a_link_and_a_visual_asset(self) -> None:
+        copies = every_copy(*PARKS_LAYERS)
+        copies['parks_1'] = [parquet('parks_1'), publish.CopiedData('Parks.stac/data/parks_1.pmtiles', 1024, '1220' + 'ef' * 32)]
+        publication = copy_plan(parks_project(), copies=copies)
+        name, parks = collection(publication, 'parks_1')
+        self.assertEqual(list(parks['assets']), ['data', 'pmtiles'])
+        visual = parks['assets']['pmtiles']
+        self.assertEqual((resolve(name, visual['href']), visual['type'], visual['roles'], visual['file:size']), ('Parks.stac/data/parks_1.pmtiles', 'application/vnd.pmtiles', ['visual'], 1024))
+        links = [link for link in parks['links'] if link['rel'] == 'pmtiles']
+        self.assertEqual(len(links), 1)
+        self.assertEqual((resolve(name, links[0]['href']), links[0]['type'], links[0]['pmtiles:layers']), ('Parks.stac/data/parks_1.pmtiles', 'application/vnd.pmtiles', ['parks_1']))
+        self.assertIn('https://stac-extensions.github.io/web-map-links/v1.3.0/schema.json', parks['stac_extensions'])
+        linked = plan(parks_project(), existing=dict(publication.files))
+        self.assertIn('Parks.stac/data/parks_1.pmtiles', linked.removals)
+
     def test_says_where_geoparquet_could_not_be_written(self) -> None:
         publication = copy_plan(parks_project(), copies=every_copy(*PARKS_LAYERS))
         publication.geoparquet_fallback = True

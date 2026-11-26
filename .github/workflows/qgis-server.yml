@@ -85,7 +85,7 @@ jobs:
       - uses: mamba-org/setup-micromamba@add3a49764cedee8ee24e82dfde87f5bc2914462 # v2.0.7
         with:
           environment-name: qgis
-          create-args: qgis=3.44 libgdal-arrow-parquet pyarrow
+          create-args: qgis=3.44 libgdal-arrow-parquet pyarrow tippecanoe
       - name: Copy data as GeoParquet with the plugin in QGIS Desktop's Python
         working-directory: packages/quac-qgis-server
         env:

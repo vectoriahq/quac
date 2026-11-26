@@ -60,7 +60,7 @@ try:
 except ImportError:
     from qgis.PyQt.QtWidgets import QAction  # Qt 5, QGIS 3
 
-from .copy_data import FLATGEOBUF, GEOPARQUET, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
+from .copy_data import FLATGEOBUF, FORMAT_IDS, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
 from .publish import (
     EXPORT,
     FOLDER_KEY,
@@ -122,7 +122,7 @@ def read_mode(project: Any) -> str:
 def read_formats(project: Any) -> list[str]:
     """The formats the project ticks for its copies, or the default where it ticks none."""
     formats, found = project.readListEntry(SETTINGS_SCOPE, FORMATS_KEY, [])
-    chosen = [format_id for format_id in formats if format_id in (GEOPARQUET, FLATGEOBUF)] if found else []
+    chosen = [format_id for format_id in formats if format_id in FORMAT_IDS] if found else []
     return chosen or default_formats()
 
 
@@ -543,6 +543,8 @@ class SettingsPageFactory(QgsOptionsWidgetFactory):
 
 
 GEOPARQUET_UNAVAILABLE = "This version of QGIS can't write GeoParquet."
+PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
+PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
 
 
 class SettingsPage(QgsOptionsPageWidget):
@@ -590,9 +592,14 @@ class SettingsPage(QgsOptionsPageWidget):
         if not self._geoparquet_writable:
             self.flatgeobuf.setChecked(True)
             self.geoparquet.setToolTip(GEOPARQUET_UNAVAILABLE)
+        self.pmtiles = QCheckBox('PMTiles')
+        self._pmtiles_writable = PMTILES in writable
+        self.pmtiles.setChecked(PMTILES in chosen and self._pmtiles_writable)
+        self.pmtiles.setToolTip(PMTILES_PURPOSE if self._pmtiles_writable else PMTILES_UNAVAILABLE)
         formats = QHBoxLayout()
         formats.addWidget(self.geoparquet)
         formats.addWidget(self.flatgeobuf)
+        formats.addWidget(self.pmtiles)
         formats.addStretch(1)
 
         link_options = QVBoxLayout()
@@ -629,7 +636,7 @@ class SettingsPage(QgsOptionsPageWidget):
         self.link.toggled.connect(self._enable_options)
         self._enable_options()
         if not self._saved_as_file:
-            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, self.geoparquet, self.flatgeobuf):
+            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, self.geoparquet, self.flatgeobuf, self.pmtiles):
                 control.setEnabled(False)
 
     def _enable_options(self) -> None:
@@ -640,6 +647,7 @@ class SettingsPage(QgsOptionsPageWidget):
         self.export_note.setEnabled(not linking)
         self.flatgeobuf.setEnabled(not linking)
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
+        self.pmtiles.setEnabled(not linking and self._pmtiles_writable)
 
     def _keep_one_format(self, box: QCheckBox, ticked: bool) -> None:
         """Keeps at least one format ticked: unticking the only one ticked ticks it again."""
@@ -653,4 +661,4 @@ class SettingsPage(QgsOptionsPageWidget):
         project.writeEntry(SETTINGS_SCOPE, MODE_KEY, EXPORT if self.export.isChecked() else LINK)
         project.writeEntry(SETTINGS_SCOPE, WRITE_ON_SAVE_KEY, self.write_on_save.isChecked())
         project.writeEntry(SETTINGS_SCOPE, FOLDER_KEY, folder_setting(project_folder(project), self.folder.filePath()))
-        project.writeEntry(SETTINGS_SCOPE, FORMATS_KEY, [format_id for format_id, box in self._format_boxes.items() if box.isChecked()])
+        project.writeEntry(SETTINGS_SCOPE, FORMATS_KEY, [format_id for format_id, box in (*self._format_boxes.items(), (PMTILES, self.pmtiles)) if box.isChecked()])

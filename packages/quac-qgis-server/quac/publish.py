@@ -80,6 +80,7 @@ from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_exte
 from .quac_server.model.stac_href import encode_asset_path
 from .quac_server.model.stac_size_and_count import FILE_EXTENSION, FILE_SIZE_FIELD
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
+from .quac_server.model.stac_wms import WEB_MAP_LINKS_EXTENSION
 from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
 from .quac_server.parse.parse_data_source import wfs_source_signs_in
 from .quac_server.parse.parse_qgs_xml import parse_qgs_xml
@@ -708,6 +709,15 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
     return None
 
 
+# PMTiles, per Portolan's media-type registry, as `PMTILES_MEDIA_TYPE` in the JavaScript's `stacPmtiles.ts` names it.
+PMTILES_MEDIA_TYPE = 'application/vnd.pmtiles'
+
+
+def tile_layer_name(layer_id: str) -> str:
+    """The name of the one tile layer in a layer's PMTiles copy: its layer id, with a character no file name may hold as `_`."""
+    return _safe_name(layer_id)
+
+
 def copy_path(children_folder: str, layer_id: str, extension: str) -> str:
     """Where a layer's copied data goes, relative to the chosen folder: `<project>.stac/data/<layer id>.<extension>`."""
     return f'{children_folder}/{COPIES_FOLDER}/{_safe_name(layer_id)}.{extension}'
@@ -718,19 +728,28 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
     Points a Collection's data asset, keyed `data`, at the first copy of its
     data, and adds each other copy as an asset keyed by its format's id, such
     as `flatgeobuf`, by its path from the chosen folder as `_place_data` writes
-    a file's. Makes the layer read-only, since an edit to a copy is lost at the
+    a file's. A PMTiles copy is registered as Portolan does, by a
+    `rel: "pmtiles"` link (web-map-links v1.3.0) naming its tile layer, and an
+    asset keyed `pmtiles` with the `visual` role, which gives its size and
+    checksum. Makes the layer read-only, since an edit to a copy is lost at the
     next export, and leaves out the fields that name where the layer's own
     data comes from, as the copy is the data.
     """
     assets = {key: value for key, value in (collection.get('assets') or {}).items() if key != 'data'}
-    for index, copy in enumerate(copied):
-        asset: dict[str, Any] = {'href': f'./{encode_asset_path(copy.path)}', 'type': declared_media_type_for_file(copy.path, 'data'), 'roles': ['data']}
+    data_copies = [copy for copy in copied if not copy.path.lower().endswith('.pmtiles')]
+    for copy in copied:
+        href = f'./{encode_asset_path(copy.path)}'
+        tiles = copy.path.lower().endswith('.pmtiles')
+        asset: dict[str, Any] = {'href': href, 'type': PMTILES_MEDIA_TYPE if tiles else declared_media_type_for_file(copy.path, 'data'), 'roles': ['visual' if tiles else 'data']}
         if copy.size > 0:
             asset[FILE_SIZE_FIELD] = copy.size
         asset[FILE_CHECKSUM_FIELD] = copy.checksum
         if copy.updated:
             asset['updated'] = copy.updated
-        if index == 0:
+        if tiles:
+            assets['pmtiles'] = asset
+            collection['links'] = [*collection.get('links', []), {'rel': 'pmtiles', 'href': href, 'type': PMTILES_MEDIA_TYPE, 'pmtiles:layers': [tile_layer_name(collection['id'])]}]
+        elif copy is data_copies[0]:
             assets = {'data': asset, **assets}
         else:
             assets[_format_id(copy.path)] = asset
@@ -739,8 +758,9 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
         collection.pop(key, None)
     collection['quac:editable'] = False
     extensions = collection.setdefault('stac_extensions', [])
-    if FILE_EXTENSION not in extensions:
-        extensions.append(FILE_EXTENSION)
+    for extension in (FILE_EXTENSION, WEB_MAP_LINKS_EXTENSION) if any(copy.path.lower().endswith('.pmtiles') for copy in copied) else (FILE_EXTENSION,):
+        if extension not in extensions:
+            extensions.append(extension)
 
 
 def _format_id(file_path: str) -> str:
@@ -946,7 +966,7 @@ def _previously_linked(root_file_name: str, root: dict[str, Any], children_folde
     """
     The files under `children_folder` the previous catalogue linked: each
     document a `child` link names, from the root down, and each style asset
-    and copied data asset of a Collection among them.
+    and copied data and PMTiles asset of a Collection among them.
     """
     linked: set[str] = set()
     for document_path, document in _previous_documents(root_file_name, root, children_folder, read_existing):
@@ -955,7 +975,7 @@ def _previously_linked(root_file_name: str, root: dict[str, Any], children_folde
         if document is not None and document.get('type') == 'Collection' and isinstance(document.get('assets'), dict):
             for asset in document['assets'].values():
                 roles = (asset.get('roles') or []) if isinstance(asset, dict) else []
-                if 'style' in roles or 'data' in roles:
+                if 'style' in roles or 'data' in roles or 'visual' in roles:
                     target = _resolve_inside(asset.get('href'), document_path, children_folder)
                     if target is not None:
                         linked.add(target)
