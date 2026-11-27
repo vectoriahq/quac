@@ -1062,3 +1062,25 @@ class KeepingUnchangedCopies(unittest.TestCase):
         for case, (paths, last_edit, processing, size_of) in cases.items():
             with self.subTest(case):
                 self.assertIsNone(publish.unchanged_copies(earlier, paths, last_edit, processing, size_of))
+
+
+class SameStyleDocument(unittest.TestCase):
+    """`same_style_document`: an unchanged style whose attributes QGIS wrote in another order is not written again."""
+
+    STYLE = b"""<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis version="3.44.3" labelsEnabled="0" minScale="100000000">
+  <renderer-v2 type="singleSymbol" symbollevels="0"><symbol type="marker" name="0" alpha="1"/></renderer-v2>
+</qgis>
+"""
+
+    def test_is_the_same_with_the_attributes_in_another_order(self) -> None:
+        reordered = self.STYLE.replace(b'version="3.44.3" labelsEnabled="0" minScale="100000000"', b'minScale="100000000" version="3.44.3" labelsEnabled="0"').replace(b'type="marker" name="0" alpha="1"', b'alpha="1" type="marker" name="0"')
+        self.assertNotEqual(reordered, self.STYLE)
+        self.assertTrue(publish.same_style_document(self.STYLE, reordered))
+
+    def test_differs_where_a_value_does(self) -> None:
+        self.assertFalse(publish.same_style_document(self.STYLE, self.STYLE.replace(b'alpha="1"', b'alpha="0.5"')))
+
+    def test_differs_where_either_is_not_xml(self) -> None:
+        self.assertFalse(publish.same_style_document(self.STYLE, b'<qgis'))
+        self.assertFalse(publish.same_style_document(b'\xff', self.STYLE))
