@@ -217,6 +217,30 @@
           "minimum": 0,
           "maximum": 1
         },
+        "quac:contrast": {
+          "description": "The contrast adjustment applied to the layer as drawn, from -1 to 1: each red, green and blue value's distance from mid-grey is multiplied by (1 + contrast) squared, so -1 draws flat mid-grey. It applies to any kind of layer. A layer with no value is unchanged.",
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "quac:brightness": {
+          "description": "The brightness adjustment applied to the layer as drawn, from -1 to 1: added to each red, green and blue value, on a scale where each runs from 0 to 1. It applies to any kind of layer. A layer with no value is unchanged.",
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "quac:gamma": {
+          "description": "The gamma correction applied to the layer as drawn, from 0.1 to 10: each red, green and blue value, from 0 to 1, is raised to the power 1 / gamma, so a gamma above 1 lightens the mid-tones. It applies to any kind of layer. A layer with no value, or with 1, is unchanged.",
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "quac:saturation": {
+          "description": "The saturation adjustment applied to the layer as drawn, from -1 to 1: the saturation of each colour is multiplied by 1 + saturation, so -1 draws the layer in greys. It applies to any kind of layer. A layer with no value is unchanged.",
+          "type": "number",
+          "minimum": -1,
+          "maximum": 1
+        },
         "quac:related_to": {
           "description": "The relations this Collection is the child side of, so its records hang off another Collection's features rather than being a map layer of their own. Written from a QGIS project's Relations.",
           "type": "array",

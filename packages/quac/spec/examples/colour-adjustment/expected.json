@@ -1,0 +1,14 @@
+{
+  "type": "Catalog",
+  "id": "imagery",
+  "collections": [
+    {
+      "type": "Collection",
+      "id": "aerial",
+      "quac:contrast": -0.1,
+      "quac:brightness": 0.05,
+      "quac:gamma": 1.8,
+      "quac:saturation": -0.2
+    }
+  ]
+}

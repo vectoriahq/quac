@@ -1,0 +1,10 @@
+{
+  "fields": [
+    "quac:contrast",
+    "quac:brightness",
+    "quac:gamma",
+    "quac:saturation"
+  ],
+  "source": "hand-written",
+  "input": "catalogue.json"
+}
