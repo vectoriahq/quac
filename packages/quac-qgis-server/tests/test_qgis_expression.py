@@ -21,7 +21,7 @@ from quac_server.parse.qgis_expression import (
 from .answers import as_json, load
 
 ANSWERS = load('qgisExpression')
-_KEYWORDS = {'currentValue': 'current_value', 'geometry': 'geometry', 'aggregates': 'aggregates', 'lookups': 'lookups', 'variables': 'variables', 'coordinates': 'coordinates'}
+_KEYWORDS = {'currentValue': 'current_value', 'geometry': 'geometry', 'aggregates': 'aggregates', 'lookups': 'lookups', 'variables': 'variables', 'coordinates': 'coordinates', 'dates': 'dates'}
 
 
 def keywords_of(options: dict[str, Any]) -> dict[str, Any]:

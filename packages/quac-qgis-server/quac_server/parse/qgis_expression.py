@@ -324,6 +324,7 @@ def read_qgis_expression(
     lookups: bool = False,
     variables: bool = False,
     coordinates: bool = False,
+    dates: bool = False,
 ) -> Optional[ExpressionNode]:
     """
     Reads a QGIS expression into a tree: fields, text, numbers, `TRUE`,
@@ -331,7 +332,7 @@ def read_qgis_expression(
     `CASE` and calls to the functions above. None for any other expression.
     The keyword arguments are the JavaScript's options, and say what the
     caller can answer: `current_value`, `geometry` (True, or the project's
-    `MeasureFactors`), `aggregates`, `lookups`, `variables` and `coordinates`.
+    `MeasureFactors`), `aggregates`, `lookups`, `variables`, `coordinates` and `dates`.
     The JavaScript's comment on `readQgisExpression` says what each one reads.
     """
     tokens = _tokenize_expression(expression)
@@ -370,7 +371,7 @@ def read_qgis_expression(
 
     if not all(_is_readable_format_date(call) for call in _find_calls(parsed, 'format_date')):
         return None
-    dated_nows = {id(_arg(call, 0)) for call in _find_calls(parsed, *DATE_TAKERS)}
+    dated_nows = {id(call) for call in _find_dated_nows(parsed, dates, dates)}
     if any(id(call) not in dated_nows for call in _find_calls(parsed, 'now')):
         return None
 
@@ -831,10 +832,50 @@ def _child_nodes(node: ExpressionNode) -> list[ExpressionNode]:
     return []
 
 
+def _is_added_interval(node: ExpressionNode) -> bool:
+    """Whether a node is a `+` or `-` with a `make_interval` call as its right side."""
+    return node['kind'] == 'arithmetic' and node['op'] in ('+', '-') and node['right']['kind'] == 'call' and node['right']['name'] == 'make_interval'
+
+
+def _find_dated_nows(node: ExpressionNode, dated: bool, dates: bool) -> list[ExpressionNode]:
+    """
+    The `now()` calls at or under a node that stand where the evaluator takes
+    a date. `dated` says whether the node itself stands in one; `dates` is the
+    caller's option, without which only the first argument of a `DATE_TAKERS`
+    call does. The JavaScript's `findDatedNows`.
+    """
+    if node['kind'] == 'call' and node['name'] == 'now':
+        return [node] if dated else []
+    found = []
+    for child, child_dated in _dated_children(node, dated, dates):
+        found += _find_dated_nows(child, child_dated, dates)
+    return found
+
+
+def _dated_children(node: ExpressionNode, dated: bool, dates: bool) -> list[tuple[ExpressionNode, bool]]:
+    """The nodes directly under a node, each with whether it stands where a date is taken."""
+    kind = node['kind']
+    if kind == 'call' and node['name'] in DATE_TAKERS:
+        return [(arg, index == 0) for index, arg in enumerate(node['args'])]
+    if dates:
+        if kind == 'compare':
+            return [(node['left'], True), (node['right'], True)]
+        if _is_added_interval(node):
+            return [(node['left'], dated), (node['right'], False)]
+        if kind == 'call' and node['name'] == 'if':
+            return [(arg, dated and index > 0) for index, arg in enumerate(node['args'])]
+        if kind == 'call' and node['name'] == 'coalesce':
+            return [(arg, dated) for arg in node['args']]
+        if kind == 'case':
+            children = [part for pair in node['whens'] for part in ((pair['when'], False), (pair['then'], dated))]
+            return children + ([(node['otherwise'], dated)] if node['otherwise'] else [])
+    return [(child, False) for child in _child_nodes(node)]
+
+
 def _find_added_intervals(node: ExpressionNode) -> list[ExpressionNode]:
     """The `make_interval` calls that are the right side of a `+` or `-` at or under a node."""
     found = []
-    if node['kind'] == 'arithmetic' and node['op'] in ('+', '-') and node['right']['kind'] == 'call' and node['right']['name'] == 'make_interval':
+    if _is_added_interval(node):
         found.append(node['right'])
     for child in _child_nodes(node):
         found += _find_added_intervals(child)

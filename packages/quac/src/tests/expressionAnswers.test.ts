@@ -297,9 +297,9 @@ describe('qgisExpression', () => {
     hectares: { geometry: ha },
     noAreaUnit: { geometry: noArea, aggregates: true },
     lookups: { lookups: true },
-    defaults: { geometry: true, aggregates: true, lookups: true, variables: true, coordinates: true },
+    defaults: { geometry: true, aggregates: true, lookups: true, variables: true, coordinates: true, dates: true },
     noVariables: { geometry: true, aggregates: true, lookups: true },
-    all: { currentValue: true, geometry: true, aggregates: true, lookups: true, variables: true, coordinates: true }
+    all: { currentValue: true, geometry: true, aggregates: true, lookups: true, variables: true, coordinates: true, dates: true }
   }
 
   const expressions = [
@@ -370,6 +370,11 @@ describe('qgisExpression', () => {
     '"due" <= "d" + make_interval(days:=14)', 'make_interval(days:=1)', 'make_interval(days:=1) + "d"', '"d" * make_interval(days:=1)',
     '"d" + make_interval(days:=1, days:=2)', '"d" + make_interval(1, days:=2)', '"d" + make_interval(days:=2, 1)', '"d" + make_interval(day:=2)',
     '"d" + make_interval(years:=1, Months:=2, seconds:=3)', '"d" + make_interval()',
+    // `now()` as a date in its own right, which a default value reads.
+    'if("condition" IS NULL, "checked", now())', 'coalesce("checked", now())', 'CASE WHEN "a" THEN now() ELSE "d" END',
+    'CASE WHEN now() THEN 1 END', '"d" < now()', 'now() >= "d" + make_interval(days:=14)', 'now() + make_interval(days:=14)',
+    'now() - make_interval(hours:=1)', 'if("a", now() + make_interval(days:=1), NULL)', 'if(now(), 1, 2)', "now() || 'x'", 'to_string(now())',
+    'now() - "d"', 'make_interval(days:=1) + now()', 'format_date(coalesce("d", now()), \'yyyy\')', 'year(if("a", now(), "d"))',
     // Regular expressions in functions.
     "regexp_match(\"a\", '^A')", 'regexp_match("a", "pattern")', "regexp_match(\"a\", '(?s).')", "regexp_replace(\"a\", '(\\\\d+)', '<\\\\1>')",
     "regexp_substr(\"a\", '[[[')", "regexp_match(\"a\", '\\\\w', 1)", "regexp_match(\"a\", '(?i)\\\\bx')", "\"a\" ~ '(?i)\\\\bx'",
