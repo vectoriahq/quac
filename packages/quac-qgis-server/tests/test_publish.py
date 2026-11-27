@@ -790,6 +790,30 @@ class AnExport(unittest.TestCase):
         extra = parks['assets']['flatgeobuf']
         self.assertEqual((resolve(name, extra['href']), extra['type'], extra['roles']), ('Parks.stac/data/parks_1.fgb', 'application/vnd.flatgeobuf', ['data']))
 
+    def test_adds_geopackage_geojson_and_csv_copies_keyed_by_format_the_csv_as_a_table(self) -> None:
+        copies = every_copy(*PARKS_LAYERS)
+        copies['parks_1'] = [parquet('parks_1')] + [publish.CopiedData(f'Parks.stac/data/parks_1.{extension}', 2048, '1220' + 'cd' * 32) for extension in ('gpkg', 'geojson', 'csv')]
+        name, parks = collection(copy_plan(parks_project(), copies=copies), 'parks_1')
+        self.assertEqual(list(parks['assets']), ['data', 'geopackage', 'geojson', 'csv'])
+        self.assertEqual(
+            [(resolve(name, parks['assets'][key]['href']), parks['assets'][key]['type'], parks['assets'][key]['roles']) for key in ('geopackage', 'geojson', 'csv')],
+            [
+                ('Parks.stac/data/parks_1.gpkg', 'application/geopackage+sqlite3', ['data']),
+                ('Parks.stac/data/parks_1.geojson', 'application/geo+json', ['data']),
+                ('Parks.stac/data/parks_1.csv', 'text/csv', ['table']),
+            ],
+        )
+
+    def test_never_makes_a_csv_copy_the_layers_data(self) -> None:
+        copies = {layer_id: [publish.CopiedData(f'Parks.stac/data/{layer_id}.csv', 512, '1220' + '45' * 32)] for layer_id in PARKS_LAYERS}
+        exported = copy_plan(parks_project(), copies=copies)
+        self.assertEqual(exported.left_out, [])
+        parks = collection(exported, 'parks_1')[1]
+        self.assertEqual(list(parks['assets']), ['csv'])
+        self.assertEqual(parks['assets']['csv']['roles'], ['table'])
+        linked = plan(parks_project(), existing=dict(exported.files))
+        self.assertIn('Parks.stac/data/parks_1.csv', linked.removals)
+
     def test_registers_a_pmtiles_copy_by_a_link_and_a_visual_asset(self) -> None:
         copies = every_copy(*PARKS_LAYERS)
         copies['parks_1'] = [parquet('parks_1'), publish.CopiedData('Parks.stac/data/parks_1.pmtiles', 1024, '1220' + 'ef' * 32)]

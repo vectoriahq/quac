@@ -4,8 +4,9 @@ with its data (`desktop.export_catalogue`). `publish.plan_publication` says
 which layers to copy; this writes each copy with QGIS and gives what the
 catalogue records of it.
 
-- The formats are the ones the project ticks, GeoParquet and FlatGeobuf for
-  the layer's data and PMTiles for viewing it on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
+- The formats are the ones the project ticks, GeoParquet, FlatGeobuf,
+  GeoPackage and GeoJSON for the layer's data, CSV as a table for
+  spreadsheets, and PMTiles for viewing it on a web map (`copy_formats`). GeoParquet is written only where this QGIS's GDAL writes
   it with the bounding-box column Portolan asks for, with its rows sorted in
   space and compressed with zstd where GDAL offers them; where it cannot,
   FlatGeobuf is written in its place. The first format is the layer's data.
@@ -43,6 +44,7 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
+    QgsField,
     QgsRasterBlockFeedback,
     QgsRasterDataProvider,
     QgsRasterFileWriter,
@@ -50,20 +52,24 @@ from qgis.core import (
     QgsRasterPipe,
     QgsVectorFileWriter,
     QgsVectorLayer,
+    QgsWkbTypes,
 )
 
-from qgis.PyQt.QtCore import QProcess
+from qgis.PyQt.QtCore import QMetaType, QProcess, QVariant
 
-from .publish import CopiedData, copy_path, tile_layer_name
+from .publish import CopiedData, copy_layer_name, copy_path
 
 
 # The formats a copy can be written in, by id, in the order a layer's copies are listed: the first ticked is the layer's data.
 GEOPARQUET = 'geoparquet'
 FLATGEOBUF = 'flatgeobuf'
+GEOPACKAGE = 'geopackage'
+GEOJSON = 'geojson'
+CSV = 'csv'
 PMTILES = 'pmtiles'
-FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, PMTILES)
+FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, GEOPACKAGE, GEOJSON, CSV, PMTILES)
 # The formats a layer's data is written in; PMTiles is a copy for viewing.
-DATA_FORMAT_IDS = (GEOPARQUET, FLATGEOBUF)
+DATA_FORMAT_IDS = (GEOPARQUET, FLATGEOBUF, GEOPACKAGE, GEOJSON, CSV)
 # A raster layer's one copy, and its file extension.
 COG = 'cog'
 COG_EXTENSION = 'tif'
@@ -116,7 +122,8 @@ def writable_formats() -> dict[str, CopyFormat]:
     The formats this QGIS writes a copy in, by id: GeoParquet where GDAL's
     Parquet driver writes the bounding-box column (`WRITE_COVERING_BBOX`, GDAL
     3.9 and later), with its rows sorted in space (`SORT_BY_BBOX`) and zstd
-    where offered, and FlatGeobuf.
+    where offered, FlatGeobuf, GeoPackage, GeoJSON (RFC 7946) and CSV, and
+    PMTiles where tippecanoe or GDAL writes it.
     """
     formats: dict[str, CopyFormat] = {}
     options = _creation_options('Parquet')
@@ -128,6 +135,10 @@ def writable_formats() -> dict[str, CopyFormat]:
             layer_options.append('COMPRESSION=ZSTD')
         formats[GEOPARQUET] = CopyFormat(GEOPARQUET, 'Parquet', 'parquet', tuple(layer_options))
     formats[FLATGEOBUF] = CopyFormat(FLATGEOBUF, 'FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',))
+    formats[GEOPACKAGE] = CopyFormat(GEOPACKAGE, 'GPKG', 'gpkg', ())
+    formats[GEOJSON] = CopyFormat(GEOJSON, 'GeoJSON', 'geojson', ('RFC7946=YES',))
+    # A table for spreadsheets: a byte order mark, so Excel reads it as UTF-8, no geometry, and X and Y columns last for a point layer (`_write_points_csv`).
+    formats[CSV] = CopyFormat(CSV, 'CSV', 'csv', ('WRITE_BOM=YES',))
     if tippecanoe() is not None or _creation_options('PMTiles'):
         formats[PMTILES] = CopyFormat(PMTILES, 'PMTiles', 'pmtiles', ())
     return formats
@@ -154,7 +165,7 @@ def copy_formats(chosen: list[str]) -> tuple[list[CopyFormat], bool]:
     ids = [format_id for format_id in DATA_FORMAT_IDS if format_id in chosen and format_id in writable]
     fallback = GEOPARQUET in chosen and GEOPARQUET not in writable
     if fallback and FLATGEOBUF not in ids:
-        ids.append(FLATGEOBUF)
+        ids.insert(0, FLATGEOBUF)
     if PMTILES in chosen and PMTILES in writable:
         ids.append(PMTILES)
     return [writable[format_id] for format_id in ids], fallback
@@ -240,7 +251,42 @@ def _copy_one(source: LayerSource, target: str, format_: CopyFormat, context: Qg
     """Writes one layer's copy to a temporary file beside `target`, in WGS84, and returns its path, or None where `feedback` was cancelled during it."""
     layer = _open(source)
     temporary = _temporary_beside(target, format_.extension)
-    return _write(layer, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback)
+    if format_.id == CSV and is_point_layer(layer):
+        return _write_points_csv(layer, source, target, temporary, format_, context, feedback)
+    return _write(layer, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback, copy_layer_name(source.layer_id))
+
+
+def is_point_layer(layer: QgsVectorLayer) -> bool:
+    """Whether a layer holds one point a feature, the one kind whose CSV copy gets coordinate columns; a multipoint layer does not."""
+    return layer.isSpatial() and QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point'
+
+
+def coordinate_columns(field_names: list[str]) -> tuple[str, str]:
+    """The names of a point layer's CSV coordinate columns: `X` and `Y`, or `X_WGS84` and `Y_WGS84` where a field of the layer is named `X` or `Y` in any case."""
+    return ('X_WGS84', 'Y_WGS84') if {name.lower() for name in field_names} & {'x', 'y'} else ('X', 'Y')
+
+
+def _write_points_csv(layer: QgsVectorLayer, source: LayerSource, target: str, temporary: str, format_: CopyFormat, context: QgsCoordinateTransformContext, feedback: Any) -> Optional[str]:
+    """
+    Writes a point layer's CSV copy with its longitude and latitude as the
+    last two columns (`coordinate_columns`). The points are first written in
+    WGS84 to a temporary FlatGeobuf, as every copy's geometry is, and the
+    columns read from it, so they match the other copies.
+    """
+    points = _temporary_beside(target, 'fgb')
+    try:
+        # Without a spatial index, which would sort the points by place, so the rows keep the layer's order.
+        if _write(layer, source, points, 'FlatGeobuf', ['SPATIAL_INDEX=NO'], [], 'EPSG:4326', context, feedback) is None:
+            return None
+        located = QgsVectorLayer(points, source.name, 'ogr')
+        if not located.isValid():
+            raise RuntimeError(f'QGIS could not read the points of {source.name} back')
+        x, y = coordinate_columns(located.fields().names())
+        located.addExpressionField('x($geometry)', QgsField(x, _DOUBLE))
+        located.addExpressionField('y($geometry)', QgsField(y, _DOUBLE))
+        return _write(located, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback)
+    finally:
+        _remove(points)
 
 
 def _write(layer: QgsVectorLayer, source: LayerSource, temporary: str, driver: str, layer_options: list[str], dataset_options: list[str], crs: str, context: QgsCoordinateTransformContext, feedback: Any, layer_name: str = '') -> Optional[str]:
@@ -333,14 +379,14 @@ def _feature_boxes(layer: QgsVectorLayer, source: LayerSource, context: QgsCoord
 def _write_pmtiles(source: LayerSource, target: str, context: QgsCoordinateTransformContext, feedback: Any) -> Optional[str]:
     """
     Writes a layer's PMTiles copy, its one tile layer named by
-    `tile_layer_name`, to a temporary file beside `target`, and returns its
+    `copy_layer_name`, to a temporary file beside `target`, and returns its
     path; None where `feedback` was cancelled, and an empty path for a layer
     with no geometry, which has no PMTiles copy.
     """
     layer = _open(source)
     if not layer.isSpatial():
         return ''
-    name = tile_layer_name(source.layer_id)
+    name = copy_layer_name(source.layer_id)
     temporary = _temporary_beside(target, 'pmtiles')
     program = tippecanoe()
     if program is None:
@@ -475,6 +521,9 @@ _NOT_RUNNING = QProcess.NotRunning if hasattr(QProcess, 'NotRunning') else QProc
 # `QgsRasterDataProvider.Size` and `QgsRasterFileWriter.NoError` in QGIS 3, and in the scoped `RasterInterfaceCapability` and `RasterFileWriterResult` in QGIS 4.
 _SIZE = QgsRasterDataProvider.Size if hasattr(QgsRasterDataProvider, 'Size') else Qgis.RasterInterfaceCapability.Size
 _RASTER_NO_ERROR = QgsRasterFileWriter.NoError if hasattr(QgsRasterFileWriter, 'NoError') else Qgis.RasterFileWriterResult.Success
+
+# A field of decimal numbers: `QgsField` takes a `QMetaType.Type` from QGIS 3.38 and a `QVariant.Type` before it.
+_DOUBLE = QMetaType.Type.Double if Qgis.QGIS_VERSION_INT >= 33800 else QVariant.Double
 
 # `QgsVectorFileWriter.NoError` in QGIS 3, and in the scoped `WriterError` in QGIS 4.
 _NO_ERROR = QgsVectorFileWriter.NoError if hasattr(QgsVectorFileWriter, 'NoError') else QgsVectorFileWriter.WriterError.NoError
