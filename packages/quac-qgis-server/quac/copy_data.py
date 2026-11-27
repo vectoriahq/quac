@@ -275,7 +275,8 @@ def _write_points_csv(layer: QgsVectorLayer, source: LayerSource, target: str, t
     """
     points = _temporary_beside(target, 'fgb')
     try:
-        if _write(layer, source, points, 'FlatGeobuf', [], [], 'EPSG:4326', context, feedback) is None:
+        # Without a spatial index, which would sort the points by place, so the rows keep the layer's order.
+        if _write(layer, source, points, 'FlatGeobuf', ['SPATIAL_INDEX=NO'], [], 'EPSG:4326', context, feedback) is None:
             return None
         located = QgsVectorLayer(points, source.name, 'ogr')
         if not located.isValid():

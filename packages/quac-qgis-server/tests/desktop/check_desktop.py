@@ -258,7 +258,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     ]))
     publish = home / 'publish'
     # Benches has an easting of its own named `x`, so its CSV's coordinate columns are X_WGS84 and Y_WGS84.
-    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench', 'x': 391234.5}]))
+    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench', 'x': 391234.5}, {'id': 2, 'name': 'Bench', 'x': 392234.5}, {'id': 3, 'name': 'Bench', 'x': 390234.5}]))
     project = QgsProject.instance()
     project.clear()
     roads = layer(project, roads_file, 'Roads', project.layerTreeRoot())
@@ -318,6 +318,8 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
             columns = b',X_WGS84,Y_WGS84' if name == 'Benches' else b',X,Y'
             check(header.startswith(b'\xef\xbb\xbfid,name') and header.endswith(columns), f'{how}: the CSV starts with a byte order mark and ends with the coordinate columns: {header!r}')
             check(lines[1].endswith(b',115.85,-31.95'), f'{how}: the coordinate columns hold the point in WGS84: {lines[1]!r}')
+            if name == 'Benches':
+                check([line.split(b',')[0] for line in lines[1:]] == [b'1', b'2', b'3'], f'{how}: the CSV keeps the layer\'s order: {lines[1:]}')
             if name == 'Roads':
                 check(b'owner' not in header and len(table_file.read_bytes().strip().split(b'\n')) == 2, f'{how}: the CSV holds the filtered road, without the excluded field')
                 check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
@@ -429,7 +431,7 @@ def check_pmtiles(how: str, name: str, collection: dict[str, Any], document_path
     archive = ogr.Open(str(file_))
     tile_layer = archive.GetLayerByName(links[0]['pmtiles:layers'][0]) if archive is not None else None
     count = tile_layer.GetFeatureCount() if tile_layer is not None else -1
-    check(file_.suffix == '.pmtiles' and count == (1 if name in ('Roads', 'Benches') else count), f'{how}: {name}\'s PMTiles holds its tile layer with its features at the largest zoom: {count}')
+    check(file_.suffix == '.pmtiles' and count == {'Roads': 1, 'Benches': 3}.get(name, count), f'{how}: {name}\'s PMTiles holds its tile layer with its features at the largest zoom: {count}')
 
 
 def check_geoparquet(copy_file: Path) -> None:
