@@ -294,6 +294,9 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
         for name, copied_layer in (('Roads', roads), ('Benches', benches)):
             document_path, collection = next((path, document) for path, document in documents.items() if document.get('title') == name)
             check(collection['quac:editable'] is False, f'{how}: {name} is read-only')
+            made = collection['assets']['data']
+            lineage = made.get('processing:lineage', '')
+            check('QUAC plugin for QGIS' in made.get('processing:software', {}) and 'GDAL' in made['processing:software'] and (name != 'Roads' or ('filtered by `"keep" = 1`' in lineage and '`owner`' not in lineage)), f'{how}: {name}\'s data says how it was copied: {made.get("processing:software")}, {lineage}')
             assets = [collection['assets']['data'], *(asset for key, asset in collection['assets'].items() if key not in ('data',) and 'data' in asset.get('roles', []))]
             files = [publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(asset['href']))) for asset in assets]
             check([file_.suffix[1:] for file_ in files] == extensions, f'{how}: {name} is copied as {extensions}, the data first: {[file_.name for file_ in files]}')
@@ -348,6 +351,10 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     if 'geoparquet' not in writable:
         expected += " The vector layers were copied as FlatGeobuf, because this version of QGIS can't write GeoParquet."
     check(bool(iface.bar.messages) and iface.bar.messages[-1][1] == expected, f'the message bar says what was exported: {expected}')
+    check_unchanged(home, processing, publish, roads_file)
+    page = iface.factories[0].createWidget(None)
+    check(page.last_change.isVisibleTo(page) and page.last_change.text().startswith('Last changed '), f'the page says when the exported catalogue last changed: {page.last_change.text()}')
+    page.close()
 
     for file_ in (publish / 'Roads.stac' / 'data').iterdir():
         file_.unlink()
@@ -381,6 +388,51 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(not (publish / 'Roads.stac' / 'data').exists() or not any((publish / 'Roads.stac' / 'data').iterdir()), 'the copies are removed once the project links its data')
     check((publish / 'benches.geojson').is_file(), 'the data in the folder is untouched')
     project.clear()
+
+
+def check_unchanged(home: Path, processing: Any, publish: Path, roads_file: Path) -> None:
+    """
+    Exports the Roads project again: with nothing changed, every copy is kept
+    as it is, by its source's last change; with no last change known, as for
+    a database table, by checksum, or for FlatGeobuf and GeoPackage by what
+    the file holds; and after Roads's file changes, Roads alone is copied
+    again, found by its last change and, with none known, by what it holds.
+    """
+    import quac.desktop
+
+    def files() -> dict[str, int]:
+        return {path.name: path.stat().st_mtime_ns for path in (publish / 'Roads.stac' / 'data').iterdir()}
+
+    def export() -> dict[str, Any]:
+        return processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Roads.qgz')}, feedback=Feedback())
+
+    before = files()
+    result = export()
+    print('      again:', result)
+    check(result['LAYERS_COPIED'] == 0 and result['LAYERS_UNCHANGED'] == 3 and files() == before, 'exported again with nothing changed, every copy is kept as it is')
+    with_last_edit = quac.desktop.source_last_edit
+    quac.desktop.source_last_edit = lambda _layer: None
+    try:
+        result = export()
+    finally:
+        quac.desktop.source_last_edit = with_last_edit
+    changed = sorted(name for name, when in files().items() if before.get(name) != when)
+    check(result['LAYERS_COPIED'] == 0 and result['LAYERS_UNCHANGED'] == 3 and not changed, f'with no last change known, every copy is made again, found identical and kept as it is: {result}, changed {changed}')
+    roads_file.write_text(roads_file.read_text(encoding='utf-8').replace('Main road', 'Main street'), encoding='utf-8')
+    later = os.stat(roads_file).st_mtime + 2
+    os.utime(roads_file, (later, later))
+    result = export()
+    changed = sorted(name for name, when in files().items() if before.get(name) != when)
+    check(result['LAYERS_COPIED'] == 1 and result['LAYERS_UNCHANGED'] == 2 and changed and all(name.startswith('Roads') for name in changed), f'after Roads changes, Roads alone is copied again: {result}, changed {changed}')
+    before = files()
+    roads_file.write_text(roads_file.read_text(encoding='utf-8').replace('Main street', 'Main avenue'), encoding='utf-8')
+    quac.desktop.source_last_edit = lambda _layer: None
+    try:
+        result = export()
+    finally:
+        quac.desktop.source_last_edit = with_last_edit
+    changed = sorted(name for name, when in files().items() if before.get(name) != when)
+    check(result['LAYERS_COPIED'] == 1 and result['LAYERS_UNCHANGED'] == 2 and len(changed) == len([name for name in before if name.startswith('Roads')]) and all(name.startswith('Roads') for name in changed), f'with no last change known, a change to Roads is found and Roads alone is copied again, every format of it: {result}, changed {changed}')
 
 
 def elevation_raster(path: Path) -> Path:
@@ -724,8 +776,8 @@ def main() -> int:
         print('      results:', alpha, beta)
         print('      warning:', beta_feedback.warnings)
         batch_files = files_under(batch)
-        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0, 'LAYERS_COPIED': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
-        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1, 'LAYERS_COPIED': 0}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
+        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
+        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
         for stem, title in (('Alpha', 'Sites'), ('Beta', 'Wells')):
             names = sorted(name for name in batch_files if name.startswith(f'{stem}.stac'))
             documents = [json.loads((batch / name).read_text(encoding='utf-8')) for name in names if name.endswith('.json')]

@@ -225,13 +225,16 @@ class CopiedData:
     """
     A layer's data copied into the chosen folder: its path relative to the
     folder, joined by `/` (`copy_path`), its size in bytes, its checksum as a
-    multihash in hex, and when its data last changed where that is known.
+    multihash in hex, when its source's data last changed where that is known,
+    and the Processing extension's fields saying how it was made
+    (`processing:software` and `processing:lineage`).
     """
 
     path: str
     size: int
     checksum: str
     updated: Optional[str] = None
+    processing: Optional[dict[str, Any]] = None
 
 
 @dataclass(frozen=True)
@@ -258,8 +261,9 @@ class Publication:
     dropped_for_hidden_fields: list[DroppedForHiddenField] = field(default_factory=list)
     # Whether this is an export, which copies every layer's data.
     exported: bool = False
-    # The layers whose data the export copied, by title.
+    # The layers whose data the export copied, by title, and those whose copies it kept as they were, as their data had not changed.
     copied: list[str] = field(default_factory=list)
+    unchanged: list[str] = field(default_factory=list)
     # Whether the project asks for GeoParquet and this QGIS cannot write it, so the vector layers were copied as FlatGeobuf (`desktop.py` sets it).
     geoparquet_fallback: bool = False
     # The layers an export copies: every vector layer QGIS opened, and every raster layer but a WMS, WMTS or XYZ one.
@@ -345,6 +349,7 @@ def plan_publication(
     data_file: Optional[Callable[[str], Optional[DataFile]]] = None,
     copies: Optional[dict[str, list[CopiedData]]] = None,
     copy_failures: Optional[set[str]] = None,
+    unchanged: Optional[set[str]] = None,
 ) -> Publication:
     """
     What to write into `folder`, the chosen folder, for a saved project.
@@ -368,7 +373,8 @@ def plan_publication(
     data and any others copies in other formats. Every such layer is named in
     `to_copy`; one with no copy is left out, for its copy failing where its
     id is in `copy_failures`. A copied layer is read-only, and the fields
-    QGIS Server excludes are left out of it, with whatever uses them.
+    QGIS Server excludes are left out of it, with whatever uses them. A layer
+    in `unchanged` is named among the layers whose copies were kept.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -416,7 +422,7 @@ def plan_publication(
                 _place_copy(collection, copied)
                 copied_hidden[collection['id']] = _hidden_fields_of(layer)
                 copy_paths.update(copy.path.lower() for copy in copied)
-                publication.copied.append(titles[collection['id']])
+                (publication.unchanged if unchanged and collection['id'] in unchanged else publication.copied).append(titles[collection['id']])
                 reason = None
         if reason is not None:
             left_out_ids.add(collection['id'])
@@ -536,6 +542,9 @@ def message(publication: Publication) -> tuple[str, str]:
     if publication.copied:
         count = len(publication.copied)
         sentences.append(f"Copied the data of {'one layer' if count == 1 else f'{count} layers'}.")
+    if publication.unchanged:
+        count = len(publication.unchanged)
+        sentences.append(f"{'One layer was' if count == 1 else f'{count} layers were'} unchanged and kept as {'it was' if count == 1 else 'they were'}.")
     if not (publication.left_out or publication.dropped_choices or publication.dropped_relations or publication.dropped_settings or publication.dropped_folders or publication.dropped_for_hidden_fields or publication.skipped_styles or publication.geoparquet_fallback):
         return 'info', ' '.join(sentences)
     if publication.geoparquet_fallback:
@@ -710,6 +719,60 @@ def _place_data(layer: Optional[LayerEntry], collection: dict[str, Any], project
     return None
 
 
+# The Processing extension, whose `processing:software` and `processing:lineage` say how a copy was made.
+PROCESSING_EXTENSION = 'https://stac-extensions.github.io/processing/v1.3.0/schema.json'
+
+
+def previous_copies(root_file_name: str, children_folder: str, read_existing: Callable[[str], Optional[bytes]]) -> dict[str, dict[str, dict[str, Any]]]:
+    """
+    The copies the catalogue already in the chosen folder names, by layer id:
+    each Collection's assets whose file is under `<project>.stac/data/`, by
+    that file's path from the chosen folder. Nothing where the folder holds no
+    QUAC catalogue of that name.
+    """
+    data = read_existing(root_file_name)
+    root = _json_object(data) if data is not None else None
+    if root is None or not _is_quac_catalog(root):
+        return {}
+    found: dict[str, dict[str, dict[str, Any]]] = {}
+    for document_path, document in _previous_documents(root_file_name, root, children_folder, read_existing):
+        if document is None or document.get('type') != 'Collection' or not isinstance(document.get('assets'), dict):
+            continue
+        copies = {}
+        for asset in document['assets'].values():
+            target = _resolve_inside(asset.get('href'), document_path, children_folder) if isinstance(asset, dict) else None
+            if target is not None and target.startswith(f'{children_folder}/{COPIES_FOLDER}/'):
+                copies[target] = asset
+        if copies:
+            found[str(document.get('id'))] = copies
+    return found
+
+
+def unchanged_copies(previous: dict[str, dict[str, Any]], expected: list[str], last_edit: Optional[str], processing: dict[str, Any], size_of: Callable[[str], Optional[int]]) -> Optional[list[CopiedData]]:
+    """
+    A layer's earlier copies, to keep as they are, where its data has not
+    changed since they were made, in the order of `expected`; None where it
+    must be copied again. They are kept only where the source's last change,
+    `last_edit`, is known and is each copy's `updated`; the copies are the
+    files `expected`, the paths this export would write, each still the size
+    its asset gives (`size_of` gives a file's size by its path from the chosen
+    folder); and each copy was made the same way, its Processing fields equal
+    to `processing`.
+    """
+    if last_edit is None or sorted(previous) != sorted(expected):
+        return None
+    kept = []
+    for path in expected:
+        asset = previous[path]
+        if asset.get('updated') != last_edit or any(asset.get(key) != value for key, value in processing.items()):
+            return None
+        size = size_of(path)
+        if size is None or size != asset.get(FILE_SIZE_FIELD, 0) or not isinstance(asset.get(FILE_CHECKSUM_FIELD), str):
+            return None
+        kept.append(CopiedData(path, size, asset[FILE_CHECKSUM_FIELD], last_edit, processing))
+    return kept
+
+
 # PMTiles, per Portolan's media-type registry, as `PMTILES_MEDIA_TYPE` in the JavaScript's `stacPmtiles.ts` names it.
 PMTILES_MEDIA_TYPE = 'application/vnd.pmtiles'
 
@@ -751,6 +814,7 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
         asset[FILE_CHECKSUM_FIELD] = copy.checksum
         if copy.updated:
             asset['updated'] = copy.updated
+        asset.update(copy.processing or {})
         if tiles:
             assets['pmtiles'] = asset
             collection['links'] = [*collection.get('links', []), {'rel': 'pmtiles', 'href': href, 'type': PMTILES_MEDIA_TYPE, 'pmtiles:layers': [copy_layer_name(collection['id'])]}]
@@ -763,7 +827,12 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
         collection.pop(key, None)
     collection['quac:editable'] = False
     extensions = collection.setdefault('stac_extensions', [])
-    for extension in (FILE_EXTENSION, WEB_MAP_LINKS_EXTENSION) if any(copy.path.lower().endswith('.pmtiles') for copy in copied) else (FILE_EXTENSION,):
+    wanted = [FILE_EXTENSION]
+    if any(copy.path.lower().endswith('.pmtiles') for copy in copied):
+        wanted.append(WEB_MAP_LINKS_EXTENSION)
+    if any(copy.processing for copy in copied):
+        wanted.append(PROCESSING_EXTENSION)
+    for extension in wanted:
         if extension not in extensions:
             extensions.append(extension)
 

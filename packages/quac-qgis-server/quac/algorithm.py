@@ -36,6 +36,7 @@ ROOT_FILE = 'ROOT_FILE'
 LAYERS_WRITTEN = 'LAYERS_WRITTEN'
 LAYERS_LEFT_OUT = 'LAYERS_LEFT_OUT'
 LAYERS_COPIED = 'LAYERS_COPIED'
+LAYERS_UNCHANGED = 'LAYERS_UNCHANGED'
 
 HELP = (
     'Writes a QGIS project\'s STAC catalogue, as saving the project with the QUAC option on does: '
@@ -120,6 +121,7 @@ class WriteCatalogue(QgsProcessingAlgorithm):
         self.addOutput(QgsProcessingOutputNumber(LAYERS_WRITTEN, 'Layers written'))
         self.addOutput(QgsProcessingOutputNumber(LAYERS_LEFT_OUT, 'Layers left out'))
         self.addOutput(QgsProcessingOutputNumber(LAYERS_COPIED, 'Layers copied'))
+        self.addOutput(QgsProcessingOutputNumber(LAYERS_UNCHANGED, 'Layers unchanged'))
 
     def processAlgorithm(self, parameters: Any, context: Any, feedback: Any) -> dict[str, Any]:  # noqa: N802 - the name QGIS calls
         file_name = self.parameterAsFile(parameters, PROJECT, context)
@@ -153,4 +155,5 @@ class WriteCatalogue(QgsProcessingAlgorithm):
             LAYERS_WRITTEN: publication.layer_count,
             LAYERS_LEFT_OUT: len(publication.left_out),
             LAYERS_COPIED: len(publication.copied),
+            LAYERS_UNCHANGED: len(publication.unchanged),
         }
