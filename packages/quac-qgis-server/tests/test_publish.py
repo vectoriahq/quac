@@ -907,6 +907,13 @@ class AnExport(unittest.TestCase):
         self.assertEqual({key: parks['assets']['data'][key] for key in ('updated', 'processing:software', 'processing:lineage')}, {'updated': '2026-11-20T01:02:03Z', **made})
         self.assertIn(publish.PROCESSING_EXTENSION, parks['stac_extensions'])
 
+    def test_gives_a_copied_layer_its_feature_count(self) -> None:
+        publication = publish.plan_publication('Parks.qgz', qgz(parks_project()), {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, {}.get, posixpath, copies=every_copy(*PARKS_LAYERS), row_counts={'parks_1': 12, 'trails_3': 0})
+        parks, trails, kinds = (collection(publication, layer_id)[1] for layer_id in ('parks_1', 'trails_3', 'kinds_4'))
+        self.assertEqual((parks['table:row_count'], trails['table:row_count']), (12, 0))
+        self.assertNotIn('table:row_count', kinds)
+        self.assertIn('https://stac-extensions.github.io/table/v1.3.0/schema.json', trails['stac_extensions'])
+
     def test_names_the_layers_whose_copies_were_kept(self) -> None:
         publication = copy_plan(parks_project(), copies=every_copy(*PARKS_LAYERS), unchanged={'parks_1', 'kinds_4', 'trails_3'})
         self.assertEqual(publication.copied, ['Playgrounds'])

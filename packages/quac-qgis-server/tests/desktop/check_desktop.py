@@ -294,6 +294,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
         for name, copied_layer in (('Roads', roads), ('Benches', benches)):
             document_path, collection = next((path, document) for path, document in documents.items() if document.get('title') == name)
             check(collection['quac:editable'] is False, f'{how}: {name} is read-only')
+            check(collection.get('table:row_count') == {'Roads': 1, 'Benches': 3}[name], f'{how}: {name} gives its copy\'s feature count, its filter applied: {collection.get("table:row_count")}')
             made = collection['assets']['data']
             lineage = made.get('processing:lineage', '')
             check('QUAC plugin for QGIS' in made.get('processing:software', {}) and 'GDAL' in made['processing:software'] and (name != 'Roads' or ('filtered by `"keep" = 1`' in lineage and '`owner`' not in lineage)), f'{how}: {name}\'s data says how it was copied: {made.get("processing:software")}, {lineage}')
@@ -331,7 +332,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
         document_path, collection = next((path, document) for path, document in documents.items() if document.get('title') == 'Elevation')
         data = collection['assets']['data']
         file_ = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(data['href'])))
-        check(collection['quac:editable'] is False and 'pmtiles' not in collection['assets'], f'{how}: Elevation is read-only, with no PMTiles copy')
+        check(collection['quac:editable'] is False and 'pmtiles' not in collection['assets'] and 'table:row_count' not in collection, f'{how}: Elevation is read-only, with no PMTiles copy and no feature count')
         check(file_.name == f'{elevation.id()}.tif' and data['type'] == 'image/tiff; application=geotiff; profile=cloud-optimized', f'{how}: Elevation is copied as a COG: {file_.name}, {data["type"]}')
         check(file_.is_file() and data['file:size'] == file_.stat().st_size and data['file:checksum'] == '1220' + hashlib.sha256(file_.read_bytes()).hexdigest(), f'{how}: {file_.name} is in Roads.stac/data, with its size and checksum')
         check_cog(how, file_)
