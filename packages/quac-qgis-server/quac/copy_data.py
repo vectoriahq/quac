@@ -44,6 +44,7 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
+    QgsField,
     QgsRasterBlockFeedback,
     QgsRasterDataProvider,
     QgsRasterFileWriter,
@@ -54,7 +55,7 @@ from qgis.core import (
     QgsWkbTypes,
 )
 
-from qgis.PyQt.QtCore import QProcess
+from qgis.PyQt.QtCore import QMetaType, QProcess, QVariant
 
 from .publish import CopiedData, copy_layer_name, copy_path
 
@@ -136,7 +137,7 @@ def writable_formats() -> dict[str, CopyFormat]:
     formats[FLATGEOBUF] = CopyFormat(FLATGEOBUF, 'FlatGeobuf', 'fgb', ('SPATIAL_INDEX=YES',))
     formats[GEOPACKAGE] = CopyFormat(GEOPACKAGE, 'GPKG', 'gpkg', ())
     formats[GEOJSON] = CopyFormat(GEOJSON, 'GeoJSON', 'geojson', ('RFC7946=YES',))
-    # A table for spreadsheets: a byte order mark, so Excel reads it as UTF-8, and X and Y columns for a point layer alone (`_csv_geometry`).
+    # A table for spreadsheets: a byte order mark, so Excel reads it as UTF-8, no geometry, and X and Y columns last for a point layer (`_write_points_csv`).
     formats[CSV] = CopyFormat(CSV, 'CSV', 'csv', ('WRITE_BOM=YES',))
     if tippecanoe() is not None or _creation_options('PMTiles'):
         formats[PMTILES] = CopyFormat(PMTILES, 'PMTiles', 'pmtiles', ())
@@ -250,13 +251,41 @@ def _copy_one(source: LayerSource, target: str, format_: CopyFormat, context: Qg
     """Writes one layer's copy to a temporary file beside `target`, in WGS84, and returns its path, or None where `feedback` was cancelled during it."""
     layer = _open(source)
     temporary = _temporary_beside(target, format_.extension)
-    options = list(format_.layer_options) + (_csv_geometry(layer) if format_.id == CSV else [])
-    return _write(layer, source, temporary, format_.driver, options, [], 'EPSG:4326', context, feedback, copy_layer_name(source.layer_id))
+    if format_.id == CSV and is_point_layer(layer):
+        return _write_points_csv(layer, source, target, temporary, format_, context, feedback)
+    return _write(layer, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback, copy_layer_name(source.layer_id))
 
 
-def _csv_geometry(layer: QgsVectorLayer) -> list[str]:
-    """A CSV copy's geometry: a point layer's as `X` and `Y` columns, and none for any other layer, a multipoint one among them."""
-    return ['GEOMETRY=AS_XY'] if layer.isSpatial() and QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point' else []
+def is_point_layer(layer: QgsVectorLayer) -> bool:
+    """Whether a layer holds one point a feature, the one kind whose CSV copy gets coordinate columns; a multipoint layer does not."""
+    return layer.isSpatial() and QgsWkbTypes.displayString(QgsWkbTypes.flatType(layer.wkbType())) == 'Point'
+
+
+def coordinate_columns(field_names: list[str]) -> tuple[str, str]:
+    """The names of a point layer's CSV coordinate columns: `X` and `Y`, or `X_WGS84` and `Y_WGS84` where a field of the layer is named `X` or `Y` in any case."""
+    return ('X_WGS84', 'Y_WGS84') if {name.lower() for name in field_names} & {'x', 'y'} else ('X', 'Y')
+
+
+def _write_points_csv(layer: QgsVectorLayer, source: LayerSource, target: str, temporary: str, format_: CopyFormat, context: QgsCoordinateTransformContext, feedback: Any) -> Optional[str]:
+    """
+    Writes a point layer's CSV copy with its longitude and latitude as the
+    last two columns (`coordinate_columns`). The points are first written in
+    WGS84 to a temporary FlatGeobuf, as every copy's geometry is, and the
+    columns read from it, so they match the other copies.
+    """
+    points = _temporary_beside(target, 'fgb')
+    try:
+        if _write(layer, source, points, 'FlatGeobuf', [], [], 'EPSG:4326', context, feedback) is None:
+            return None
+        located = QgsVectorLayer(points, source.name, 'ogr')
+        if not located.isValid():
+            raise RuntimeError(f'QGIS could not read the points of {source.name} back')
+        x, y = coordinate_columns(located.fields().names())
+        located.addExpressionField('x($geometry)', QgsField(x, _DOUBLE))
+        located.addExpressionField('y($geometry)', QgsField(y, _DOUBLE))
+        return _write(located, source, temporary, format_.driver, list(format_.layer_options), [], 'EPSG:4326', context, feedback)
+    finally:
+        _remove(points)
 
 
 def _write(layer: QgsVectorLayer, source: LayerSource, temporary: str, driver: str, layer_options: list[str], dataset_options: list[str], crs: str, context: QgsCoordinateTransformContext, feedback: Any, layer_name: str = '') -> Optional[str]:
@@ -491,6 +520,9 @@ _NOT_RUNNING = QProcess.NotRunning if hasattr(QProcess, 'NotRunning') else QProc
 # `QgsRasterDataProvider.Size` and `QgsRasterFileWriter.NoError` in QGIS 3, and in the scoped `RasterInterfaceCapability` and `RasterFileWriterResult` in QGIS 4.
 _SIZE = QgsRasterDataProvider.Size if hasattr(QgsRasterDataProvider, 'Size') else Qgis.RasterInterfaceCapability.Size
 _RASTER_NO_ERROR = QgsRasterFileWriter.NoError if hasattr(QgsRasterFileWriter, 'NoError') else Qgis.RasterFileWriterResult.Success
+
+# A field of decimal numbers: `QgsField` takes a `QMetaType.Type` from QGIS 3.38 and a `QVariant.Type` before it.
+_DOUBLE = QMetaType.Type.Double if Qgis.QGIS_VERSION_INT >= 33800 else QVariant.Double
 
 # `QgsVectorFileWriter.NoError` in QGIS 3, and in the scoped `WriterError` in QGIS 4.
 _NO_ERROR = QgsVectorFileWriter.NoError if hasattr(QgsVectorFileWriter, 'NoError') else QgsVectorFileWriter.WriterError.NoError

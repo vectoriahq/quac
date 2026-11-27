@@ -247,7 +247,7 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
 
     from osgeo import ogr
 
-    from quac.copy_data import _csv_geometry, writable_formats
+    from quac.copy_data import coordinate_columns, is_point_layer, writable_formats
     from quac.publish import copy_layer_name
 
     writable = writable_formats()
@@ -257,7 +257,8 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
         {'id': 2, 'name': 'Old track', 'keep': 0, 'owner': 'Example Trust'},
     ]))
     publish = home / 'publish'
-    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench'}]))
+    # Benches has an easting of its own named `x`, so its CSV's coordinate columns are X_WGS84 and Y_WGS84.
+    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench', 'x': 391234.5}]))
     project = QgsProject.instance()
     project.clear()
     roads = layer(project, roads_file, 'Roads', project.layerTreeRoot())
@@ -277,10 +278,11 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(not (publish / 'Roads.stac.json').exists(), 'a save of a project set to export writes nothing')
     extensions = [extension for format_id, extension in (('geoparquet', 'parquet'), ('flatgeobuf', 'fgb'), ('geopackage', 'gpkg'), ('geojson', 'geojson')) if format_id in writable]
     check(
-        _csv_geometry(QgsVectorLayer('Point?crs=EPSG:4326', 'p', 'memory')) == ['GEOMETRY=AS_XY']
-        and all(_csv_geometry(QgsVectorLayer(kind, 'other', 'memory')) == [] for kind in ('MultiPoint?crs=EPSG:4326', 'LineString?crs=EPSG:4326', 'Polygon?crs=EPSG:4326', 'None')),
-        'a CSV copy writes a point layer as X and Y columns, and no geometry for any other layer',
+        is_point_layer(QgsVectorLayer('PointZ?crs=EPSG:4326', 'p', 'memory'))
+        and not any(is_point_layer(QgsVectorLayer(kind, 'other', 'memory')) for kind in ('MultiPoint?crs=EPSG:4326', 'LineString?crs=EPSG:4326', 'Polygon?crs=EPSG:4326', 'None')),
+        'a CSV copy gives a point layer coordinate columns, and no other layer',
     )
+    check(coordinate_columns(['id', 'name']) == ('X', 'Y') and coordinate_columns(['id', 'x']) == ('X_WGS84', 'Y_WGS84') and coordinate_columns(['Y']) == ('X_WGS84', 'Y_WGS84'), 'the coordinate columns are X and Y, or X_WGS84 and Y_WGS84 where the layer has a field named X or Y')
 
     def check_copies(how: str) -> None:
         root = json.loads((publish / 'Roads.stac.json').read_text(encoding='utf-8'))
@@ -311,8 +313,11 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
             table = collection['assets'].get('csv', {})
             table_file = publish / posixpath.normpath(posixpath.join(posixpath.dirname(document_path), unquote(table.get('href', 'missing'))))
             check(table.get('roles') == ['table'] and table.get('type') == 'text/csv' and table_file.is_file() and table['file:checksum'] == '1220' + hashlib.sha256(table_file.read_bytes()).hexdigest(), f'{how}: {name} has a CSV copy, a table asset with its checksum')
-            header = table_file.read_bytes().split(b'\n', 1)[0]
-            check(header.startswith(b'\xef\xbb\xbfX,Y,'), f'{how}: the CSV starts with a byte order mark and the X and Y columns: {header!r}')
+            lines = table_file.read_bytes().strip().split(b'\n')
+            header = lines[0]
+            columns = b',X_WGS84,Y_WGS84' if name == 'Benches' else b',X,Y'
+            check(header.startswith(b'\xef\xbb\xbfid,name') and header.endswith(columns), f'{how}: the CSV starts with a byte order mark and ends with the coordinate columns: {header!r}')
+            check(lines[1].endswith(b',115.85,-31.95'), f'{how}: the coordinate columns hold the point in WGS84: {lines[1]!r}')
             if name == 'Roads':
                 check(b'owner' not in header and len(table_file.read_bytes().strip().split(b'\n')) == 2, f'{how}: the CSV holds the filtered road, without the excluded field')
                 check('owner' not in [column['name'] for column in collection.get('table:columns', [])], f'{how}: the catalogue leaves the excluded field out')
