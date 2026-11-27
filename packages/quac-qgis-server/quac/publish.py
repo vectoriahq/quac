@@ -71,7 +71,7 @@ from typing import Any, Callable, Optional
 from urllib.parse import unquote
 from xml.etree.ElementTree import ParseError, canonicalize  # nosec B405
 
-from .quac_server.generate.normalized_project import build_stac_extent
+from .quac_server.generate.normalized_project import TABLE_EXTENSION, build_stac_extent
 from .quac_server.js_compat import url_search_params
 from .quac_server.generate.server_stac_catalogue import _SOURCE_FIELDS, _hidden_fields_of, _mentions_any, primary_key_of, server_wms_endpoint, with_field_type
 from .quac_server.generate.split_catalogue import _safe_name, split_catalogue
@@ -79,7 +79,7 @@ from .quac_server.generate.stac_catalogue import QUAC_CATEGORISED_FIELD, generat
 from .quac_server.model.qgs_project import BoundingBox, LayerEntry, MapExtent
 from .quac_server.model.quac_extension import QUAC_SCHEMA_URL, declare_quac_extension
 from .quac_server.model.stac_href import encode_asset_path
-from .quac_server.model.stac_size_and_count import FILE_EXTENSION, FILE_SIZE_FIELD
+from .quac_server.model.stac_size_and_count import FILE_EXTENSION, FILE_SIZE_FIELD, TABLE_ROW_COUNT_FIELD
 from .quac_server.model.stac_styles import DEFAULT_STYLE_ROLE, style_asset_key
 from .quac_server.model.stac_wms import WEB_MAP_LINKS_EXTENSION
 from .quac_server.parse.geometry_siblings import find_geometry_siblings, sibling_collection_id
@@ -351,6 +351,7 @@ def plan_publication(
     copies: Optional[dict[str, list[CopiedData]]] = None,
     copy_failures: Optional[set[str]] = None,
     unchanged: Optional[set[str]] = None,
+    row_counts: Optional[dict[str, int]] = None,
 ) -> Publication:
     """
     What to write into `folder`, the chosen folder, for a saved project.
@@ -375,7 +376,9 @@ def plan_publication(
     `to_copy`; one with no copy is left out, for its copy failing where its
     id is in `copy_failures`. A copied layer is read-only, and the fields
     QGIS Server excludes are left out of it, with whatever uses them. A layer
-    in `unchanged` is named among the layers whose copies were kept.
+    in `unchanged` is named among the layers whose copies were kept. A copied
+    layer in `row_counts` gives that count as the Table extension's
+    `table:row_count`: how many features its copy holds.
 
     Where the chosen folder already holds a root document of that name that is
     not a QUAC Catalog, nothing is written and `refusal` says why.
@@ -421,6 +424,8 @@ def plan_publication(
                 reason = COPY_FAILED if copy_failures and collection['id'] in copy_failures else NOT_COPIED
             else:
                 _place_copy(collection, copied)
+                if row_counts and collection['id'] in row_counts:
+                    _place_row_count(collection, row_counts[collection['id']])
                 copied_hidden[collection['id']] = _hidden_fields_of(layer)
                 copy_paths.update(copy.path.lower() for copy in copied)
                 (publication.unchanged if unchanged and collection['id'] in unchanged else publication.copied).append(titles[collection['id']])
@@ -836,6 +841,14 @@ def _place_copy(collection: dict[str, Any], copied: list[CopiedData]) -> None:
     for extension in wanted:
         if extension not in extensions:
             extensions.append(extension)
+
+
+def _place_row_count(collection: dict[str, Any], count: int) -> None:
+    """Gives a copied Collection how many features its copy holds, as `table:row_count`, with the Table extension listed."""
+    collection[TABLE_ROW_COUNT_FIELD] = count
+    extensions = collection.setdefault('stac_extensions', [])
+    if TABLE_EXTENSION not in extensions:
+        extensions.append(TABLE_EXTENSION)
 
 
 def _format_id(file_path: str) -> str:

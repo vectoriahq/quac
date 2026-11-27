@@ -164,22 +164,23 @@ def export_styles(project: Any, styles_folder: str) -> dict[str, LayerStyle]:
     return styles
 
 
-def write_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None) -> tuple[str, Publication]:
+def write_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None, row_counts: Optional[dict[str, int]] = None) -> tuple[str, Publication]:
     """
     Writes the catalogue of `project`, saved as a file, from its saved file and
     what QGIS gives for its layers, into `folder`, or where its settings say
     where `folder` is None. Returns the folder and what was written, or why
     nothing was. `copies` holds the copies an export just made, by layer id,
     and makes this an export; None links each layer's data where it is.
-    `unchanged` holds the layers whose earlier copies the export kept.
+    `unchanged` holds the layers whose earlier copies the export kept, and
+    `row_counts` each copied vector layer's feature count.
     """
-    folder, publication = plan_catalogue(project, folder, copies, copy_failures, unchanged)
+    folder, publication = plan_catalogue(project, folder, copies, copy_failures, unchanged, row_counts)
     if publication.refusal is None:
         write_publication(folder, publication)
     return folder, publication
 
 
-def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None) -> tuple[str, Publication]:
+def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None, row_counts: Optional[dict[str, int]] = None) -> tuple[str, Publication]:
     """What `write_catalogue` writes, and into which folder, without writing it."""
     _write_on_save, setting = read_settings(project)
     home = os.path.realpath(project_folder(project))
@@ -203,6 +204,7 @@ def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[
         copies=copies,
         copy_failures=copy_failures,
         unchanged=unchanged,
+        row_counts=row_counts,
     )
     return folder, publication
 
@@ -214,8 +216,9 @@ class ExportJob:
     saved: the folder, the documents' folder, each layer to copy, the
     formats, whether GeoParquet was ticked and cannot be written, the
     project's datum transformations, the earlier copies kept, by layer id,
-    of each layer whose data has not changed (`unchanged_copies`), and the
-    raster layers among them all.
+    of each layer whose data has not changed (`unchanged_copies`), the
+    raster layers among them all, and each vector layer's feature count, its
+    filter applied, where QGIS gives one.
     """
 
     folder: str
@@ -226,6 +229,7 @@ class ExportJob:
     transform_context: Any = None
     kept: dict[str, list[CopiedData]] = field(default_factory=dict)
     rasters: set[str] = field(default_factory=set)
+    row_counts: dict[str, int] = field(default_factory=dict)
 
 
 def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
@@ -249,6 +253,10 @@ def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
         raster = isinstance(layer, QgsRasterLayer)
         if raster:
             job.rasters.add(request.layer_id)
+        else:
+            count = layer.featureCount()
+            if count >= 0:
+                job.row_counts[request.layer_id] = count
         last_edit = source_last_edit(layer)
         processing = copy_processing(layer, request.hidden_fields)
         earlier = previous.get(request.layer_id, {})
@@ -273,7 +281,7 @@ def finish_export(project: Any, job: ExportJob, copies: Copies) -> Publication:
         layer = project.mapLayer(layer_id)
         QgsMessageLog.logMessage(f'{project.baseName()}: the data of {layer.name() if layer is not None else layer_id} could not be copied: {reason}', LOG_TAG, _level('Warning'))
     placed = {**job.kept, **place_copies(copies, job.folder)}
-    publication = write_catalogue(project, job.folder, copies=placed, copy_failures=set(copies.failed), unchanged=set(job.kept) | copies.unchanged)[1]
+    publication = write_catalogue(project, job.folder, copies=placed, copy_failures=set(copies.failed), unchanged=set(job.kept) | copies.unchanged, row_counts=job.row_counts)[1]
     publication.geoparquet_fallback = job.geoparquet_fallback and any(layer_id not in job.rasters for layer_id in placed)
     return publication
 
