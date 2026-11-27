@@ -733,8 +733,8 @@ class AnEarlierCatalogue(unittest.TestCase):
         self.assertEqual(publication.removals, [])
 
 
-def copy_plan(project: bytes, *, copies: Optional[dict[str, Any]] = None, existing: Optional[dict[str, bytes]] = None, opened: Optional[set[str]] = None, failures: Optional[set[str]] = None):
-    return publish.plan_publication('Parks.qgz', qgz(project), {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, (existing or {}).get, posixpath, opened_layer_ids=opened, copies=copies, copy_failures=failures)
+def copy_plan(project: bytes, *, copies: Optional[dict[str, Any]] = None, existing: Optional[dict[str, bytes]] = None, opened: Optional[set[str]] = None, failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None):
+    return publish.plan_publication('Parks.qgz', qgz(project), {}, {}, PROJECT_FOLDER, PUBLISH_FOLDER, {}, (existing or {}).get, posixpath, opened_layer_ids=opened, copies=copies, copy_failures=failures, unchanged=unchanged)
 
 
 def parquet(layer_id: str, size: int = 4096) -> Any:
@@ -900,6 +900,19 @@ class AnExport(unittest.TestCase):
         self.assertIn('The relation Sales of Sales was left out, because it uses a field QGIS Server excludes, which the copy leaves out.', publication.warnings())
         self.assertNotIn('example-secret', json.dumps(documents(publication)))
 
+    def test_records_how_each_copy_was_made(self) -> None:
+        made = {'processing:software': {'QUAC plugin for QGIS': '0.6.0', 'QGIS': '3.44.3', 'GDAL': '3.13.3'}, 'processing:lineage': 'Copied.'}
+        copies = {layer_id: [publish.CopiedData(f'Parks.stac/data/{layer_id}.parquet', 4096, '1220' + 'ab' * 32, '2026-11-20T01:02:03Z', made)] for layer_id in PARKS_LAYERS}
+        parks = collection(copy_plan(parks_project(), copies=copies), 'parks_1')[1]
+        self.assertEqual({key: parks['assets']['data'][key] for key in ('updated', 'processing:software', 'processing:lineage')}, {'updated': '2026-11-20T01:02:03Z', **made})
+        self.assertIn(publish.PROCESSING_EXTENSION, parks['stac_extensions'])
+
+    def test_names_the_layers_whose_copies_were_kept(self) -> None:
+        publication = copy_plan(parks_project(), copies=every_copy(*PARKS_LAYERS), unchanged={'parks_1', 'kinds_4', 'trails_3'})
+        self.assertEqual(publication.copied, ['Playgrounds'])
+        self.assertEqual(sorted(publication.unchanged), ['Kinds', 'Parks', 'Trails'])
+        self.assertEqual(publish.message(publication), ('info', 'Exported the STAC catalogue Parks.stac.json. Copied the data of one layer. 3 layers were unchanged and kept as they were.'))
+
     def test_writes_each_copy_under_the_documents_folder_by_layer_id(self) -> None:
         self.assertEqual(publish.copy_path('Parks.stac', 'trails_3', 'parquet'), 'Parks.stac/data/trails_3.parquet')
         self.assertEqual(publish.copy_path('Parks.stac', 'a:b', 'fgb'), 'Parks.stac/data/a_b.fgb')
@@ -995,3 +1008,57 @@ class NoPathOrPasswordIsWritten(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+MADE = {'processing:software': {'QUAC plugin for QGIS': '0.6.0', 'QGIS': '3.44.3', 'GDAL': '3.13.3'}, 'processing:lineage': 'Copied with the fields `id`, `name`.'}
+EDITED = '2026-11-20T01:02:03Z'
+
+
+class KeepingUnchangedCopies(unittest.TestCase):
+    """`previous_copies` and `unchanged_copies`: which earlier copies an export keeps as they are."""
+
+    def exported(self) -> tuple[dict[str, Any], dict[str, int]]:
+        copies = {layer_id: [
+            publish.CopiedData(f'Parks.stac/data/{layer_id}.parquet', 4096, '1220' + 'ab' * 32, EDITED, MADE),
+            publish.CopiedData(f'Parks.stac/data/{layer_id}.pmtiles', 1024, '1220' + 'cd' * 32, EDITED, MADE),
+        ] for layer_id in PARKS_LAYERS}
+        files = dict(copy_plan(parks_project(), copies=copies).files)
+        previous = publish.previous_copies('Parks.stac.json', 'Parks.stac', files.get)
+        return previous, {path: 4096 if path.endswith('.parquet') else 1024 for copies_ in previous.values() for path in copies_}
+
+    def test_reads_each_layers_copies_from_the_catalogue_in_the_folder(self) -> None:
+        previous, _sizes = self.exported()
+        self.assertEqual(sorted(previous), sorted(PARKS_LAYERS))
+        self.assertEqual(sorted(previous['parks_1']), ['Parks.stac/data/parks_1.parquet', 'Parks.stac/data/parks_1.pmtiles'])
+        self.assertEqual(previous['parks_1']['Parks.stac/data/parks_1.parquet']['updated'], EDITED)
+
+    def test_reads_nothing_where_the_folder_holds_no_quac_catalogue(self) -> None:
+        self.assertEqual(publish.previous_copies('Parks.stac.json', 'Parks.stac', {}.get), {})
+        self.assertEqual(publish.previous_copies('Parks.stac.json', 'Parks.stac', {'Parks.stac.json': b'{"type": "Catalog"}'}.get), {})
+
+    def test_keeps_the_copies_of_a_layer_whose_data_has_not_changed(self) -> None:
+        previous, sizes = self.exported()
+        expected = ['Parks.stac/data/parks_1.parquet', 'Parks.stac/data/parks_1.pmtiles']
+        kept = publish.unchanged_copies(previous['parks_1'], expected, EDITED, MADE, sizes.get)
+        self.assertEqual(kept, [
+            publish.CopiedData('Parks.stac/data/parks_1.parquet', 4096, '1220' + 'ab' * 32, EDITED, MADE),
+            publish.CopiedData('Parks.stac/data/parks_1.pmtiles', 1024, '1220' + 'cd' * 32, EDITED, MADE),
+        ])
+
+    def test_copies_again_where_anything_that_makes_the_copy_has_changed(self) -> None:
+        previous, sizes = self.exported()
+        earlier = previous['parks_1']
+        expected = ['Parks.stac/data/parks_1.parquet', 'Parks.stac/data/parks_1.pmtiles']
+        cases = {
+            'the last change is not known': (expected, None, MADE, sizes.get),
+            'the data changed since': (expected, '2026-11-21T00:00:00Z', MADE, sizes.get),
+            'another format is ticked': ([*expected, 'Parks.stac/data/parks_1.fgb'], EDITED, MADE, sizes.get),
+            'a format is no longer ticked': (expected[:1], EDITED, MADE, sizes.get),
+            'another version of the plugin': (expected, EDITED, {**MADE, 'processing:software': {**MADE['processing:software'], 'QUAC plugin for QGIS': '0.7.0'}}, sizes.get),
+            'another filter or other fields': (expected, EDITED, {**MADE, 'processing:lineage': 'Copied with the fields `id`.'}, sizes.get),
+            'a copy is missing': (expected, EDITED, MADE, lambda path: None if path.endswith('.pmtiles') else sizes.get(path)),
+            'a copy is another size': (expected, EDITED, MADE, lambda path: 1 if path.endswith('.pmtiles') else sizes.get(path)),
+        }
+        for case, (paths, last_edit, processing, size_of) in cases.items():
+            with self.subTest(case):
+                self.assertIsNone(publish.unchanged_copies(earlier, paths, last_edit, processing, size_of))

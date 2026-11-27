@@ -23,6 +23,17 @@ catalogue records of it.
 - Each copy is written to a temporary file beside where it goes, and moved
   into place only once every copy is made (`place_copies`), so a cancelled
   export changes nothing.
+- A copy the same as the one already in place is not moved: the earlier
+  file is kept as it is, so a sync sees nothing to upload. A copy is the
+  same where its checksum is the earlier copy's, or, for FlatGeobuf and
+  GeoPackage, whose headers hold the coordinate system as GDAL writes it on
+  that thread and, for GeoPackage, the time of writing, where it holds the
+  same layer, coordinate system, fields and features (`_same_data`). So
+  that an unchanged layer gives an identical file, GDAL's PMTiles is named
+  by the layer id and tippecanoe runs on fixed file names in a folder of its
+  own, as both write a name into the file. A GeoPackage copy's
+  `last_change` is the source's last change where known
+  (`source_last_edit`).
 
 `copy_layers` makes no use of a project, so it can run in a `QgsTask` off the
 main thread: it opens each layer afresh from its source.
@@ -30,10 +41,13 @@ main thread: it opens each layer afresh from its source.
 
 from __future__ import annotations
 
+import configparser
 import hashlib
 import math
 import os
 import shutil
+import sqlite3
+import tempfile
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Optional
@@ -45,6 +59,8 @@ from qgis.core import (
     QgsCoordinateTransform,
     QgsCoordinateTransformContext,
     QgsField,
+    QgsFields,
+    QgsProviderRegistry,
     QgsRasterBlockFeedback,
     QgsRasterDataProvider,
     QgsRasterFileWriter,
@@ -57,7 +73,7 @@ from qgis.core import (
 
 from qgis.PyQt.QtCore import QMetaType, QProcess, QVariant
 
-from .publish import CopiedData, copy_layer_name, copy_path
+from .publish import CopiedData, copy_layer_name, copy_path, read_data_file
 
 
 # The formats a copy can be written in, by id, in the order a layer's copies are listed: the first ticked is the layer's data.
@@ -89,7 +105,13 @@ class CopyFormat:
 
 @dataclass(frozen=True)
 class LayerSource:
-    """What opens a layer again: its id, name, source and provider as QGIS gives them, and the fields its copy leaves out."""
+    """
+    What opens a layer again: its id, name, source and provider as QGIS gives
+    them, and the fields its copy leaves out; whether it is a raster layer;
+    when its source's data last changed, where known (`source_last_edit`);
+    the checksum of each earlier copy, by its path from the chosen folder; and
+    how its copies are made (`copy_processing`).
+    """
 
     layer_id: str
     name: str
@@ -97,13 +119,22 @@ class LayerSource:
     provider: str
     hidden_fields: frozenset[str] = frozenset()
     raster: bool = False
+    last_edit: Optional[str] = None
+    previous: dict[str, str] = field(default_factory=dict)
+    processing: Optional[dict[str, Any]] = None
 
 
 @dataclass
 class Copies:
-    """What `copy_layers` made: each layer's copies by layer id, each with its temporary file, and each failure with why."""
+    """
+    What `copy_layers` made: each layer's copies by layer id, each with its
+    temporary file, or an empty path where the earlier file is identical and
+    kept; the layers all of whose copies were identical; and each failure with
+    why.
+    """
 
     made: dict[str, list[tuple[str, CopiedData]]] = field(default_factory=dict)
+    unchanged: set[str] = field(default_factory=set)
     failed: dict[str, str] = field(default_factory=dict)
     cancelled: bool = False
 
@@ -190,9 +221,9 @@ def copy_layers(
 ) -> Copies:
     """
     Copies each vector layer in each format, and each raster layer as a COG,
-    to a temporary file beside where its copy goes under `folder`. Stops
-    between copies where `feedback` is cancelled, and removes what it made
-    then.
+    to a temporary file beside where its copy goes under `folder`, and keeps
+    the earlier file where the copy is identical to it. Stops between copies
+    where `feedback` is cancelled, and removes what it made then.
     """
     copies = Copies()
     context = transform_context or QgsCoordinateTransformContext()
@@ -219,7 +250,15 @@ def copy_layers(
                 break
             if temporary == '':
                 continue
-            made.append((temporary, CopiedData(relative, os.path.getsize(temporary), checksum(temporary))))
+            if format_.id == GEOPACKAGE and source.last_edit is not None:
+                _stamp_geopackage(temporary, source.last_edit)
+            digest = checksum(temporary)
+            earlier = source.previous.get(relative)
+            if earlier is not None and os.path.isfile(target) and (earlier == digest or (format_.id in (FLATGEOBUF, GEOPACKAGE) and _same_data(target, temporary))):
+                _remove(temporary)
+                made.append(('', CopiedData(relative, os.path.getsize(target), earlier, source.last_edit, source.processing)))
+                continue
+            made.append((temporary, CopiedData(relative, os.path.getsize(temporary), digest, source.last_edit, source.processing)))
         if source.layer_id in copies.failed or copies.cancelled:
             for temporary, _copied in made:
                 _remove(temporary)
@@ -227,6 +266,8 @@ def copy_layers(
                 break
             continue
         copies.made[source.layer_id] = made
+        if made and all(temporary == '' for temporary, _copied in made):
+            copies.unchanged.add(source.layer_id)
         if feedback is not None:
             feedback.setProgress(100 * (index + 1) / len(sources))
     if copies.cancelled:
@@ -391,17 +432,21 @@ def _write_pmtiles(source: LayerSource, target: str, context: QgsCoordinateTrans
     program = tippecanoe()
     if program is None:
         smallest, largest = fitting_zooms(_feature_boxes(layer, source, context))
-        return _write(layer, source, temporary, 'PMTiles', [], [f'MINZOOM={smallest}', f'MAXZOOM={largest}'], 'EPSG:3857', context, feedback, name)
-    features = _temporary_beside(target, 'fgb')
+        return _write(layer, source, temporary, 'PMTiles', [], [f'MINZOOM={smallest}', f'MAXZOOM={largest}', f'NAME={name}'], 'EPSG:3857', context, feedback, name)
+    # tippecanoe writes its command line into the file, so it runs on the same file names each time, in a folder of its own.
+    work = tempfile.mkdtemp(prefix='.quac-', dir=os.path.dirname(temporary))
+    features = os.path.join(work, 'features.fgb')
+    tiles = os.path.join(work, 'tiles.pmtiles')
     try:
         if _write(layer, source, features, 'FlatGeobuf', [], [], 'EPSG:4326', context, feedback) is None:
             return None
         arguments = [
-            '--quiet', '--force', f'--output={temporary}', f'--layer={name}',
+            '--quiet', '--force', '--output=tiles.pmtiles', f'--layer={name}',
             '--minimum-zoom=0', '-zg', f'--smallest-maximum-zoom-guess={_PRECISE_ZOOM}',
-            '--drop-densest-as-needed', '--extend-zooms-if-still-dropping', features,
+            '--drop-densest-as-needed', '--extend-zooms-if-still-dropping', 'features.fgb',
         ]
         process = QProcess()
+        process.setWorkingDirectory(work)
         process.start(program, arguments)
         if not process.waitForStarted(30_000):
             raise RuntimeError(f'tippecanoe could not be started: {process.errorString()}')
@@ -411,15 +456,14 @@ def _write_pmtiles(source: LayerSource, target: str, context: QgsCoordinateTrans
             if feedback is not None and feedback.isCanceled():
                 process.kill()
                 process.waitForFinished(30_000)
-                _remove(temporary)
                 return None
         errors = bytes(process.readAllStandardError()).decode('utf-8', 'replace').strip()
-        if process.exitCode() != 0 or not os.path.isfile(temporary):
-            _remove(temporary)
+        if process.exitCode() != 0 or not os.path.isfile(tiles):
             raise RuntimeError(f'tippecanoe could not write {source.name}: {errors or process.errorString()}')
+        os.replace(tiles, temporary)
         return temporary
     finally:
-        _remove(features)
+        shutil.rmtree(work, ignore_errors=True)
 
 
 _COG_FORMAT = CopyFormat(COG, 'COG', COG_EXTENSION, ())
@@ -498,11 +542,12 @@ def _write_cog(source: LayerSource, target: str, feedback: Any) -> Optional[str]
 
 
 def place_copies(copies: Copies, folder: str) -> dict[str, list[CopiedData]]:
-    """Moves each copy from its temporary file into place, over the earlier copy, and returns the copies by layer id."""
+    """Moves each copy from its temporary file into place, over the earlier copy, leaving an identical earlier copy as it is, and returns the copies by layer id."""
     placed: dict[str, list[CopiedData]] = {}
     for layer_id, made in copies.made.items():
         for temporary, copied in made:
-            os.replace(temporary, os.path.join(folder, *copied.path.split('/')))
+            if temporary:
+                os.replace(temporary, os.path.join(folder, *copied.path.split('/')))
         placed[layer_id] = [copied for _temporary, copied in made]
     return placed
 
@@ -511,7 +556,8 @@ def discard(copies: Copies) -> None:
     """Removes every temporary file the copies were written to."""
     for made in copies.made.values():
         for temporary, _copied in made:
-            _remove(temporary)
+            if temporary:
+                _remove(temporary)
     copies.made.clear()
 
 
@@ -527,6 +573,144 @@ _DOUBLE = QMetaType.Type.Double if Qgis.QGIS_VERSION_INT >= 33800 else QVariant.
 
 # `QgsVectorFileWriter.NoError` in QGIS 3, and in the scoped `WriterError` in QGIS 4.
 _NO_ERROR = QgsVectorFileWriter.NoError if hasattr(QgsVectorFileWriter, 'NoError') else QgsVectorFileWriter.WriterError.NoError
+
+
+# The parts of a shapefile whose change changes the layer.
+_SHAPEFILE_PARTS = ('.shp', '.shx', '.dbf', '.prj', '.cpg')
+
+
+def source_last_edit(layer: Any) -> Optional[str]:
+    """
+    When a layer's source data last changed, as an RFC 3339 time in UTC, or
+    None where it cannot be told, such as for a database table or a web
+    service. A GeoPackage table gives its `last_change` in `gpkg_contents`,
+    which GDAL updates when the table is edited; a shapefile, the latest
+    change to its parts; any other file read through GDAL or as delimited
+    text, the file's last change.
+    """
+    provider = layer.providerType()
+    if provider not in ('ogr', 'gdal', 'delimitedtext'):
+        return None
+    path = QgsProviderRegistry.instance().decodeUri(provider, layer.source()).get('path') or ''
+    if not os.path.isfile(path):
+        return None
+    if provider == 'ogr' and path.lower().endswith('.gpkg'):
+        table = QgsProviderRegistry.instance().decodeUri(provider, layer.source()).get('layerName')
+        changed = _last_change(path, table)
+        if changed is not None:
+            return changed
+    stem, extension = os.path.splitext(path)
+    files = [stem + part for part in _SHAPEFILE_PARTS] if extension.lower() == '.shp' else [path]
+    times = [facts.updated for facts in map(read_data_file, files) if facts is not None]
+    return max(times) if times else None
+
+
+def _last_change(path: str, table: Optional[str]) -> Optional[str]:
+    """A GeoPackage table's `last_change`, or its one table's where `table` is None; None where the file is not a GeoPackage that gives it."""
+    if not os.path.isfile(path):
+        return None
+    try:
+        connection = sqlite3.connect(f'file:{path}?mode=ro', uri=True)
+        try:
+            rows = connection.execute('SELECT table_name, last_change FROM gpkg_contents').fetchall()
+        finally:
+            connection.close()
+    except sqlite3.Error:
+        return None
+    values = [changed for name, changed in rows if table is None or name == table]
+    return values[0] if len(values) == 1 and isinstance(values[0], str) else None
+
+
+def _same_data(earlier: str, made: str) -> bool:
+    """
+    Whether two vector files hold the same data: the same layers, by name,
+    each with the same geometry type, an equivalent coordinate system, the
+    same fields, and the same features in the same order, each with the same
+    geometry and values.
+    """
+    from osgeo import ogr
+
+    first = ogr.Open(earlier)
+    second = ogr.Open(made)
+    try:
+        if first is None or second is None or first.GetLayerCount() != second.GetLayerCount():
+            return False
+        for index in range(first.GetLayerCount()):
+            one, other = first.GetLayer(index), second.GetLayer(index)
+            if one.GetName() != other.GetName() or one.GetGeomType() != other.GetGeomType() or not _same_system(one.GetSpatialRef(), other.GetSpatialRef()):
+                return False
+            if _schema(one) != _schema(other) or one.GetFeatureCount() != other.GetFeatureCount():
+                return False
+            one.ResetReading()
+            other.ResetReading()
+            for feature, twin in zip(one, other):
+                if _feature_data(feature) != _feature_data(twin):
+                    return False
+        return True
+    finally:
+        first = second = None
+
+
+def _same_system(one: Any, other: Any) -> bool:
+    if one is None or other is None:
+        return one is None and other is None
+    return bool(one.IsSame(other)) or (one.GetAuthorityName(None), one.GetAuthorityCode(None)) == (other.GetAuthorityName(None), other.GetAuthorityCode(None)) != (None, None)
+
+
+def _schema(layer: Any) -> list[tuple[str, int, int, int]]:
+    definition = layer.GetLayerDefn()
+    return [(field_.GetName(), field_.GetType(), field_.GetSubType(), field_.GetWidth()) for field_ in (definition.GetFieldDefn(index) for index in range(definition.GetFieldCount()))]
+
+
+def _feature_data(feature: Any) -> tuple[Any, ...]:
+    geometry = feature.GetGeometryRef()
+    return (bytes(geometry.ExportToIsoWkb()) if geometry is not None else None, *(feature.GetField(index) for index in range(feature.GetFieldCount())))
+
+
+def _stamp_geopackage(path: str, when: str) -> None:
+    """Sets the `last_change` of each table in a GeoPackage copy, in the GeoPackage's form, with milliseconds."""
+    if when.endswith('Z') and '.' not in when:
+        when = f'{when[:-1]}.000Z'
+    connection = sqlite3.connect(path)
+    try:
+        with connection:
+            connection.execute('UPDATE gpkg_contents SET last_change = ?', (when,))
+    finally:
+        connection.close()
+
+
+def copy_processing(layer: Any, hidden_fields: frozenset[str]) -> dict[str, Any]:
+    """
+    The Processing extension's fields for a layer's copies: the software that
+    made them, the plugin's, QGIS's and GDAL's versions, as
+    `processing:software`, and how, as `processing:lineage`: for a vector
+    layer, the fields copied and the layer's filter. An export keeps a
+    layer's copies only where these are unchanged.
+    """
+    from osgeo import gdal
+
+    software = {'QUAC plugin for QGIS': plugin_version(), 'QGIS': Qgis.version().split('-')[0], 'GDAL': gdal.__version__}
+    if isinstance(layer, QgsRasterLayer):
+        lineage = "Copied from the layer's data by the QUAC plugin for QGIS, as a cloud-optimised GeoTIFF."
+    else:
+        fields = layer.fields()
+        names = [fields.at(index).name() for index in range(fields.count()) if fields.fieldOrigin(index) == _PROVIDER_ORIGIN and fields.at(index).name() not in hidden_fields]
+        lineage = f"Copied from the layer's data by the QUAC plugin for QGIS, with the fields {', '.join(f'`{name}`' for name in names)}"
+        if layer.subsetString():
+            lineage += f', filtered by `{layer.subsetString()}`'
+        lineage += '.'
+    return {'processing:software': software, 'processing:lineage': lineage}
+
+
+def plugin_version() -> str:
+    """The plugin's version, from its `metadata.txt`."""
+    metadata = configparser.ConfigParser(interpolation=None)
+    metadata.read(os.path.join(os.path.dirname(__file__), 'metadata.txt'), encoding='utf-8')
+    return metadata.get('general', 'version', fallback='unknown')
+
+
+# A field read from the layer's data rather than added by the project: `QgsFields.OriginProvider` in QGIS 3, and in the scoped `Qgis.FieldOrigin` from 3.38.
+_PROVIDER_ORIGIN = QgsFields.OriginProvider if hasattr(QgsFields, 'OriginProvider') else Qgis.FieldOrigin.Provider
 
 
 def _remove(file_path: str) -> None:

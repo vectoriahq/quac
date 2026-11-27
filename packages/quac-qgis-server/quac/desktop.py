@@ -45,6 +45,7 @@ from __future__ import annotations
 import os
 import tempfile
 import traceback
+from datetime import datetime
 from contextlib import contextmanager
 from typing import Any, Iterator, Optional
 
@@ -61,24 +62,29 @@ try:
 except ImportError:
     from qgis.PyQt.QtWidgets import QAction  # Qt 5, QGIS 3
 
-from .copy_data import CSV, FLATGEOBUF, FORMAT_IDS, GEOJSON, GEOPACKAGE, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, default_formats, discard, place_copies, writable_formats
+from .copy_data import COG_EXTENSION, CSV, FLATGEOBUF, FORMAT_IDS, GEOJSON, GEOPACKAGE, GEOPARQUET, PMTILES, Copies, CopyFormat, LayerSource, copy_formats, copy_layers, copy_processing, default_formats, discard, place_copies, source_last_edit, writable_formats
 from .publish import (
     EXPORT,
     FOLDER_KEY,
     FORMATS_KEY,
     LINK,
+    COPIES_FOLDER,
     MODE_KEY,
     SETTINGS_SCOPE,
     WRITE_ON_SAVE_KEY,
+    CopiedData,
     LayerStyle,
     Publication,
     catalogue_names,
     chosen_folder,
+    copy_path,
     emptied_folders,
     folder_setting,
     message,
     plan_publication,
+    previous_copies,
     read_data_file,
+    unchanged_copies,
 )
 from .qgis_inputs import field_types, layer_extents, stored_project, wgs84_box
 
@@ -157,21 +163,22 @@ def export_styles(project: Any, styles_folder: str) -> dict[str, LayerStyle]:
     return styles
 
 
-def write_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None) -> tuple[str, Publication]:
+def write_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None) -> tuple[str, Publication]:
     """
     Writes the catalogue of `project`, saved as a file, from its saved file and
     what QGIS gives for its layers, into `folder`, or where its settings say
     where `folder` is None. Returns the folder and what was written, or why
     nothing was. `copies` holds the copies an export just made, by layer id,
     and makes this an export; None links each layer's data where it is.
+    `unchanged` holds the layers whose earlier copies the export kept.
     """
-    folder, publication = plan_catalogue(project, folder, copies, copy_failures)
+    folder, publication = plan_catalogue(project, folder, copies, copy_failures, unchanged)
     if publication.refusal is None:
         write_publication(folder, publication)
     return folder, publication
 
 
-def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None) -> tuple[str, Publication]:
+def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[dict[str, Any]] = None, copy_failures: Optional[set[str]] = None, unchanged: Optional[set[str]] = None) -> tuple[str, Publication]:
     """What `write_catalogue` writes, and into which folder, without writing it."""
     _write_on_save, setting = read_settings(project)
     home = os.path.realpath(project_folder(project))
@@ -194,13 +201,21 @@ def plan_catalogue(project: Any, folder: Optional[str] = None, copies: Optional[
         data_file=read_data_file,
         copies=copies,
         copy_failures=copy_failures,
+        unchanged=unchanged,
     )
     return folder, publication
 
 
 @dataclass
 class ExportJob:
-    """What an export copies, worked out on the main thread from the project as saved: the folder, the documents' folder, each layer to copy, the formats, whether GeoParquet was ticked and cannot be written, and the project's datum transformations."""
+    """
+    What an export copies, worked out on the main thread from the project as
+    saved: the folder, the documents' folder, each layer to copy, the
+    formats, whether GeoParquet was ticked and cannot be written, the
+    project's datum transformations, the earlier copies kept, by layer id,
+    of each layer whose data has not changed (`unchanged_copies`), and the
+    raster layers among them all.
+    """
 
     folder: str
     children_folder: str
@@ -208,10 +223,16 @@ class ExportJob:
     geoparquet_fallback: bool = False
     sources: list[LayerSource] = field(default_factory=list)
     transform_context: Any = None
+    kept: dict[str, list[CopiedData]] = field(default_factory=dict)
+    rasters: set[str] = field(default_factory=set)
 
 
 def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
-    """Every layer an export of `project` copies, with the formats it ticks. Raises `FolderMissing` as `write_catalogue` does."""
+    """
+    Every layer an export of `project` copies, with the formats it ticks, less
+    each whose earlier copies can be kept as they are. Raises `FolderMissing`
+    as `write_catalogue` does.
+    """
     formats, fallback = copy_formats(read_formats(project))
     if not formats:
         raise NoFormatTicked()
@@ -219,10 +240,29 @@ def prepare_export(project: Any, folder: Optional[str] = None) -> ExportJob:
     job = ExportJob(planned_folder, publication.children_folder, formats, fallback, transform_context=QgsCoordinateTransformContext(project.transformContext()))
     if publication.refusal is not None:
         return job
+    previous = previous_copies(publication.root_file_name, publication.children_folder, lambda name: _read_inside(job.folder, name))
     for request in publication.to_copy:
         layer = project.mapLayer(request.layer_id)
-        if isinstance(layer, (QgsVectorLayer, QgsRasterLayer)) and layer.isValid():
-            job.sources.append(LayerSource(request.layer_id, layer.name(), layer.source(), layer.providerType(), request.hidden_fields, isinstance(layer, QgsRasterLayer)))
+        if not isinstance(layer, (QgsVectorLayer, QgsRasterLayer)) or not layer.isValid():
+            continue
+        raster = isinstance(layer, QgsRasterLayer)
+        if raster:
+            job.rasters.add(request.layer_id)
+        last_edit = source_last_edit(layer)
+        processing = copy_processing(layer, request.hidden_fields)
+        earlier = previous.get(request.layer_id, {})
+        extensions = [COG_EXTENSION] if raster else [format_.extension for format_ in formats if format_.id != PMTILES or layer.isSpatial()]
+        expected = [copy_path(job.children_folder, request.layer_id, extension) for extension in extensions]
+        kept = unchanged_copies(earlier, expected, last_edit, processing, lambda path: _size_inside(job.folder, path))
+        if kept is not None:
+            job.kept[request.layer_id] = kept
+            continue
+        job.sources.append(LayerSource(
+            request.layer_id, layer.name(), layer.source(), layer.providerType(), request.hidden_fields, raster,
+            last_edit=last_edit,
+            previous={path: asset['file:checksum'] for path, asset in earlier.items() if isinstance(asset.get('file:checksum'), str)},
+            processing=processing,
+        ))
     return job
 
 
@@ -231,10 +271,9 @@ def finish_export(project: Any, job: ExportJob, copies: Copies) -> Publication:
     for layer_id, reason in copies.failed.items():
         layer = project.mapLayer(layer_id)
         QgsMessageLog.logMessage(f'{project.baseName()}: the data of {layer.name() if layer is not None else layer_id} could not be copied: {reason}', LOG_TAG, _level('Warning'))
-    placed = place_copies(copies, job.folder)
-    publication = write_catalogue(project, job.folder, copies=placed, copy_failures=set(copies.failed))[1]
-    rasters = {source.layer_id for source in job.sources if source.raster}
-    publication.geoparquet_fallback = job.geoparquet_fallback and any(layer_id not in rasters for layer_id in placed)
+    placed = {**job.kept, **place_copies(copies, job.folder)}
+    publication = write_catalogue(project, job.folder, copies=placed, copy_failures=set(copies.failed), unchanged=set(job.kept) | copies.unchanged)[1]
+    publication.geoparquet_fallback = job.geoparquet_fallback and any(layer_id not in job.rasters for layer_id in placed)
     return publication
 
 
@@ -329,6 +368,14 @@ def _path_inside(folder: str, name: str) -> str:
     if os.path.commonpath([folder, target]) != os.path.normpath(folder) or target == os.path.normpath(folder):
         raise ValueError(f'{name} is not inside the chosen folder')
     return target
+
+
+def _size_inside(folder: str, name: str) -> Optional[int]:
+    """The size of a file in the chosen folder by its path relative to it, joined by `/`, or None where there is none."""
+    try:
+        return os.path.getsize(_path_inside(folder, name))
+    except (OSError, ValueError):
+        return None
 
 
 def _read_inside(folder: str, name: str) -> Optional[bytes]:
@@ -568,6 +615,30 @@ NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for eac
 NOT_PORTOLAN_HERE_NOTE = "Not a Portolan catalogue: this version of QGIS can't write GeoParquet, which Portolan needs for each vector layer's data."
 
 
+_MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+
+
+def last_export_change(folder: str, root_file_name: str) -> Optional[str]:
+    """
+    When the exported catalogue in `folder` last changed, in local time, such
+    as `27 Nov 2026, 2:05 am`: its root document's last change, where the
+    folder holds it and a copy under `<project>.stac/data/`. None otherwise.
+    """
+    if not folder:
+        return None
+    root = os.path.join(folder, root_file_name)
+    copies = os.path.join(folder, f'{root_file_name[:-len(".json")]}', COPIES_FOLDER)
+    try:
+        with os.scandir(copies) as entries:
+            copied = any(entry.is_file() for entry in entries)
+        if not os.path.isfile(root) or not copied:
+            return None
+        when = datetime.fromtimestamp(os.path.getmtime(root))
+    except OSError:
+        return None
+    return f'{when.day} {_MONTHS[when.month - 1]} {when.year}, {when.hour % 12 or 12}:{when.minute:02d} {"am" if when.hour < 12 else "pm"}'
+
+
 class SettingsPage(QgsOptionsPageWidget):
     """
     The folder, the root document's name, and how the project publishes:
@@ -640,6 +711,8 @@ class SettingsPage(QgsOptionsPageWidget):
         format_choice.addLayout(formats)
         format_choice.addWidget(self.format_note)
         export_options.addRow('Formats', format_choice)
+        self.last_change = QLabel()
+        export_options.addRow(self.last_change)
         for box in (*self._format_boxes.values(), self.pmtiles):
             box.toggled.connect(self._show_format_note)
 
@@ -665,7 +738,9 @@ class SettingsPage(QgsOptionsPageWidget):
         layout.addLayout(export_options)
         layout.addStretch(1)
 
+        self._root_file_name = root_file_name
         self.link.toggled.connect(self._enable_options)
+        self.folder.fileChanged.connect(self._show_last_change)
         self._enable_options()
         if not self._saved_as_file:
             for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, *self._format_boxes.values(), self.pmtiles):
@@ -682,6 +757,19 @@ class SettingsPage(QgsOptionsPageWidget):
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
         self.pmtiles.setEnabled(not linking and self._pmtiles_writable)
         self._show_format_note()
+        self._show_last_change()
+
+    def _show_last_change(self, *_args: Any) -> None:
+        """
+        Says when the exported catalogue in the chosen folder last changed,
+        while exporting: the time its root document was last written, where
+        the folder holds it and copies under `<project>.stac/data/`. An export
+        that finds nothing changed leaves the files as they are, so this is
+        when an export last changed something.
+        """
+        changed = last_export_change(self.folder.filePath(), self._root_file_name) if self._saved_as_file else None
+        self.last_change.setText(f'Last changed {changed}.' if changed else '')
+        self.last_change.setVisible(self.export.isChecked() and bool(changed))
 
     def _show_format_note(self) -> None:
         """
