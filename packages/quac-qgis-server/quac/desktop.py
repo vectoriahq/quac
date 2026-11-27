@@ -84,6 +84,7 @@ from .publish import (
     plan_publication,
     previous_copies,
     read_data_file,
+    same_style_document,
     unchanged_copies,
 )
 from .qgis_inputs import field_types, layer_extents, stored_project, wgs84_box
@@ -387,11 +388,12 @@ def _read_inside(folder: str, name: str) -> Optional[bytes]:
 
 
 def _write_atomically(target: str, data: bytes) -> None:
-    """Writes `data` to a temporary file beside `target` and renames it over `target`; leaves an unchanged file alone."""
+    """Writes `data` to a temporary file beside `target` and renames it over `target`; leaves an unchanged file alone, and a style that says the same (`same_style_document`)."""
     if os.path.isfile(target):
         with open(target, 'rb') as handle:
-            if handle.read() == data:
-                return
+            earlier = handle.read()
+        if earlier == data or (target.lower().endswith('.qml') and same_style_document(earlier, data)):
+            return
     folder = os.path.dirname(target)
     os.makedirs(folder, exist_ok=True)
     handle, temporary = tempfile.mkstemp(prefix=f'.{os.path.basename(target)}.', suffix='.tmp', dir=folder)

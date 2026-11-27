@@ -69,6 +69,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Optional
 from urllib.parse import unquote
+from xml.etree.ElementTree import ParseError, canonicalize  # nosec B405
 
 from .quac_server.generate.normalized_project import build_stac_extent
 from .quac_server.js_compat import url_search_params
@@ -991,6 +992,19 @@ def _unclaimed(name: str, suffix: str, taken: set[str]) -> str:
         count += 1
     taken.add(candidate.lower())
     return candidate
+
+
+def same_style_document(earlier: bytes, style: bytes) -> bool:
+    """
+    Whether two QML style documents say the same, in their canonical XML
+    form (C14N 2.0), which orders each element's attributes. QGIS writes a
+    style's attributes in an order that differs from one QGIS process to the
+    next, so an unchanged style is left as it is rather than written again.
+    """
+    try:
+        return canonicalize(earlier.decode('utf-8')) == canonicalize(style.decode('utf-8'))
+    except (ParseError, UnicodeDecodeError, ValueError):
+        return False
 
 
 def _encode(document: dict[str, Any]) -> bytes:

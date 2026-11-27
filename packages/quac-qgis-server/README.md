@@ -151,6 +151,26 @@ schtasks /Create /SC DAILY /ST 02:00 /TN "Write QUAC catalogues" /TR "D:\GIS\wri
 
 The Windows commands follow the batch file names and folders QGIS's Windows installers use; they have not been run on Windows by this repository's checks.
 
+### Uploading an export
+
+The plugin writes into a folder on this computer. Putting an exported catalogue where others read it, such as an S3 bucket or an organisation's own web server, is a separate step, which can run after the export in the same scheduled task. [rclone](https://rclone.org/) is one tool for it: a remote set up once with `rclone config`, here one named `opendata`, then commands that copy the folder to it.
+
+These upload in an order that never leaves the uploaded catalogue naming a file not there yet: the copies first, then the other documents and styles, then the root, and last a `sync` that removes the files the catalogue no longer names. rclone leaves a file whose size and modification time match the remote's, and the export leaves an unchanged copy, document or style as it is, so a run in which nothing changed uploads nothing.
+
+```bash
+#!/bin/sh
+set -e
+export QT_QPA_PLATFORM=offscreen
+qgis_process run quac:writequaccatalogue -- PROJECT=/data/projects/Parks.qgz
+cd /data/projects/publish
+rclone copy Parks.stac/data opendata:maps/Parks.stac/data
+rclone copy Parks.stac opendata:maps/Parks.stac
+rclone copyto Parks.stac.json opendata:maps/Parks.stac.json
+rclone sync Parks.stac opendata:maps/Parks.stac
+```
+
+These commands were run with `qgis_process` 3.34 and rclone 1.76, with a local folder standing in for the remote: the first run uploaded every file, a second with nothing changed uploaded none, and one after a layer's data changed uploaded that layer's copies and document alone. On Windows, the same commands go in a batch file after the export, each followed by `|| exit /b 1`, with `\` in the local paths; that has not been run on Windows by this repository's checks.
+
 ### Limits
 
 - STAC software that opens a cloud folder's share link cannot follow relative paths: the link names the folder, and a file inside it is reached through the provider's own API, given the link and the file's path. An application that reads cloud folders through each provider's API, or software that opens the synced folder from disk or a copy on web storage, can follow them.
