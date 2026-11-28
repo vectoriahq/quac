@@ -28,7 +28,8 @@
       "aggregates": true,
       "lookups": true,
       "variables": true,
-      "coordinates": true
+      "coordinates": true,
+      "dates": true
     },
     "noVariables": {
       "geometry": true,
@@ -41,7 +42,8 @@
       "aggregates": true,
       "lookups": true,
       "variables": true,
-      "coordinates": true
+      "coordinates": true,
+      "dates": true
     }
   },
   "expressions": [
@@ -16578,11 +16580,31 @@
             "hectares",
             "noAreaUnit",
             "lookups",
-            "defaults",
-            "noVariables",
-            "all"
+            "noVariables"
           ],
           "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "now",
+              "args": []
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "now",
+              "args": []
+            },
+            "template": null,
+            "fields": [],
+            "currentValueFields": [],
+            "lookups": []
+          }
         }
       ],
       "condition": null,
@@ -16599,11 +16621,31 @@
             "hectares",
             "noAreaUnit",
             "lookups",
-            "defaults",
-            "noVariables",
-            "all"
+            "noVariables"
           ],
           "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "now",
+              "args": []
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "now",
+              "args": []
+            },
+            "template": null,
+            "fields": [],
+            "currentValueFields": [],
+            "lookups": []
+          }
         }
       ],
       "condition": null,
@@ -18742,6 +18784,1037 @@
           }
         ]
       }
+    },
+    {
+      "expression": "if(\"condition\" IS NULL, \"checked\", now())",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "if",
+              "args": [
+                {
+                  "kind": "predicate",
+                  "op": "is",
+                  "negate": false,
+                  "args": [
+                    {
+                      "kind": "field",
+                      "name": "condition"
+                    },
+                    {
+                      "kind": "null"
+                    }
+                  ]
+                },
+                {
+                  "kind": "field",
+                  "name": "checked"
+                },
+                {
+                  "kind": "call",
+                  "name": "now",
+                  "args": []
+                }
+              ]
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "if",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "is",
+                  "args": [
+                    {
+                      "name": "property",
+                      "args": [
+                        "condition"
+                      ]
+                    },
+                    null
+                  ]
+                },
+                {
+                  "name": "property",
+                  "args": [
+                    "checked"
+                  ]
+                },
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "condition",
+              "checked"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "coalesce(\"checked\", now())",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "coalesce",
+              "args": [
+                {
+                  "kind": "field",
+                  "name": "checked"
+                },
+                {
+                  "kind": "call",
+                  "name": "now",
+                  "args": []
+                }
+              ]
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "coalesce",
+              "args": [
+                {
+                  "name": "property",
+                  "args": [
+                    "checked"
+                  ]
+                },
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "checked"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "CASE WHEN \"a\" THEN now() ELSE \"d\" END",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "case",
+              "whens": [
+                {
+                  "when": {
+                    "kind": "field",
+                    "name": "a"
+                  },
+                  "then": {
+                    "kind": "call",
+                    "name": "now",
+                    "args": []
+                  }
+                }
+              ],
+              "otherwise": {
+                "kind": "field",
+                "name": "d"
+              }
+            },
+            "geoStyler": {
+              "name": "case",
+              "args": [
+                {
+                  "name": "property",
+                  "args": [
+                    "d"
+                  ]
+                },
+                {
+                  "case": {
+                    "name": "property",
+                    "args": [
+                      "a"
+                    ]
+                  },
+                  "value": {
+                    "name": "custom",
+                    "fnName": "now",
+                    "args": []
+                  }
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "a",
+              "d"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "CASE WHEN now() THEN 1 END",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "\"d\" < now()",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "compare",
+              "op": "<",
+              "left": {
+                "kind": "field",
+                "name": "d"
+              },
+              "right": {
+                "kind": "call",
+                "name": "now",
+                "args": []
+              }
+            },
+            "geoStyler": {
+              "name": "lessThan",
+              "args": [
+                {
+                  "name": "property",
+                  "args": [
+                    "d"
+                  ]
+                },
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "d"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "now() >= \"d\" + make_interval(days:=14)",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "compare",
+              "op": ">=",
+              "left": {
+                "kind": "call",
+                "name": "now",
+                "args": []
+              },
+              "right": {
+                "kind": "arithmetic",
+                "op": "+",
+                "left": {
+                  "kind": "field",
+                  "name": "d"
+                },
+                "right": {
+                  "kind": "call",
+                  "name": "make_interval",
+                  "args": [
+                    {
+                      "kind": "number",
+                      "value": 0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 14
+                    },
+                    {
+                      "kind": "number",
+                      "value": 0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 0
+                    },
+                    {
+                      "kind": "number",
+                      "value": 0
+                    }
+                  ]
+                }
+              }
+            },
+            "geoStyler": {
+              "name": "greaterThanOrEqualTo",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                },
+                {
+                  "name": "add",
+                  "args": [
+                    {
+                      "name": "property",
+                      "args": [
+                        "d"
+                      ]
+                    },
+                    {
+                      "name": "custom",
+                      "fnName": "make_interval",
+                      "args": [
+                        0,
+                        0,
+                        0,
+                        14,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "d"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "now() + make_interval(days:=14)",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "arithmetic",
+              "op": "+",
+              "left": {
+                "kind": "call",
+                "name": "now",
+                "args": []
+              },
+              "right": {
+                "kind": "call",
+                "name": "make_interval",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 14
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "geoStyler": {
+              "name": "add",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                },
+                {
+                  "name": "custom",
+                  "fnName": "make_interval",
+                  "args": [
+                    0,
+                    0,
+                    0,
+                    14,
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            "template": null,
+            "fields": [],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "now() - make_interval(hours:=1)",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "arithmetic",
+              "op": "-",
+              "left": {
+                "kind": "call",
+                "name": "now",
+                "args": []
+              },
+              "right": {
+                "kind": "call",
+                "name": "make_interval",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 1
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  },
+                  {
+                    "kind": "number",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "geoStyler": {
+              "name": "sub",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "now",
+                  "args": []
+                },
+                {
+                  "name": "custom",
+                  "fnName": "make_interval",
+                  "args": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            "template": null,
+            "fields": [],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "if(\"a\", now() + make_interval(days:=1), NULL)",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "if",
+              "args": [
+                {
+                  "kind": "field",
+                  "name": "a"
+                },
+                {
+                  "kind": "arithmetic",
+                  "op": "+",
+                  "left": {
+                    "kind": "call",
+                    "name": "now",
+                    "args": []
+                  },
+                  "right": {
+                    "kind": "call",
+                    "name": "make_interval",
+                    "args": [
+                      {
+                        "kind": "number",
+                        "value": 0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 1
+                      },
+                      {
+                        "kind": "number",
+                        "value": 0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 0
+                      },
+                      {
+                        "kind": "number",
+                        "value": 0
+                      }
+                    ]
+                  }
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "if",
+              "args": [
+                {
+                  "name": "property",
+                  "args": [
+                    "a"
+                  ]
+                },
+                {
+                  "name": "add",
+                  "args": [
+                    {
+                      "name": "custom",
+                      "fnName": "now",
+                      "args": []
+                    },
+                    {
+                      "name": "custom",
+                      "fnName": "make_interval",
+                      "args": [
+                        0,
+                        0,
+                        0,
+                        1,
+                        0,
+                        0,
+                        0
+                      ]
+                    }
+                  ]
+                },
+                null
+              ]
+            },
+            "template": null,
+            "fields": [
+              "a"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "if(now(), 1, 2)",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "now() || 'x'",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "to_string(now())",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "now() - \"d\"",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "make_interval(days:=1) + now()",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "defaults",
+            "noVariables",
+            "all"
+          ],
+          "read": null
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "format_date(coalesce(\"d\", now()), 'yyyy')",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "format_date",
+              "args": [
+                {
+                  "kind": "call",
+                  "name": "coalesce",
+                  "args": [
+                    {
+                      "kind": "field",
+                      "name": "d"
+                    },
+                    {
+                      "kind": "call",
+                      "name": "now",
+                      "args": []
+                    }
+                  ]
+                },
+                {
+                  "kind": "text",
+                  "value": "yyyy"
+                }
+              ]
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "format_date",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "coalesce",
+                  "args": [
+                    {
+                      "name": "property",
+                      "args": [
+                        "d"
+                      ]
+                    },
+                    {
+                      "name": "custom",
+                      "fnName": "now",
+                      "args": []
+                    }
+                  ]
+                },
+                "yyyy"
+              ]
+            },
+            "template": null,
+            "fields": [
+              "d"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
+    },
+    {
+      "expression": "year(if(\"a\", now(), \"d\"))",
+      "reads": [
+        {
+          "options": [
+            "none",
+            "currentValue",
+            "geometry",
+            "hectares",
+            "noAreaUnit",
+            "lookups",
+            "noVariables"
+          ],
+          "read": null
+        },
+        {
+          "options": [
+            "defaults",
+            "all"
+          ],
+          "read": {
+            "node": {
+              "kind": "call",
+              "name": "year",
+              "args": [
+                {
+                  "kind": "call",
+                  "name": "if",
+                  "args": [
+                    {
+                      "kind": "field",
+                      "name": "a"
+                    },
+                    {
+                      "kind": "call",
+                      "name": "now",
+                      "args": []
+                    },
+                    {
+                      "kind": "field",
+                      "name": "d"
+                    }
+                  ]
+                }
+              ]
+            },
+            "geoStyler": {
+              "name": "custom",
+              "fnName": "year",
+              "args": [
+                {
+                  "name": "custom",
+                  "fnName": "if",
+                  "args": [
+                    {
+                      "name": "property",
+                      "args": [
+                        "a"
+                      ]
+                    },
+                    {
+                      "name": "custom",
+                      "fnName": "now",
+                      "args": []
+                    },
+                    {
+                      "name": "property",
+                      "args": [
+                        "d"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "template": null,
+            "fields": [
+              "a",
+              "d"
+            ],
+            "currentValueFields": [],
+            "lookups": []
+          }
+        }
+      ],
+      "condition": null,
+      "conditionInHectares": null
     },
     {
       "expression": "regexp_match(\"a\", '^A')",

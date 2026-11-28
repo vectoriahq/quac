@@ -448,7 +448,7 @@ def _parse_field_edit_rules(maplayer: Element) -> dict[str, FieldEditRule]:
         default_value = _parse_default_expression(expression, on_update)
         if default_value:
             rule_for(name).default_value = default_value
-        elif read_qgis_expression(expression, geometry=True, aggregates=True, lookups=True, variables=True, coordinates=True):
+        elif read_qgis_expression(expression, geometry=True, aggregates=True, lookups=True, variables=True, coordinates=True, dates=True):
             rule_for(name).default_expression = FieldDefaultExpression(expression=js_trim(expression), on_update=on_update)
 
     # The UUID Generator widget fills a null field with an identifier in braces; a default expression fills the field first.

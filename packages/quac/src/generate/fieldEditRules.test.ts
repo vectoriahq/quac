@@ -564,7 +564,9 @@ describe('an expression default', () => {
     ["coalesce(@cloud_useremail, 'unknown')", '0', false],
     ['round(x(@position_coordinate), 6)', '0', false],
     ['round($x, 2)', '1', true],
-    ["y(transform($geometry, @layer_crs, 'EPSG:4326'))", '0', false]
+    ["y(transform($geometry, @layer_crs, 'EPSG:4326'))", '0', false],
+    ['if("condition" IS NULL, "checked", now())', '1', true],
+    ['now() + make_interval(days:=14)', '0', false]
   ])('writes %s as kind expression and reads it back', (expression, applyOnUpdate, onUpdate) => {
     const { column: written, rule } = defaultFor(expression, applyOnUpdate)
 

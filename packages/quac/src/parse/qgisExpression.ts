@@ -395,9 +395,15 @@ export function isQgisConditionFilter(filter: unknown): filter is { name: 'custo
  *
  * `format_date` is read where its pattern and any language are text written
  * into the expression, and the pattern holds no `t` (`qtDateFormat.ts`).
- * `now()`, or `$now`, is read only as the date of `format_date` or of a
- * function that takes a part of a date, such as `year`: anywhere else it would
- * be compared or added as a date, which the evaluator does not do.
+ * `now()`, or `$now`, is read as the date of `format_date` or of a function
+ * that takes a part of a date, such as `year`. Where the caller says `dates`
+ * (a default value), it is read as a date in three more places: as the value
+ * of the whole expression, as a side of a comparison, and as the date an
+ * interval is added to or taken from. A branch of `if`, `CASE` or `coalesce`
+ * in any of those places is one too, as in
+ * `if("condition" IS NULL, "checked", now())`. Anywhere else, such as inside
+ * `||` or `to_string`, it would be used as text or a number, which the
+ * evaluator does not do (`findDatedNows`).
  *
  * A variable other than `@parent`, such as `@cloud_useremail`, is read only
  * where the caller says `variables`: the caller then supplies each one's value
@@ -415,7 +421,7 @@ export function isQgisConditionFilter(filter: unknown): filter is { name: 'custo
  */
 export function readQgisExpression(
   expression: string,
-  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean, variables?: boolean, coordinates?: boolean } = {}
+  options: { currentValue?: boolean, geometry?: true | MeasureFactors, aggregates?: boolean, lookups?: boolean, variables?: boolean, coordinates?: boolean, dates?: boolean } = {}
 ): ExpressionNode | null {
   const tokens = tokenizeExpression(expression)
   if (!tokens || tokens.length === 0) return null
@@ -441,7 +447,7 @@ export function readQgisExpression(
 
   const formatDateCalls = findCalls(parsed.node, 'format_date')
   if (!formatDateCalls.every(isReadableFormatDate)) return null
-  const datedNows = new Set(findCalls(parsed.node, ...DATE_TAKERS).map((call) => call.args[0]))
+  const datedNows = new Set(findDatedNows(parsed.node, options.dates === true, options.dates === true))
   if (findCalls(parsed.node, 'now').some((call) => !datedNows.has(call))) return null
 
   if (!areLookupsReadable(parsed.node, options.lookups === true)) return null
@@ -856,11 +862,43 @@ function childNodes(node: ExpressionNode): ExpressionNode[] {
   }
 }
 
+/** Whether a node is a `+` or `-` with a `make_interval` call as its right side. */
+function isAddedInterval(node: ExpressionNode): node is ExpressionNode & { kind: 'arithmetic' } {
+  return node.kind === 'arithmetic' && (node.op === '+' || node.op === '-') && node.right.kind === 'call' && node.right.name === 'make_interval'
+}
+
+/**
+ * The `now()` calls at or under a node that stand where the evaluator takes a
+ * date (`readQgisExpression`). `dated` says whether the node itself stands in
+ * one; `dates` is the caller's option, without which only the first argument
+ * of a `DATE_TAKERS` call does.
+ */
+function findDatedNows(node: ExpressionNode, dated: boolean, dates: boolean): ExpressionNode[] {
+  if (node.kind === 'call' && node.name === 'now') return dated ? [node] : []
+  return datedChildren(node, dated, dates).flatMap(([child, childDated]) => findDatedNows(child, childDated, dates))
+}
+
+/** The nodes directly under a node, each with whether it stands where a date is taken. */
+function datedChildren(node: ExpressionNode, dated: boolean, dates: boolean): Array<[ExpressionNode, boolean]> {
+  if (node.kind === 'call' && DATE_TAKERS.includes(node.name)) return node.args.map((arg, index) => [arg, index === 0])
+  if (dates) {
+    if (node.kind === 'compare') return [[node.left, true], [node.right, true]]
+    if (isAddedInterval(node)) return [[node.left, dated], [node.right, false]]
+    if (node.kind === 'call' && node.name === 'if') return node.args.map((arg, index) => [arg, dated && index > 0])
+    if (node.kind === 'call' && node.name === 'coalesce') return node.args.map((arg) => [arg, dated])
+    if (node.kind === 'case') {
+      return [
+        ...node.whens.flatMap(({ when, then }): Array<[ExpressionNode, boolean]> => [[when, false], [then, dated]]),
+        ...(node.otherwise ? [[node.otherwise, dated] as [ExpressionNode, boolean]] : [])
+      ]
+    }
+  }
+  return childNodes(node).map((child) => [child, false])
+}
+
 /** The `make_interval` calls that are the right side of a `+` or `-` at or under a node. */
 function findAddedIntervals(node: ExpressionNode): ExpressionNode[] {
-  const own = node.kind === 'arithmetic' && (node.op === '+' || node.op === '-') && node.right.kind === 'call' && node.right.name === 'make_interval'
-    ? [node.right]
-    : []
+  const own = isAddedInterval(node) ? [node.right] : []
   return [...own, ...childNodes(node).flatMap(findAddedIntervals)]
 }
 
