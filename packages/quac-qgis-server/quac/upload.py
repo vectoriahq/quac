@@ -39,7 +39,7 @@ import re
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterator, Optional, Protocol
+from typing import Any, Callable, Iterator, Optional, Protocol, Union
 from urllib.parse import urlsplit
 
 from .publish import COPIES_FOLDER, SETTINGS_SCOPE
@@ -353,29 +353,34 @@ def result_message(target: UploadTarget, result: UploadResult) -> str:
     return ' '.join(sentences)
 
 
-@dataclass
+@dataclass(frozen=True)
 class PendingUpload:
-    """The upload that follows an export into `folder`: its target, or why the settings cannot be used."""
+    """The upload that follows an export into `folder`, to `target`."""
 
     folder: str
     root_file_name: str
     children_folder: str
-    target: Optional[UploadTarget] = None
-    problem: Optional[str] = None
+    target: UploadTarget
 
 
-def pending_upload(project: Any, folder: str, root_file_name: str, children_folder: str, target: Optional[UploadTarget] = None) -> Optional[PendingUpload]:
-    """The upload after an export of `project` into `folder`: to `target` where one is given, otherwise as the project's QUAC page says, or None where it turns none on."""
+@dataclass(frozen=True)
+class UploadProblem:
+    """Why the project's upload settings cannot be used, as the message to show after its export."""
+
+    message: str
+
+
+def pending_upload(project: Any, folder: str, root_file_name: str, children_folder: str, target: Optional[UploadTarget] = None) -> Union[PendingUpload, UploadProblem, None]:
+    """The upload after an export of `project` into `folder`: to `target` where one is given, otherwise as the project's QUAC page says; why its settings cannot be used; or None where it turns none on."""
     try:
         target = target or read_upload_target(project)
     except UploadFailed as failed:
-        return PendingUpload(folder, root_file_name, children_folder, problem=f'{NOT_UPLOADED}. {failed.message}')
+        return UploadProblem(f'{NOT_UPLOADED}. {failed.message}')
     return PendingUpload(folder, root_file_name, children_folder, target) if target is not None else None
 
 
 def run_upload(pending: PendingUpload, credentials: Credentials, cancelled: Callable[[], bool] = lambda: False, progress: Callable[[float], None] = lambda _percent: None) -> UploadResult:
     """Uploads the export through GDAL. Raises `UploadFailed` as `upload_export` does."""
-    assert pending.target is not None
     with GdalStore(pending.target, credentials) as store:
         return upload_export(pending.folder, pending.root_file_name, pending.children_folder, pending.target, store, cancelled, progress)
 

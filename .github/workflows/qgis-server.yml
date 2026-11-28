@@ -48,6 +48,9 @@ jobs:
       - name: Run the Python tests
         working-directory: packages/quac-qgis-server
         run: python3 -m unittest discover -s tests -t . -v
+      - name: Scan the plugin as plugins.qgis.org does
+        working-directory: packages/quac-qgis-server
+        run: ./tests/scan_plugin.sh
 
   qgis-desktop:
     name: QGIS Desktop ${{ matrix.label }}

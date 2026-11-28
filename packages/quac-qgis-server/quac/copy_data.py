@@ -561,18 +561,15 @@ def discard(copies: Copies) -> None:
     copies.made.clear()
 
 
-# `QProcess.NotRunning` in Qt 5, and in the scoped `ProcessState` in Qt 6.
-_NOT_RUNNING = QProcess.NotRunning if hasattr(QProcess, 'NotRunning') else QProcess.ProcessState.NotRunning
-
-# `QgsRasterDataProvider.Size` and `QgsRasterFileWriter.NoError` in QGIS 3, and in the scoped `RasterInterfaceCapability` and `RasterFileWriterResult` in QGIS 4.
-_SIZE = QgsRasterDataProvider.Size if hasattr(QgsRasterDataProvider, 'Size') else Qgis.RasterInterfaceCapability.Size
-_RASTER_NO_ERROR = QgsRasterFileWriter.NoError if hasattr(QgsRasterFileWriter, 'NoError') else Qgis.RasterFileWriterResult.Success
+# Each by its scoped name, which Qt 5 and Qt 6 both take. A raster provider's capabilities are in `Qgis.RasterInterfaceCapability` where QGIS has it, and in `QgsRasterDataProvider.Capability` before it.
+_NOT_RUNNING = QProcess.ProcessState.NotRunning
+_SIZE = (getattr(Qgis, 'RasterInterfaceCapability', None) or QgsRasterDataProvider.Capability).Size
+_RASTER_NO_ERROR = Qgis.RasterFileWriterResult.Success
 
 # A field of decimal numbers: `QgsField` takes a `QMetaType.Type` from QGIS 3.38 and a `QVariant.Type` before it.
 _DOUBLE = QMetaType.Type.Double if Qgis.QGIS_VERSION_INT >= 33800 else QVariant.Double
 
-# `QgsVectorFileWriter.NoError` in QGIS 3, and in the scoped `WriterError` in QGIS 4.
-_NO_ERROR = QgsVectorFileWriter.NoError if hasattr(QgsVectorFileWriter, 'NoError') else QgsVectorFileWriter.WriterError.NoError
+_NO_ERROR = QgsVectorFileWriter.WriterError.NoError
 
 
 # The parts of a shapefile whose change changes the layer.
@@ -709,8 +706,9 @@ def plugin_version() -> str:
     return metadata.get('general', 'version', fallback='unknown')
 
 
-# A field read from the layer's data rather than added by the project: `QgsFields.OriginProvider` in QGIS 3, and in the scoped `Qgis.FieldOrigin` from 3.38.
-_PROVIDER_ORIGIN = QgsFields.OriginProvider if hasattr(QgsFields, 'OriginProvider') else Qgis.FieldOrigin.Provider
+# A field read from the layer's data rather than added by the project: `Qgis.FieldOrigin.Provider` where QGIS has it, and `QgsFields.FieldOrigin.OriginProvider` before it.
+_FIELD_ORIGIN = getattr(Qgis, 'FieldOrigin', None)
+_PROVIDER_ORIGIN = _FIELD_ORIGIN.Provider if _FIELD_ORIGIN is not None else QgsFields.FieldOrigin.OriginProvider
 
 
 def _remove(file_path: str) -> None:
