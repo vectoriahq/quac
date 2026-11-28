@@ -33,7 +33,7 @@ from qgis.PyQt.QtGui import QIcon
 
 from .desktop import ICON, NO_FORMAT_MESSAGE, FolderMissing, NoFormatTicked, ProjectUnreadable, read_mode, saved_as_file, saved_project, write_as_set
 from .publish import EXPORT, catalogue_names, message
-from .upload import UploadFailed, pending_upload, read_credentials, result_message, run_upload, upload_target
+from .upload import UploadFailed, UploadProblem, pending_upload, read_credentials, result_message, run_upload, upload_target
 
 PROJECT = 'PROJECT'
 FOLDER = 'FOLDER'
@@ -187,9 +187,9 @@ class WriteCatalogue(QgsProcessingAlgorithm):
         else:
             feedback.pushWarning(text)
         uploaded = removed = 0
+        if isinstance(upload, UploadProblem):
+            raise QgsProcessingException(upload.message)
         if upload is not None:
-            if upload.target is None:
-                raise QgsProcessingException(upload.problem or '')
             try:
                 result = run_upload(upload, read_credentials(upload.target), feedback.isCanceled, feedback.setProgress)
             except UploadFailed as failed:

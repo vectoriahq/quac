@@ -258,9 +258,9 @@ class TheSettings(unittest.TestCase):
             def readEntry(self, _scope, key, _default):  # noqa: N802 - QGIS's name
                 return {upload.BUCKET_KEY: 's3://parks-catalogue', upload.AUTHCFG_KEY: 'abc1234'}.get(key, ''), True
 
-        pending = upload.pending_upload(Project(), '/export', ROOT, CHILDREN)
-        self.assertIsNone(pending.target)
-        self.assertTrue(pending.problem.startswith('The STAC catalogue was exported, but not uploaded. s3://parks-catalogue is not a bucket name.'))
+        problem = upload.pending_upload(Project(), '/export', ROOT, CHILDREN)
+        self.assertIsInstance(problem, upload.UploadProblem)
+        self.assertTrue(problem.message.startswith('The STAC catalogue was exported, but not uploaded. s3://parks-catalogue is not a bucket name.'))
 
     def test_the_record_is_named_after_the_root(self) -> None:
         self.assertEqual(upload.record_name('Parks.stac.json'), '.Parks.stac.upload.json')

@@ -49,7 +49,7 @@ import tempfile
 import traceback
 from datetime import datetime
 from contextlib import contextmanager
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, Union
 
 from dataclasses import dataclass, field
 
@@ -101,6 +101,7 @@ from .upload import (
     UPLOAD_KEY,
     Credentials,
     PendingUpload,
+    UploadProblem,
     UploadFailed,
     UploadResult,
     pending_upload,
@@ -529,7 +530,7 @@ class QuacDesktop:
         note = UNSAVED_CHANGES_MESSAGE if project.isDirty() else None
         file_name = project.fileName()
         job: Optional[ExportJob] = None
-        upload: Optional[PendingUpload] = None
+        upload: Union[PendingUpload, UploadProblem, None] = None
 
         def start() -> Optional[Publication]:
             nonlocal job, upload
@@ -550,7 +551,7 @@ class QuacDesktop:
         self._task = ExportTask(job, lambda copies: self._finish_export(file_name, job, copies, note, upload))
         QgsApplication.taskManager().addTask(self._task)
 
-    def _finish_export(self, file_name: str, job: ExportJob, copies: Copies, note: Optional[str], upload: Optional[PendingUpload]) -> None:
+    def _finish_export(self, file_name: str, job: ExportJob, copies: Copies, note: Optional[str], upload: Union[PendingUpload, UploadProblem, None]) -> None:
         self._task = None
         if copies.cancelled:
             self._show('info', EXPORT_CANCELLED_MESSAGE)
@@ -563,7 +564,7 @@ class QuacDesktop:
         if self._report(QgsProject.instance(), finish, WRITE_NOW_FAILURE_MESSAGE, note):
             self._upload(upload)
 
-    def _upload(self, pending: Optional[PendingUpload]) -> None:
+    def _upload(self, pending: Union[PendingUpload, UploadProblem, None]) -> None:
         """
         Uploads the export just written, where the project turns an upload on:
         the credentials read here, on the main thread, and the files uploaded
@@ -572,8 +573,8 @@ class QuacDesktop:
         """
         if pending is None:
             return
-        if pending.target is None:
-            self._show('warning', pending.problem or '')
+        if isinstance(pending, UploadProblem):
+            self._show('warning', pending.message)
             return
         try:
             credentials = read_credentials(pending.target)
@@ -586,7 +587,6 @@ class QuacDesktop:
 
     def _finish_upload(self, task: 'UploadTask') -> None:
         self._task = None
-        assert task.pending.target is not None
         if task.failure is not None:
             QgsMessageLog.logMessage(f'{task.failure}{task.details}', LOG_TAG, _level('Warning'))
             self._show('warning', task.failure)
@@ -659,7 +659,6 @@ class UploadTask(QgsTask):
     """An export's upload, made off the main thread; `done` runs on the main thread with the task, which holds what was uploaded or why it failed."""
 
     def __init__(self, pending: PendingUpload, credentials: Credentials, done: Any) -> None:
-        assert pending.target is not None
         super().__init__(f'Uploading the STAC catalogue to {pending.target.where()}')
         self.pending = pending
         self.credentials = credentials
@@ -674,7 +673,6 @@ class UploadTask(QgsTask):
         except UploadFailed as failed:
             self.failure = failed.message
         except Exception as error:  # noqa: BLE001 - reported on the main thread
-            assert self.pending.target is not None
             self.failure = f'{NOT_UPLOADED} to {self.pending.target.where()}. The QUAC tab of the Log Messages panel has the details. {NEXT_RUN_NOTE}'
             self.details = f'\n{type(error).__name__}: {error}'
             self.details += f'\n{traceback.format_exc()}'
