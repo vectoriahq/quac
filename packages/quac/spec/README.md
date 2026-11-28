@@ -363,6 +363,28 @@ For a Collection drawn from tiles: the deepest tile level requested, as a whole 
 
 Written by: QGIS project, hand-written. Stable. Example: `19`.
 
+#### `quac:contrast`, `quac:brightness`, `quac:gamma` and `quac:saturation`
+
+Colour adjustments applied to the layer as drawn, whatever it draws: an image, tiles or features. Each applies to the red, green and blue values of every pixel the layer draws, each on a scale from 0 to 1, in this order, and the result is kept between 0 and 1:
+
+1. `quac:contrast`, from −1 to 1: each value's distance from 0.5 is multiplied by (1 + contrast)². At −1 the layer is flat mid-grey.
+2. `quac:brightness`, from −1 to 1: added to each value.
+3. `quac:gamma`, from 0.1 to 10: each value is raised to the power 1 ÷ gamma. Above 1 the mid-tones lighten, and black and white stay as they are.
+4. `quac:saturation`, from −1 to 1: each colour's saturation is multiplied by 1 + saturation. At −1 the layer is drawn in greys.
+
+Absent, a field leaves the layer unchanged, as `0` does, or `1` for `quac:gamma`.
+
+QGIS has these settings in two places, both under *Layer Properties → Symbology → Layer Rendering*, and both apply them in the order above:
+
+| QGIS setting | `quac:contrast` | `quac:brightness` | `quac:gamma` | `quac:saturation` |
+|---|---|---|---|---|
+| A raster layer's **Contrast**, **Brightness**, **Gamma** and **Saturation** | QGIS's value ÷ 100 | QGIS's value ÷ 255 | QGIS's value | QGIS's value ÷ 100 |
+| A vector layer's **Draw effects**, with a **Colorise** effect | √(1 + QGIS's value ÷ 100) − 1, since QGIS multiplies a vector layer's contrast by 1 + value ÷ 100 rather than squaring it | QGIS's value ÷ 255 | none | QGIS's value ÷ 100 |
+
+From `QgsBrightnessContrastFilter`, `QgsHueSaturationFilter` and `QgsRasterPipe::set` (`src/core/raster/`), and `QgsColorEffect` and `QgsImageOperation` (`src/core/effects/`), `qgis/QGIS@final-3_40_0`, read 2026-11-28. QGIS lowers saturation in HSL and raises it along a curve, so a reader drawing saturation with an adjustment of its own, such as a browser's `saturate()` filter, gives a near match rather than the same pixels.
+
+Written by: hand-written only. Experimental. Examples: `-0.1`, `0.1`, `1.8` and `-0.2`.
+
 ## On a link
 
 ### `quac:wms_crs` and `quac:wms_version`

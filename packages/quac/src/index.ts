@@ -70,6 +70,8 @@ export {
   GL_STYLE_MEDIA_TYPE
 } from './model/stacStyles.ts'
 export type { StacStyle, StyleOverrideReference } from './model/stacStyles.ts'
+export { readCollectionColourAdjustment } from './model/colourAdjustment.ts'
+export type { ColourAdjustment } from './model/colourAdjustment.ts'
 
 export { parseQgsXml } from './parse/parseQgsXml.ts'
 export { measureFactorsOf } from './parse/parseMeasurement.ts'
