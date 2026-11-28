@@ -145,6 +145,14 @@ class ALaterUpload(Export):
         self.assertNotIn(f'{CHILDREN}/data/parks.pmtiles', self.record()['files'])
         self.assertEqual(upload.result_message(TARGET, result), 'Uploaded 1 file to s3://parks-catalogue/catalogues/parks. Removed 2 files the catalogue no longer names.')
 
+    def test_a_file_already_gone_from_the_bucket_counts_as_removed(self) -> None:
+        self.remove(f'{CHILDREN}/styles/Parks.qml')
+        self.store.refuse = {f'{CHILDREN}/styles/Parks.qml'}
+        self.store.error = upload.StoreError('NoSuchKey')
+        result = self.run_upload()
+        self.assertEqual(result.removed, [f'{CHILDREN}/styles/Parks.qml'])
+        self.assertNotIn(f'{CHILDREN}/styles/Parks.qml', self.record()['files'])
+
     def test_never_removes_a_file_it_did_not_upload(self) -> None:
         self.store.files['notes/readme.txt'] = b'put there another way'
         self.remove(f'{CHILDREN}/styles/Parks.qml')

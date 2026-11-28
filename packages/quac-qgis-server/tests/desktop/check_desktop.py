@@ -546,14 +546,22 @@ def check_upload(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(result['FILES_REMOVED'] >= 2, f'after Trees is removed, its files are removed from the bucket: {result}')
     check({name: data for name, data in bucket_files(endpoint).items() if not name.startswith('(')} == exported, 'and the bucket holds the export alone')
 
-    missing = refused(UPLOAD_BUCKET='quac-missing', UPLOAD_ENDPOINT=endpoint, UPLOAD_CREDENTIALS=authcfg)
-    print('      missing bucket:', missing)
-    check('the bucket quac-missing' in missing and 'does not exist' in missing and missing.startswith(f'The STAC catalogue was exported, but not uploaded to s3://quac-missing at {endpoint}, because'), 'a bucket that does not exist is named, and the export is said to be written')
-    refusing = os.environ.get('QUAC_S3_REFUSING_ENDPOINT')
-    if refusing:
-        refusal = refused(UPLOAD_BUCKET=S3_BUCKET, UPLOAD_ENDPOINT=refusing, UPLOAD_CREDENTIALS=authcfg)
-        print('      refused:', refusal)
-        check(f'to s3://{S3_BUCKET} at {refusing}: the store refused' in refusal and 'Check that the chosen credentials may write to the bucket' in refusal, 'a store that refuses the credentials is named, with what to check')
+    # GDAL's Python bindings report a failure by its return code, or raise it where they are set to, as QGIS 3.44 and 4 set them.
+    from osgeo import gdal
+
+    raising = gdal.GetUseExceptions()
+    for raises in (False, True):
+        (gdal.UseExceptions if raises else gdal.DontUseExceptions)()
+        how = 'with GDAL raising its errors' if raises else 'with GDAL returning its errors'
+        missing = refused(UPLOAD_BUCKET='quac-missing', UPLOAD_ENDPOINT=endpoint, UPLOAD_CREDENTIALS=authcfg)
+        print('      missing bucket:', missing)
+        check('the bucket quac-missing' in missing and 'does not exist' in missing and missing.startswith(f'The STAC catalogue was exported, but not uploaded to s3://quac-missing at {endpoint}, because'), f'{how}, a bucket that does not exist is named, and the export is said to be written')
+        refusing = os.environ.get('QUAC_S3_REFUSING_ENDPOINT')
+        if refusing:
+            refusal = refused(UPLOAD_BUCKET=S3_BUCKET, UPLOAD_ENDPOINT=refusing, UPLOAD_CREDENTIALS=authcfg)
+            print('      refused:', refusal)
+            check(f'to s3://{S3_BUCKET} at {refusing}: the store refused' in refusal and 'Check that the chosen credentials may write to the bucket' in refusal, f'{how}, a store that refuses the credentials is named, with what to check')
+    (gdal.UseExceptions if raising else gdal.DontUseExceptions)()
 
     # A run with no one at the computer: a process of its own, as a scheduled task starts qgis_process.
     password_file = home / 'master-password.txt'

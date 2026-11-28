@@ -317,7 +317,9 @@ def upload_export(
             try:
                 store.remove(path)
             except StoreError as error:
-                raise UploadFailed(failure_message(target, error, path, len(result.uploaded), removing=True)) from None
+                # A file already gone from the bucket, such as one removed by hand, counts as removed.
+                if error.code != 'NoSuchKey':
+                    raise UploadFailed(failure_message(target, error, path, len(result.uploaded), removing=True)) from None
             done.pop(path, None)
             result.removed.append(path)
             progress(100 * (len(plan.uploads) + index + 1) / steps)
@@ -445,15 +447,26 @@ class GdalStore:
         from osgeo import gdal
 
         with _s3_errors() as seen:
-            if gdal.CopyFile(local_path, f'{self.prefix}/{path}', options=[f'Content-Type={media_type}']) != 0:
-                raise seen.error()
+            _succeed(seen, lambda: gdal.CopyFile(local_path, f'{self.prefix}/{path}', options=[f'Content-Type={media_type}']))
 
     def remove(self, path: str) -> None:
         from osgeo import gdal
 
         with _s3_errors() as seen:
-            if gdal.Unlink(f'{self.prefix}/{path}') != 0:
-                raise seen.error()
+            _succeed(seen, lambda: gdal.Unlink(f'{self.prefix}/{path}'))
+
+
+def _succeed(seen: '_SeenErrors', call: Callable[[], int]) -> None:
+    """Runs a GDAL call and raises `StoreError` where it fails: by a return code other than 0, or by an exception, where GDAL's Python bindings are set to raise them, as QGIS 3.44 and 4 set them."""
+    try:
+        failed = call() != 0
+    except RuntimeError:
+        failed = True
+    if failed:
+        raise seen.error()
+
+
+_STATUS_CODES = {'403': 'AccessDenied', '404': 'NoSuchKey'}
 
 
 class _SeenErrors:
@@ -461,12 +474,21 @@ class _SeenErrors:
         self.messages: list[str] = []
 
     def error(self) -> StoreError:
-        """S3's error code and message, which GDAL gives only as a debug message holding S3's answer, or neither where there was no answer."""
+        """
+        S3's error code and message, which GDAL gives only as a debug message
+        holding S3's answer. Where an answer has no body, as to the request
+        GDAL makes for a file's size, its status stands in: 403 as
+        `AccessDenied`, 404 as `NoSuchKey`. Neither where there was no answer.
+        """
         for message in self.messages:
             code = re.search(r'<Code>([^<]*)</Code>', message)
             if code:
                 detail = re.search(r'<Message>([^<]*)</Message>', message)
                 return StoreError(code.group(1), detail.group(1).strip().rstrip('.') if detail else '')
+        for message in self.messages:
+            status = re.search(r'response_code=(\d+)', message)
+            if status and status.group(1) != '0':
+                return StoreError(_STATUS_CODES.get(status.group(1), f'HTTP {status.group(1)}'))
         return StoreError()
 
 
