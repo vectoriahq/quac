@@ -35,11 +35,20 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
    WGS84, each copy's size and checksum in the catalogue and the layer made
    read-only; a save writing nothing; and the copies removed once the project
    links its data again. It prints the formats this QGIS writes;
-9. after `unload`, and checks nothing more is written, the menu action and the
+9. where `QUAC_S3_ENDPOINT` gives an S3 emulator's address, such as
+   `http://127.0.0.1:5055`, an export uploaded to a bucket on it, with
+   credentials from QGIS's Authentication Manager: from the menu, then by the
+   algorithm with nothing changed, after a layer changes and after one is
+   removed; to a bucket that does not exist; through a separate process given
+   the master password by `QGIS_AUTH_PASSWORD_FILE`, and one given none; and,
+   where `QUAC_S3_REFUSING_ENDPOINT` gives an emulator that checks
+   credentials, refused by it;
+10. after `unload`, and checks nothing more is written, the menu action and the
    Processing provider are gone.
 
 It also draws the QUAC page of Project Properties and, given a path, saves it
-as a PNG. It prints what it checked and exits non-zero on a failure. It is not
+as a PNG, and with the S3 check, the page with an upload set beside it, as
+`<name>-upload.png`. It prints what it checked and exits non-zero on a failure. It is not
 one of the unit tests: it needs QGIS and its Processing plugin, which it looks
 for in QGIS's own `python/plugins` folder.
 """
@@ -60,6 +69,8 @@ from urllib.parse import unquote
 os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 # Draws the settings page at twice the size, as on a high-density screen.
 os.environ.setdefault('QT_SCALE_FACTOR', '2')
+# A credential store of the check's own, apart from the profile of whoever runs it.
+os.environ.setdefault('QGIS_AUTH_DB_DIR_PATH', tempfile.mkdtemp(prefix='quac-auth-'))
 
 PACKAGE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PACKAGE))
@@ -389,6 +400,211 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(not (publish / 'Roads.stac' / 'data').exists() or not any((publish / 'Roads.stac' / 'data').iterdir()), 'the copies are removed once the project links its data')
     check((publish / 'benches.geojson').is_file(), 'the data in the folder is untouched')
     project.clear()
+
+
+S3_BUCKET = 'quac-check'
+# A folder of each run's own, so a run against an emulator that is still running finds it empty.
+S3_FOLDER = f'catalogues/benches-{os.getpid()}'
+MASTER_PASSWORD = 'made-up-master-password'
+
+
+def s3_options(endpoint: str) -> dict[str, str]:
+    from quac.upload import Credentials, UploadTarget, gdal_options
+
+    return gdal_options(UploadTarget(S3_BUCKET, endpoint=endpoint), Credentials('quac-check-key', 'quac-check-secret'))
+
+
+def bucket_files(endpoint: str) -> dict[str, bytes]:
+    """What the bucket's folder holds, by path under it, read through GDAL with the check's own credentials."""
+    from osgeo import gdal
+
+    # A listing is a request to the bucket, so the options are the bucket's.
+    bucket = f'/vsis3/{S3_BUCKET}'
+    prefix = f'{bucket}/{S3_FOLDER}'
+    for name, value in s3_options(endpoint).items():
+        gdal.SetPathSpecificOption(bucket, name, value)
+    try:
+        gdal.VSICurlPartialClearCache(bucket)
+        found = {}
+        for name in gdal.ReadDirRecursive(prefix) or []:
+            if name.endswith('/'):
+                continue
+            handle = gdal.VSIFOpenL(f'{prefix}/{name}', 'rb')
+            size = gdal.VSIStatL(f'{prefix}/{name}').size
+            found[name] = bytes(gdal.VSIFReadL(1, size, handle)) if size else b''
+            gdal.VSIFCloseL(handle)
+        headers = {name.lower(): value for name, value in (gdal.GetFileMetadata(f'{prefix}/Benches.stac.json', 'HEADERS') or {}).items()}
+        found['(root content type)'] = headers.get('content-type', '').encode()
+        return found
+    finally:
+        gdal.ClearPathSpecificOptions(bucket)
+
+
+def exported_files(publish: Path) -> dict[str, bytes]:
+    return {name: (publish / name).read_bytes() for name in files_under(publish) if name == 'Benches.stac.json' or (name.startswith('Benches.stac/') and '/.' not in name)}
+
+
+def check_upload(home: Path, processing: Any, iface: Any, plugin: Any, write_now: Any, endpoint: str, screenshot: Any) -> None:
+    """
+    Exports a made-up project of two layers, Benches and Trees, as FlatGeobuf
+    and uploads it to the emulator at `endpoint`, as section 9 of the
+    module's description says.
+    """
+    import subprocess
+    import time
+    import urllib.request
+
+    from qgis.core import QgsAuthMethodConfig
+
+    from quac.upload import record_name
+
+    manager = QgsApplication.authManager()
+    check(manager.setMasterPassword(MASTER_PASSWORD, True), 'a master password is set on the check\'s own credential store')
+    config = QgsAuthMethodConfig('AWSS3')
+    config.setName('Made-up bucket')
+    config.setConfig('username', 'quac-check-key')
+    config.setConfig('password', 'quac-check-secret')
+    config.setConfig('region', 'us-east-1')
+    stored = manager.storeAuthenticationConfig(config)
+    authcfg = config.id()
+    check(bool(stored[0] if isinstance(stored, tuple) else stored) and bool(authcfg), f'an "AWS S3" configuration is stored: {authcfg}')
+    urllib.request.urlopen(urllib.request.Request(f'{endpoint}/{S3_BUCKET}', method='PUT'), timeout=10).close()
+
+    publish = home / 'publish'
+    benches_file = write(publish / 'benches.geojson', points([{'id': 1, 'name': 'Bench by the lake'}, {'id': 2, 'name': 'Bench by the gate'}]))
+    trees_file = write(publish / 'trees.geojson', points([{'id': 1, 'name': 'Example gum'}]))
+    project = QgsProject.instance()
+    project.clear()
+    layer(project, benches_file, 'Benches', project.layerTreeRoot())
+    trees = layer(project, trees_file, 'Trees', project.layerTreeRoot())
+    project.writeEntry('quac', 'catalogue/folder', 'publish')
+    project.writeEntry('quac', 'catalogue/mode', 'export')
+    project.writeEntry('quac', 'catalogue/formats', ['flatgeobuf'])
+    project.writeEntry('quac', 'upload/enabled', True)
+    project.writeEntry('quac', 'upload/bucket', S3_BUCKET)
+    project.writeEntry('quac', 'upload/folder', S3_FOLDER)
+    project.writeEntry('quac', 'upload/endpoint', endpoint)
+    project.writeEntry('quac', 'upload/authcfg', authcfg)
+    check(project.write(str(home / 'Benches.qgz')), 'the upload project saves, set to export and upload')
+
+    page = iface.factories[0].createWidget(None)
+    check(page.upload.isChecked() and page.bucket.text() == S3_BUCKET and page.bucket_folder.text() == S3_FOLDER and page.endpoint.text() == endpoint and page.credentials.configId() == authcfg, 'the page shows the upload\'s settings')
+    check(page.bucket.isEnabled() and page.credentials.isEnabled(), 'the upload\'s settings can be changed while exporting with the upload on')
+    page.resize(640, 560)
+    page.show()
+    QgsApplication.processEvents()
+    if screenshot:
+        upload_screenshot = str(Path(screenshot).with_name(f'{Path(screenshot).stem}-upload.png'))
+        check(page.grab().save(upload_screenshot), f'the page with an upload is saved as {upload_screenshot}')
+    page.upload.setChecked(False)
+    check(not page.bucket.isEnabled() and not page.credentials.isEnabled(), 'with the upload off, its settings are off')
+    page.link.setChecked(True)
+    check(not page.upload.isEnabled(), 'while linking, the upload is off')
+    page.close()
+
+    where = f's3://{S3_BUCKET}/{S3_FOLDER} at {endpoint}'
+    iface.bar.messages.clear()
+    write_now.trigger()
+    waited = time.monotonic()
+    while plugin._task is not None and time.monotonic() - waited < 120:
+        QgsApplication.processEvents()
+        time.sleep(0.05)
+    messages = [text for _title, text, _level in iface.bar.messages]
+    print('      messages:', messages)
+    exported = exported_files(publish)
+    check(plugin._task is None and messages[-1:] == [f'Uploaded {len(exported)} files to {where}.'], 'from the menu, the export is uploaded in a background task, and the message bar says where')
+    uploaded = bucket_files(endpoint)
+    check({name: data for name, data in uploaded.items() if not name.startswith('(')} == exported, f'the bucket holds the export, byte for byte: {sorted(uploaded)}')
+    check(uploaded['(root content type)'] == b'application/json', f'the root is served as JSON: {uploaded["(root content type)"]!r}')
+    check((publish / record_name('Benches.stac.json')).is_file() and record_name('Benches.stac.json') not in uploaded, 'the record of the upload is beside the export, and not uploaded')
+
+    def run(**parameters: Any) -> Any:
+        return processing.run('quac:writequaccatalogue', {'PROJECT': str(home / 'Benches.qgz'), **parameters}, feedback=Feedback())
+
+    def refused(**parameters: Any) -> str:
+        try:
+            run(**parameters)
+        except QgsProcessingException as error:
+            return str(error)
+        return ''
+
+    result = run()
+    check(result['FILES_UPLOADED'] == 0 and result['FILES_REMOVED'] == 0, f'by the algorithm with nothing changed, nothing is uploaded: {result}')
+
+    write(benches_file, points([{'id': 1, 'name': 'Bench by the lake'}, {'id': 2, 'name': 'Bench by the gate'}, {'id': 3, 'name': 'Bench by the hill'}]))
+    later = os.stat(benches_file).st_mtime + 2
+    os.utime(benches_file, (later, later))
+    result = run()
+    exported = exported_files(publish)
+    check(0 < result['FILES_UPLOADED'] < len(exported) and result['FILES_REMOVED'] == 0, f'after Benches changes, only the files that changed are uploaded: {result}')
+    check({name: data for name, data in bucket_files(endpoint).items() if not name.startswith('(')} == exported, 'and the bucket holds the export again')
+
+    project.removeMapLayer(trees.id())
+    check(project.write(), 'the project saves without Trees')
+    result = run()
+    exported = exported_files(publish)
+    check(result['FILES_REMOVED'] >= 2, f'after Trees is removed, its files are removed from the bucket: {result}')
+    check({name: data for name, data in bucket_files(endpoint).items() if not name.startswith('(')} == exported, 'and the bucket holds the export alone')
+
+    # GDAL's Python bindings report a failure by its return code, or raise it where they are set to, as QGIS 3.44 and 4 set them.
+    from osgeo import gdal
+
+    raising = gdal.GetUseExceptions()
+    for raises in (False, True):
+        (gdal.UseExceptions if raises else gdal.DontUseExceptions)()
+        how = 'with GDAL raising its errors' if raises else 'with GDAL returning its errors'
+        missing = refused(UPLOAD_BUCKET='quac-missing', UPLOAD_ENDPOINT=endpoint, UPLOAD_CREDENTIALS=authcfg)
+        print('      missing bucket:', missing)
+        check('the bucket quac-missing' in missing and 'does not exist' in missing and missing.startswith(f'The STAC catalogue was exported, but not uploaded to s3://quac-missing at {endpoint}, because'), f'{how}, a bucket that does not exist is named, and the export is said to be written')
+        refusing = os.environ.get('QUAC_S3_REFUSING_ENDPOINT')
+        if refusing:
+            refusal = refused(UPLOAD_BUCKET=S3_BUCKET, UPLOAD_ENDPOINT=refusing, UPLOAD_CREDENTIALS=authcfg)
+            print('      refused:', refusal)
+            check(f'to s3://{S3_BUCKET} at {refusing}: the store refused' in refusal and 'Check that the chosen credentials may write to the bucket' in refusal, f'{how}, a store that refuses the credentials is named, with what to check')
+    (gdal.UseExceptions if raising else gdal.DontUseExceptions)()
+
+    # A run with no one at the computer: a process of its own, as a scheduled task starts qgis_process.
+    password_file = home / 'master-password.txt'
+    password_file.write_text(MASTER_PASSWORD, encoding='utf-8')
+    password_file.chmod(0o600)
+    write(benches_file, points([{'id': 1, 'name': 'Bench by the lake'}]))
+    later = os.stat(benches_file).st_mtime + 4
+    os.utime(benches_file, (later, later))
+    plugins = Path(sys.modules['quac'].__file__).resolve().parents[1]
+    environment = {**os.environ, 'QGIS_AUTH_PASSWORD_FILE': str(password_file)}
+    unattended = subprocess.run([sys.executable, __file__, '--unattended', str(plugins), str(home / 'Benches.qgz')], env=environment, capture_output=True, text=True, timeout=300)
+    print('      unattended:', unattended.stdout.strip().splitlines()[-1:] or unattended.stderr[-400:])
+    check(unattended.returncode == 0 and '"FILES_UPLOADED": ' in unattended.stdout and '"FILES_UPLOADED": 0' not in unattended.stdout, 'a separate process given the master password by QGIS_AUTH_PASSWORD_FILE uploads the change')
+    check({name: data for name, data in bucket_files(endpoint).items() if not name.startswith('(')} == exported_files(publish), 'and the bucket holds the export')
+    del environment['QGIS_AUTH_PASSWORD_FILE']
+    started = time.monotonic()
+    locked = subprocess.run([sys.executable, __file__, '--unattended', str(plugins), str(home / 'Benches.qgz')], env=environment, capture_output=True, text=True, timeout=300)
+    print('      no password:', locked.stdout.strip().splitlines()[-1:] or locked.stderr[-400:])
+    check(locked.returncode != 0 and 'could not read the credentials' in locked.stdout and 'QGIS_AUTH_PASSWORD_FILE' in locked.stdout, f'a process given no master password says it could not read the credentials, and how to give it, in {time.monotonic() - started:.0f} seconds')
+    project.clear()
+
+
+def unattended(plugins: str, project_file: str) -> int:
+    """Runs the algorithm on `project_file` in a QGIS of its own, as a scheduled task does, and prints its result or its error."""
+    app = QgsApplication([], False)
+    app.initQgis()
+    try:
+        processing = start_processing()
+        sys.path.insert(0, plugins)
+        import quac
+
+        # Held until the run ends: the provider goes with the plugin.
+        desktop = quac.classFactory(None)
+        desktop.initProcessing()
+        try:
+            result = processing.run('quac:writequaccatalogue', {'PROJECT': project_file}, feedback=Feedback())
+        except QgsProcessingException as error:
+            print(f'ERROR {error}')
+            return 1
+        print(json.dumps({name: value for name, value in result.items() if name != 'ROOT_FILE'}))
+        return 0
+    finally:
+        app.exitQgis()
 
 
 def check_unchanged(home: Path, processing: Any, publish: Path, roads_file: Path) -> None:
@@ -777,8 +993,8 @@ def main() -> int:
         print('      results:', alpha, beta)
         print('      warning:', beta_feedback.warnings)
         batch_files = files_under(batch)
-        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
-        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
+        check(alpha == {'ROOT_FILE': str(batch.resolve() / 'Alpha.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 0, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0, 'FILES_UPLOADED': 0, 'FILES_REMOVED': 0}, "Alpha, with no folder given, writes into its own folder, and gives the root file's path and the counts")
+        check(beta == {'ROOT_FILE': str(batch.resolve() / 'Beta.stac.json'), 'LAYERS_WRITTEN': 1, 'LAYERS_LEFT_OUT': 1, 'LAYERS_COPIED': 0, 'LAYERS_UNCHANGED': 0, 'FILES_UPLOADED': 0, 'FILES_REMOVED': 0}, 'Beta, with the folder given, writes there rather than its own setting, and counts Roads left out')
         for stem, title in (('Alpha', 'Sites'), ('Beta', 'Wells')):
             names = sorted(name for name in batch_files if name.startswith(f'{stem}.stac'))
             documents = [json.loads((batch / name).read_text(encoding='utf-8')) for name in names if name.endswith('.json')]
@@ -810,7 +1026,15 @@ def main() -> int:
         check_export(work / 'Export Project', processing, iface, plugin, write_now)
         check(project.read(str(project_file)), 'the Parks project reads again after the export')
 
-        # 9. After unload.
+        # 9. An export uploaded to a bucket on an S3 emulator.
+        endpoint = os.environ.get('QUAC_S3_ENDPOINT')
+        if endpoint:
+            check_upload(work / 'Upload Project', processing, iface, plugin, write_now, endpoint, screenshot)
+            check(project.read(str(project_file)), 'the Parks project reads again after the upload')
+        else:
+            print('      no QUAC_S3_ENDPOINT: the upload is not checked')
+
+        # 10. After unload.
         project.writeEntry('quac', 'catalogue/write_on_save', True)
         plugin.unload()
         check(iface.factories == [], 'unload unregisters the page')
@@ -829,4 +1053,6 @@ def main() -> int:
 
 
 if __name__ == '__main__':
+    if sys.argv[1:2] == ['--unattended']:
+        sys.exit(unattended(sys.argv[2], sys.argv[3]))
     sys.exit(main())

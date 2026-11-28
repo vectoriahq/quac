@@ -152,9 +152,76 @@ schtasks /Create /SC DAILY /ST 02:00 /TN "Write QUAC catalogues" /TR "D:\GIS\wri
 
 The Windows commands follow the batch file names and folders QGIS's Windows installers use; they have not been run on Windows by this repository's checks.
 
-### Uploading an export
+### Uploading an export to an S3 bucket
 
-The plugin writes into a folder on this computer. Putting an exported catalogue where others read it, such as an S3 bucket or an organisation's own web server, is a separate step, which can run after the export in the same scheduled task. [rclone](https://rclone.org/) is one tool for it: a remote set up once with `rclone config`, here one named `opendata`, then commands that copy the folder to it.
+Where a project exports a copy of every layer, the plugin can upload each export to an S3 bucket, or to an S3-compatible store reached at another endpoint, such as Cloudflare R2 or MinIO. On the QUAC page, tick **Upload to an S3 bucket after each export** and fill in:
+
+| Setting | What it holds |
+|---|---|
+| Bucket | The bucket's name alone, such as `parks-catalogue`. |
+| Folder in bucket | The folder the catalogue goes into, such as `catalogues/parks`. Empty for the bucket's top level. |
+| Endpoint | An S3-compatible store's address, such as `https://storage.example.test`. Empty for Amazon S3. The plugin reaches the bucket by path on it, as `https://storage.example.test/parks-catalogue/`. |
+| Credentials | An "AWS S3" configuration in QGIS's Authentication Manager (Settings ▸ Options ▸ Authentication), holding the access key, the secret key and the region. The project holds the configuration's id, never the keys. |
+
+Each export from Project ▸ Write STAC catalogue now, and each run of Write QUAC catalogue, then uploads the files that changed since the last upload, each to the same path under the folder: the copies first, then the other documents and styles, then the root, so the uploaded catalogue never names a file that is not there yet. Then it removes each file it uploaded before that the catalogue no longer names. A run in which nothing changed uploads nothing.
+
+- **The record.** `.Parks.stac.upload.json`, beside `Parks.stac.json`, holds the bucket, folder and endpoint last uploaded to, and each file's checksum as uploaded. A file put in the bucket another way is never removed, and one the record names that is already gone from the bucket counts as removed. Changing the bucket, folder or endpoint uploads every file to the new place and leaves the old one as it is.
+- **The upload's credentials** are given to GDAL, which QGIS ships, for that bucket alone, and cleared when the upload ends. They are not written into the catalogue, the project or the record.
+- **Failures.** The message names the bucket and says what to do: credentials QGIS cannot read, a bucket that does not exist, a store that refuses the credentials, or one that does not answer. The first file that fails stops the upload, so the root is never uploaded before the files it names. The export in the folder is left as written, and the next run uploads what was missed.
+- **Media types.** Each file is uploaded with the media type a browser reads it by, such as `application/json` for a document and `application/vnd.pmtiles` for a PMTiles copy.
+- **Requests.** Against the S3 emulator the checks use, the plugin listed the folder and put and deleted files in it. On Amazon S3, that would be `s3:ListBucket` on the bucket and `s3:PutObject` and `s3:DeleteObject` on the folder; that has not been run against Amazon S3 itself.
+- **GDAL 3.6 or later**, which gives credentials for one bucket alone.
+
+From the menu, the upload runs in a background task of its own, in QGIS's task manager. The algorithm takes the same settings as parameters: `UPLOAD_BUCKET`, `UPLOAD_FOLDER`, `UPLOAD_ENDPOINT` and `UPLOAD_CREDENTIALS`, an "AWS S3" configuration's id. Given a bucket, it uploads there with the folder, endpoint and credentials given beside it, and none of the QUAC page's; given none, it uploads as the QUAC page says. It gives `FILES_UPLOADED` and `FILES_REMOVED`, and fails, with the message, where the upload does, so a scheduled task's run reports it.
+
+#### In a scheduled task
+
+QGIS keeps the credentials behind its master password, which nobody is there to type in a scheduled run. `QGIS_AUTH_PASSWORD_FILE` names a file holding the master password, which QGIS reads to unlock them:
+
+```bash
+#!/bin/sh
+set -e
+export QT_QPA_PLATFORM=offscreen
+export QGIS_AUTH_PASSWORD_FILE=/home/gis/.quac/master-password
+qgis_process run quac:writequaccatalogue -- PROJECT=/data/projects/Parks.qgz
+```
+
+The file unlocks every credential in that QGIS profile, so it must be readable only by the account that runs the task: on Linux and macOS, `chmod 600` it, in a folder only that account can open. Without the file, the run fails at once with a message that QGIS could not read the credentials, with no prompt and no wait. The QGIS Desktop check runs the algorithm this way in a separate process, with the file and without it, on Linux; `qgis_process` with the file was run with QGIS 3.34 on Linux. Neither has been run on Windows or macOS, where QGIS may keep the master password in the system's keychain.
+
+#### Setting up the bucket
+
+The plugin uploads the files and sets up nothing else. For a web map in another website to read the catalogue, the bucket needs two settings, made once by whoever administers it:
+
+- **Public reads** of the folder. On Amazon S3, a bucket policy such as this one, with the bucket's Block Public Access settings turned off for policies:
+
+  ```json
+  {
+    "Version": "2012-10-17",
+    "Statement": [{
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::parks-catalogue/catalogues/parks/*"
+    }]
+  }
+  ```
+
+- **Reads from other websites, in parts.** A CORS rule allowing `GET` and `HEAD` with a `Range` header, which a reader of a PMTiles, FlatGeobuf, GeoParquet or COG copy sends to read part of a file:
+
+  ```json
+  [{
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["Range"],
+    "ExposeHeaders": ["Content-Range", "Content-Length", "ETag"]
+  }]
+  ```
+
+Against the S3 emulator, with a policy and a CORS rule like these, a request for part of a PMTiles copy from another website answered `206` with `Access-Control-Allow-Origin`; without the policy, an anonymous read was refused. An S3-compatible store sets these its own way.
+
+### Uploading an export another way
+
+The plugin uploads to S3 and S3-compatible stores alone. Putting an exported catalogue anywhere else, such as an organisation's own web server, is a separate step, which can run after the export in the same scheduled task. [rclone](https://rclone.org/) is one tool for it: a remote set up once with `rclone config`, here one named `opendata`, then commands that copy the folder to it.
 
 These upload in an order that never leaves the uploaded catalogue naming a file not there yet: the copies first, then the other documents and styles, then the root, and last a `sync` that removes the files the catalogue no longer names. rclone leaves a file whose size and modification time match the remote's, and the export leaves an unchanged copy, document or style as it is, so a run in which nothing changed uploads nothing.
 
@@ -181,9 +248,9 @@ These commands were run with `qgis_process` 3.34 and rclone 1.76, with a local f
 
 ### Its code and checks
 
-`quac/publish.py` works out what to write, from the saved project's bytes and what QGIS gives, with no QGIS module, `quac/desktop.py` reads those from QGIS, draws the settings page, adds the menu action and writes the files, `quac/copy_data.py` copies a layer's data with QGIS, and `quac/algorithm.py` is the Processing provider and its algorithm. `tests/test_publish.py` checks `publish.py` anywhere: the paths, the hrefs and the folder rules, Windows paths and the settings that name a layer left out among them, the styles, what an earlier catalogue leaves to remove and the messages, and that no document written for any fixture holds an absolute path, an Attachment widget's default folder on the computer among them, a user name or a password. It imports the plugin as QGIS installs it (`tests/installed_plugin.py`).
+`quac/publish.py` works out what to write, from the saved project's bytes and what QGIS gives, with no QGIS module, `quac/desktop.py` reads those from QGIS, draws the settings page, adds the menu action and writes the files, `quac/copy_data.py` copies a layer's data with QGIS, `quac/upload.py` uploads an export to an S3 bucket, and `quac/algorithm.py` is the Processing provider and its algorithm. `tests/test_upload.py` checks the upload's order, its record, what it removes, its settings and its messages, through a bucket kept in memory. `tests/test_publish.py` checks `publish.py` anywhere: the paths, the hrefs and the folder rules, Windows paths and the settings that name a layer left out among them, the styles, what an earlier catalogue leaves to remove and the messages, and that no document written for any fixture holds an absolute path, an Attachment widget's default folder on the computer among them, a user name or a password. It imports the plugin as QGIS installs it (`tests/installed_plugin.py`).
 
-`tests/desktop/check_desktop.py` runs the Desktop part in QGIS's own Python: it starts the plugin through `classFactory` with a stand-in for QGIS's `iface`, saves a made-up project, with a field default and form conditions, one reading a layer left out, with the option off and on, after removing a layer and after a layer's data file is deleted, runs Project ▸ Write STAC catalogue now with the option off, with and without unsaved changes and for a project not saved as a file, runs the Processing algorithm on two project files one after the other and on a file that is not a project, exports a project set to export a copy of every layer in every format, with a filtered layer outside its folder holding a field QGIS Server excludes, a layer inside it and a raster outside it, from the menu and the algorithm, checking the raster's copy is a COG with overviews and its band's statistics, then exports it again with nothing changed, with no last change known and after a layer's file changes, checking which copies are kept as they are, and draws the settings page. It needs QGIS's Processing plugin, which it loads from QGIS's own `python/plugins` folder. The `QGIS Desktop` job of `.github/workflows/qgis-server.yml` runs it in the official `qgis/qgis` image, whose GDAL has no Parquet driver, so the copy there is FlatGeobuf; the `QGIS Desktop 3.44 LTR, GeoParquet` job runs it in conda-forge's QGIS with `libgdal-arrow-parquet`, and checks the copy is GeoParquet 1.1 with a bounding-box covering column, zstd, and no row group over 150,000 rows. To run it where QGIS's Python bindings are installed:
+`tests/desktop/check_desktop.py` runs the Desktop part in QGIS's own Python: it starts the plugin through `classFactory` with a stand-in for QGIS's `iface`, saves a made-up project, with a field default and form conditions, one reading a layer left out, with the option off and on, after removing a layer and after a layer's data file is deleted, runs Project ▸ Write STAC catalogue now with the option off, with and without unsaved changes and for a project not saved as a file, runs the Processing algorithm on two project files one after the other and on a file that is not a project, exports a project set to export a copy of every layer in every format, with a filtered layer outside its folder holding a field QGIS Server excludes, a layer inside it and a raster outside it, from the menu and the algorithm, checking the raster's copy is a COG with overviews and its band's statistics, then exports it again with nothing changed, with no last change known and after a layer's file changes, checking which copies are kept as they are, and draws the settings page. Given `QUAC_S3_ENDPOINT`, an S3 emulator's address, it also uploads an export to a bucket there, with credentials from QGIS's Authentication Manager: from the menu, then by the algorithm with nothing changed, after a layer changes and after one is removed, checking the bucket holds the export byte for byte; to a bucket that does not exist; in a separate process given the master password by `QGIS_AUTH_PASSWORD_FILE` and in one given none; and, given `QUAC_S3_REFUSING_ENDPOINT`, to an emulator that refuses the credentials. The workflow's QGIS Desktop jobs run [moto](https://github.com/getmoto/moto) for these. It needs QGIS's Processing plugin, which it loads from QGIS's own `python/plugins` folder. The `QGIS Desktop` job of `.github/workflows/qgis-server.yml` runs it in the official `qgis/qgis` image, whose GDAL has no Parquet driver, so the copy there is FlatGeobuf; the `QGIS Desktop 3.44 LTR, GeoParquet` job runs it in conda-forge's QGIS with `libgdal-arrow-parquet`, and checks the copy is GeoParquet 1.1 with a bounding-box covering column, zstd, and no row group over 150,000 rows. To run it where QGIS's Python bindings are installed:
 
 ```bash
 cd packages/quac-qgis-server && QT_QPA_PLATFORM=offscreen python3 tests/desktop/check_desktop.py settings-page.png

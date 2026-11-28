@@ -13,7 +13,9 @@ A project publishes one of two ways, chosen on its QUAC page:
   every layer's data into the folder, a vector layer's in the formats ticked
   and a raster layer's as a cloud-optimised GeoTIFF (`copy_data.py`), from
   the menu in a background task, and then write the catalogue. A save writes
-  nothing.
+  nothing. Where the QUAC page turns an upload on, the export is then
+  uploaded to an S3 bucket (`upload.py`), from the menu in a background task
+  of its own.
 
 The save, the menu action and the Processing algorithm all write through
 `write_catalogue`:
@@ -52,7 +54,7 @@ from typing import Any, Iterator, Optional
 from dataclasses import dataclass, field
 
 from qgis.core import Qgis, QgsApplication, QgsCoordinateTransformContext, QgsFeedback, QgsMapLayer, QgsMessageLog, QgsPathResolver, QgsProject, QgsRasterLayer, QgsReadWriteContext, QgsTask, QgsVectorLayer
-from qgis.gui import QgsFileWidget, QgsOptionsPageWidget, QgsOptionsWidgetFactory
+from qgis.gui import QgsAuthConfigSelect, QgsFileWidget, QgsOptionsPageWidget, QgsOptionsWidgetFactory
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QGridLayout, QLabel, QLineEdit, QRadioButton, QVBoxLayout
 from qgis.PyQt.QtXml import QDomDocument
@@ -88,6 +90,24 @@ from .publish import (
     unchanged_copies,
 )
 from .qgis_inputs import field_types, layer_extents, stored_project, wgs84_box
+from .upload import (
+    AUTHCFG_KEY,
+    AWS_S3_PROVIDER,
+    BUCKET_FOLDER_KEY,
+    BUCKET_KEY,
+    ENDPOINT_KEY,
+    NEXT_RUN_NOTE,
+    NOT_UPLOADED,
+    UPLOAD_KEY,
+    Credentials,
+    PendingUpload,
+    UploadFailed,
+    UploadResult,
+    pending_upload,
+    read_credentials,
+    result_message,
+    run_upload,
+)
 
 LOG_TAG = 'QUAC'
 TITLE = 'QUAC'
@@ -432,7 +452,7 @@ class QuacDesktop:
         self._provider: Any = None
         self._write_now: Optional[QAction] = None
         self._menu: Any = None
-        self._task: Optional[ExportTask] = None
+        self._task: Optional[QgsTask] = None
 
     def initProcessing(self) -> None:  # noqa: N802 - the name QGIS calls
         from .algorithm import QuacProvider
@@ -504,28 +524,33 @@ class QuacDesktop:
             self._show('warning', NOT_SAVED_MESSAGE)
             return
         if self._task is not None:
-            self._show('warning', 'The STAC catalogue is already being exported. Wait for that export to finish, or cancel it in the task manager.')
+            self._show('warning', 'The STAC catalogue is already being exported or uploaded. Wait for that to finish, or cancel it in the task manager.')
             return
         note = UNSAVED_CHANGES_MESSAGE if project.isDirty() else None
         file_name = project.fileName()
         job: Optional[ExportJob] = None
+        upload: Optional[PendingUpload] = None
 
         def start() -> Optional[Publication]:
-            nonlocal job
+            nonlocal job, upload
             with saved_project(file_name) as saved:
                 if read_mode(saved) != EXPORT:
                     return write_catalogue(saved)[1]
                 job = prepare_export(saved)
+                upload = pending_upload(saved, job.folder, *catalogue_names(file_name))
                 if not job.sources:
                     return finish_export(saved, job, Copies())
             return None
 
-        if not self._report(project, start, WRITE_NOW_FAILURE_MESSAGE, note) or job is None or not job.sources:
+        if not self._report(project, start, WRITE_NOW_FAILURE_MESSAGE, note) or job is None:
             return
-        self._task = ExportTask(job, lambda copies: self._finish_export(file_name, job, copies, note))
+        if not job.sources:
+            self._upload(upload)
+            return
+        self._task = ExportTask(job, lambda copies: self._finish_export(file_name, job, copies, note, upload))
         QgsApplication.taskManager().addTask(self._task)
 
-    def _finish_export(self, file_name: str, job: ExportJob, copies: Copies, note: Optional[str]) -> None:
+    def _finish_export(self, file_name: str, job: ExportJob, copies: Copies, note: Optional[str], upload: Optional[PendingUpload]) -> None:
         self._task = None
         if copies.cancelled:
             self._show('info', EXPORT_CANCELLED_MESSAGE)
@@ -535,7 +560,39 @@ class QuacDesktop:
             with saved_project(file_name) as saved:
                 return finish_export(saved, job, copies)
 
-        self._report(QgsProject.instance(), finish, WRITE_NOW_FAILURE_MESSAGE, note)
+        if self._report(QgsProject.instance(), finish, WRITE_NOW_FAILURE_MESSAGE, note):
+            self._upload(upload)
+
+    def _upload(self, pending: Optional[PendingUpload]) -> None:
+        """
+        Uploads the export just written, where the project turns an upload on:
+        the credentials read here, on the main thread, and the files uploaded
+        in a background task, which QGIS's task manager shows with its
+        progress and a cancel button.
+        """
+        if pending is None:
+            return
+        if pending.target is None:
+            self._show('warning', pending.problem or '')
+            return
+        try:
+            credentials = read_credentials(pending.target)
+        except UploadFailed as failed:
+            QgsMessageLog.logMessage(failed.message, LOG_TAG, _level('Warning'))
+            self._show('warning', failed.message)
+            return
+        self._task = UploadTask(pending, credentials, self._finish_upload)
+        QgsApplication.taskManager().addTask(self._task)
+
+    def _finish_upload(self, task: 'UploadTask') -> None:
+        self._task = None
+        assert task.pending.target is not None
+        if task.failure is not None:
+            QgsMessageLog.logMessage(f'{task.failure}{task.details}', LOG_TAG, _level('Warning'))
+            self._show('warning', task.failure)
+        elif task.uploaded is not None:
+            text = result_message(task.pending.target, task.uploaded)
+            self._show('warning' if task.uploaded.cancelled else 'info', text)
 
     def _report(self, project: Any, write: Any, failure_message: str, note: Optional[str] = None) -> bool:
         """
@@ -598,6 +655,35 @@ class ExportTask(QgsTask):
         self.done(self.copies)
 
 
+class UploadTask(QgsTask):
+    """An export's upload, made off the main thread; `done` runs on the main thread with the task, which holds what was uploaded or why it failed."""
+
+    def __init__(self, pending: PendingUpload, credentials: Credentials, done: Any) -> None:
+        assert pending.target is not None
+        super().__init__(f'Uploading the STAC catalogue to {pending.target.where()}')
+        self.pending = pending
+        self.credentials = credentials
+        self.done = done
+        self.uploaded: Optional[UploadResult] = None
+        self.failure: Optional[str] = None
+        self.details = ''
+
+    def run(self) -> bool:
+        try:
+            self.uploaded = run_upload(self.pending, self.credentials, self.isCanceled, self.setProgress)
+        except UploadFailed as failed:
+            self.failure = failed.message
+        except Exception as error:  # noqa: BLE001 - reported on the main thread
+            assert self.pending.target is not None
+            self.failure = f'{NOT_UPLOADED} to {self.pending.target.where()}. The QUAC tab of the Log Messages panel has the details. {NEXT_RUN_NOTE}'
+            self.details = f'\n{type(error).__name__}: {error}'
+            self.details += f'\n{traceback.format_exc()}'
+        return True
+
+    def finished(self, result: bool) -> None:
+        self.done(self)
+
+
 class SettingsPageFactory(QgsOptionsWidgetFactory):
     """The QUAC page of Project Properties."""
 
@@ -619,6 +705,7 @@ PMTILES_UNAVAILABLE = "This version of QGIS can't write PMTiles."
 PMTILES_PURPOSE = 'Map tiles for viewing the layer on a web map.'
 CSV_PURPOSE = 'A table for spreadsheets. Point layers get X and Y columns.'
 PORTOLAN_ADDRESS = 'https://portolan-sdi.org/'
+ENDPOINT_PURPOSE = 'For an S3-compatible store, such as Cloudflare R2 or MinIO, its address, such as https://storage.example.test. Empty for Amazon S3.'
 NO_FORMAT_NOTE = 'Tick a format to export.'
 NO_DATA_NOTE = "No format holds the vector layers' data."
 NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for each vector layer's data."
@@ -653,7 +740,10 @@ class SettingsPage(QgsOptionsPageWidget):
     """
     The folder, the root document's name, and how the project publishes:
     linking its data where it is, with writing on save, or exporting a copy of
-    every layer, in the formats ticked. Saved in the project
+    every layer, in the formats ticked, and uploading the export to an S3
+    bucket: its name, the folder in it, an S3-compatible store's endpoint, and
+    an "AWS S3" configuration from QGIS's Authentication Manager, saved by its
+    id. Saved in the project
     (`QgsProject.writeEntry`), the folder relative to the project file, when
     Project Properties is closed with OK or Apply.
     """
@@ -723,6 +813,28 @@ class SettingsPage(QgsOptionsPageWidget):
         export_options.addRow('Formats', format_choice)
         self.last_change = QLabel()
         export_options.addRow(self.last_change)
+
+        upload_on, _found = project.readBoolEntry(SETTINGS_SCOPE, UPLOAD_KEY, False)
+        self.upload = QCheckBox('Upload to an S3 bucket after each export')
+        self.upload.setChecked(bool(upload_on))
+        self.bucket = QLineEdit(project.readEntry(SETTINGS_SCOPE, BUCKET_KEY, '')[0])
+        self.bucket.setPlaceholderText('parks-catalogue')
+        self.bucket_folder = QLineEdit(project.readEntry(SETTINGS_SCOPE, BUCKET_FOLDER_KEY, '')[0])
+        self.bucket_folder.setPlaceholderText("The bucket's top level")
+        self.endpoint = QLineEdit(project.readEntry(SETTINGS_SCOPE, ENDPOINT_KEY, '')[0])
+        self.endpoint.setPlaceholderText('Amazon S3')
+        self.endpoint.setToolTip(ENDPOINT_PURPOSE)
+        self.credentials = QgsAuthConfigSelect(self, AWS_S3_PROVIDER)
+        self.credentials.setConfigId(project.readEntry(SETTINGS_SCOPE, AUTHCFG_KEY, '')[0])
+        upload_options = QFormLayout()
+        upload_options.setContentsMargins(24, 0, 0, 0)
+        upload_options.addRow('Bucket', self.bucket)
+        upload_options.addRow('Folder in bucket', self.bucket_folder)
+        upload_options.addRow('Endpoint', self.endpoint)
+        upload_options.addRow('Credentials', self.credentials)
+        self._upload_fields = (self.bucket, self.bucket_folder, self.endpoint, self.credentials)
+        export_options.addRow(self.upload)
+        export_options.addRow(upload_options)
         for box in (*self._format_boxes.values(), self.pmtiles):
             box.toggled.connect(self._show_format_note)
 
@@ -750,10 +862,11 @@ class SettingsPage(QgsOptionsPageWidget):
 
         self._root_file_name = root_file_name
         self.link.toggled.connect(self._enable_options)
+        self.upload.toggled.connect(self._enable_options)
         self.folder.fileChanged.connect(self._show_last_change)
         self._enable_options()
         if not self._saved_as_file:
-            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, *self._format_boxes.values(), self.pmtiles):
+            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, *self._format_boxes.values(), self.pmtiles, self.upload, *self._upload_fields):
                 control.setEnabled(False)
 
     def _enable_options(self) -> None:
@@ -766,6 +879,9 @@ class SettingsPage(QgsOptionsPageWidget):
             box.setEnabled(not linking)
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
         self.pmtiles.setEnabled(not linking and self._pmtiles_writable)
+        self.upload.setEnabled(not linking)
+        for control in self._upload_fields:
+            control.setEnabled(not linking and self.upload.isChecked())
         self._show_format_note()
         self._show_last_change()
 
@@ -808,3 +924,8 @@ class SettingsPage(QgsOptionsPageWidget):
         project.writeEntry(SETTINGS_SCOPE, WRITE_ON_SAVE_KEY, self.write_on_save.isChecked())
         project.writeEntry(SETTINGS_SCOPE, FOLDER_KEY, folder_setting(project_folder(project), self.folder.filePath()))
         project.writeEntry(SETTINGS_SCOPE, FORMATS_KEY, [format_id for format_id, box in (*self._format_boxes.items(), (PMTILES, self.pmtiles)) if box.isChecked()])
+        project.writeEntry(SETTINGS_SCOPE, UPLOAD_KEY, self.upload.isChecked())
+        project.writeEntry(SETTINGS_SCOPE, BUCKET_KEY, self.bucket.text().strip())
+        project.writeEntry(SETTINGS_SCOPE, BUCKET_FOLDER_KEY, self.bucket_folder.text().strip())
+        project.writeEntry(SETTINGS_SCOPE, ENDPOINT_KEY, self.endpoint.text().strip())
+        project.writeEntry(SETTINGS_SCOPE, AUTHCFG_KEY, self.credentials.configId())
