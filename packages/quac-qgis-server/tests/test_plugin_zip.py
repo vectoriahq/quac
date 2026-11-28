@@ -42,6 +42,13 @@ class PluginZipTest(unittest.TestCase):
         for name in ('service.py', 'catalogue.py', 'access.py', 'qgis_inputs.py', 'desktop.py', 'publish.py', 'quac_server/model/stac_styles.py'):
             self.assertIn(f'quac/{name}', self.names)
 
+    def test_holds_the_settings_page_logos_as_the_repository_keeps_them(self) -> None:
+        # The QUAC page shows the QUAC mark and the Vectoria logo, light and dark, from the plugin's own copies of `assets/`.
+        assets = Path(__file__).resolve().parents[3] / 'assets'
+        with zipfile.ZipFile(self.archive) as zip_file:
+            for name in ('quac-mark.svg', 'vectoria-logo.svg', 'vectoria-logo-dark.svg'):
+                self.assertEqual(zip_file.read(f'quac/icons/{name}'), (assets / name).read_bytes(), name)
+
     def test_starts_in_qgis_server_and_in_qgis_desktop(self) -> None:
         source = (Path(__file__).resolve().parent.parent / 'quac' / '__init__.py').read_text(encoding='utf-8')
         self.assertRegex(source, r'def serverClassFactory\(')

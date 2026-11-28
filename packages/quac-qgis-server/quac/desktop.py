@@ -1,5 +1,5 @@
 """
-The plugin's QGIS Desktop part: a QUAC page in Project Properties, Project ▸
+The plugin's QGIS Desktop part: a QUAC page in Project Properties (`SettingsPage`), Project ▸
 Write STAC catalogue now, the QUAC Processing provider (`algorithm.py`), and
 the catalogue written into the chosen folder as STAC documents (`publish.py`
 works out what to write).
@@ -44,19 +44,22 @@ not reach the catalogue.
 
 from __future__ import annotations
 
+import configparser
 import os
 import tempfile
 import traceback
 from datetime import datetime
 from contextlib import contextmanager
+from html import escape
 from typing import Any, Iterator, Optional, Union
 
 from dataclasses import dataclass, field
 
 from qgis.core import Qgis, QgsApplication, QgsCoordinateTransformContext, QgsFeedback, QgsMapLayer, QgsMessageLog, QgsPathResolver, QgsProject, QgsRasterLayer, QgsReadWriteContext, QgsTask, QgsVectorLayer
 from qgis.gui import QgsAuthConfigSelect, QgsFileWidget, QgsOptionsPageWidget, QgsOptionsWidgetFactory
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QGridLayout, QLabel, QLineEdit, QRadioButton, QVBoxLayout
+from qgis.PyQt.QtCore import QSize, Qt, QUrl
+from qgis.PyQt.QtGui import QColor, QDesktopServices, QIcon, QPalette
+from qgis.PyQt.QtWidgets import QButtonGroup, QCheckBox, QFormLayout, QFrame, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QRadioButton, QStyle, QVBoxLayout, QWidget
 from qgis.PyQt.QtXml import QDomDocument
 
 try:
@@ -709,41 +712,102 @@ NO_DATA_NOTE = "No format holds the vector layers' data."
 NOT_PORTOLAN_NOTE = "Not a Portolan catalogue: Portolan needs GeoParquet for each vector layer's data."
 NOT_PORTOLAN_HERE_NOTE = "Not a Portolan catalogue: this version of QGIS can't write GeoParquet, which Portolan needs for each vector layer's data."
 
+PURPOSE = "Publishes this project's map as a STAC catalogue, so web and mobile apps can show its layers as you've set them up here."
+STAC_ADDRESS = 'https://stacspec.org/'
+LINK_LABEL = 'Link the data where it is'
+LINK_PURPOSE = "For a folder you sync or serve yourself, with the project's data inside it. The data stays where it is."
+EXPORT_LABEL = 'Export a copy of every layer'
+EXPORT_PURPOSE = "For web storage. Copies each layer's data into the folder, read-only, in the formats you tick."
+NOT_SAVED_NOTE = 'Save the project as a .qgz or .qgs file to choose where its catalogue goes. QUAC writes a catalogue only for a project saved as a file.'
+UNSAVED_CATALOGUE = 'Named after the project once it is saved.'
+WRITE_NOW_PATH = f'Project ▸ {WRITE_NOW_LABEL}'
+MAKER = 'Vectoria'
+MAKER_ADDRESS = 'https://vectoria.com.au'
+
+_ICONS = os.path.join(os.path.dirname(__file__), 'icons')
+MARK = os.path.join(_ICONS, 'quac-mark.svg')
+MAKER_LOGO = os.path.join(_ICONS, 'vectoria-logo.svg')
+MAKER_LOGO_ON_DARK = os.path.join(_ICONS, 'vectoria-logo-dark.svg')
 
 _MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 
 
-def last_export_change(folder: str, root_file_name: str) -> Optional[str]:
+def last_change(folder: str, root_file_name: str, exported: bool) -> Optional[str]:
     """
-    When the exported catalogue in `folder` last changed, in local time, such
-    as `27 Nov 2026, 2:05 am`: its root document's last change, where the
-    folder holds it and a copy under `<project>.stac/data/`. None otherwise.
+    When the catalogue in `folder` last changed, in local time, such as
+    `today at 2:05 pm` or `27 Nov 2026 at 2:05 am`: its root document's last
+    change, where the folder holds it, and for an export, where the folder
+    also holds a copy under `<project>.stac/data/`. None otherwise.
     """
     if not folder:
         return None
     root = os.path.join(folder, root_file_name)
-    copies = os.path.join(folder, f'{root_file_name[:-len(".json")]}', COPIES_FOLDER)
     try:
-        with os.scandir(copies) as entries:
-            copied = any(entry.is_file() for entry in entries)
-        if not os.path.isfile(root) or not copied:
+        if not os.path.isfile(root):
             return None
+        if exported:
+            with os.scandir(os.path.join(folder, root_file_name[:-len('.json')], COPIES_FOLDER)) as entries:
+                if not any(entry.is_file() for entry in entries):
+                    return None
         when = datetime.fromtimestamp(os.path.getmtime(root))
     except OSError:
         return None
-    return f'{when.day} {_MONTHS[when.month - 1]} {when.year}, {when.hour % 12 or 12}:{when.minute:02d} {"am" if when.hour < 12 else "pm"}'
+    day = 'today' if when.date() == datetime.now().date() else f'{when.day} {_MONTHS[when.month - 1]} {when.year}'
+    return f'{day} at {when.hour % 12 or 12}:{when.minute:02d} {"am" if when.hour < 12 else "pm"}'
+
+
+def status_text(exporting: bool, write_on_save: bool, bucket: Optional[str], changed: Optional[str]) -> tuple[str, str]:
+    """
+    The QUAC page's status line, as the page's choices stand: what the chosen
+    way does, then the rest, ending with when the catalogue in the folder last
+    changed (`last_change`). `bucket` is the bucket an export uploads to, empty
+    where none is named yet, or None where it uploads nowhere.
+    """
+    if exporting:
+        upload = '' if bucket is None else f' and uploads it to {bucket or "an S3 bucket"}'
+        when = f'The export last changed files {changed}.' if changed else 'Nothing is exported to this folder yet.'
+        return 'Exports when you ask.', f'{WRITE_NOW_PATH} exports a copy{upload}. {when}'
+    when = f'The catalogue last changed {changed}.' if changed else 'Nothing is written to this folder yet.'
+    if write_on_save:
+        return 'Writes on each save.', when
+    return 'Writes when you ask.', f'Choose {WRITE_NOW_PATH}. {when}'
+
+
+def plugin_metadata() -> dict[str, str]:
+    """The `[general]` section of the plugin's `metadata.txt`: its version, homepage and tracker among them."""
+    parser = configparser.ConfigParser(interpolation=None)
+    parser.read(os.path.join(os.path.dirname(__file__), 'metadata.txt'), encoding='utf-8')
+    return dict(parser['general']) if parser.has_section('general') else {}
+
+
+def _mix(base: QColor, other: QColor, amount: float) -> QColor:
+    """`base` moved `amount` of the way to `other`."""
+    return QColor(*(round(getattr(base, part)() * (1 - amount) + getattr(other, part)() * amount) for part in ('red', 'green', 'blue')))
 
 
 class SettingsPage(QgsOptionsPageWidget):
     """
-    The folder, the root document's name, and how the project publishes:
-    linking its data where it is, with writing on save, or exporting a copy of
-    every layer, in the formats ticked, and uploading the export to an S3
-    bucket: its name, the folder in it, an S3-compatible store's endpoint, and
-    an "AWS S3" configuration from QGIS's Authentication Manager, saved by its
-    id. Saved in the project
-    (`QgsProject.writeEntry`), the folder relative to the project file, when
-    Project Properties is closed with OK or Apply.
+    The QUAC page of Project Properties, from the top:
+
+    - What QUAC does, beside its mark, with a link to what STAC is.
+    - A status line, as the page's choices stand: what the chosen way does,
+      and when the catalogue in the folder last changed, with a button that
+      opens the folder. For a project not saved as a file, a note to save it
+      first takes its place, and every control is off.
+    - How the project publishes: linking its data where it is, with writing
+      on save, or exporting a copy of every layer, in the formats ticked, and
+      uploading the export to an S3 bucket: its name, the folder in it, an
+      S3-compatible store's endpoint, and an "AWS S3" configuration from
+      QGIS's Authentication Manager, saved by its id. Each way says when to
+      choose it, and only the chosen way's settings show.
+    - Where: the folder, and the root document's name.
+    - The plugin's version, links to its documentation and its issues, and
+      who made it.
+
+    The colours come from QGIS's palette, so the page follows its theme. The
+    settings are saved in the project (`QgsProject.writeEntry`), the folder
+    relative to the project file, when Project Properties is closed with OK
+    or Apply.
     """
 
     def __init__(self, parent: Any = None) -> None:
@@ -751,20 +815,58 @@ class SettingsPage(QgsOptionsPageWidget):
         project = QgsProject.instance()
         self._saved_as_file = saved_as_file(project)
         write_on_save, setting = read_settings(project)
-        root_file_name, _children_folder = catalogue_names(project.fileName() or 'project.qgz')
+        root_file_name, children_folder = catalogue_names(project.fileName() or 'project.qgz')
+        palette = self.palette()
+        window = palette.color(QPalette.ColorRole.Window)
+        text = palette.color(QPalette.ColorRole.WindowText)
+        self._muted_colour = _mix(text, window, 0.3)
+        on_dark = window.lightness() < 128
+        style = self.style()
+        indent = style.pixelMetric(QStyle.PixelMetric.PM_ExclusiveIndicatorWidth) + style.pixelMetric(QStyle.PixelMetric.PM_RadioButtonLabelSpacing)
 
-        self.folder = QgsFileWidget()
-        self.folder.setStorageMode(getattr(QgsFileWidget, 'GetDirectory', None) or QgsFileWidget.StorageMode.GetDirectory)
-        self.folder.setDialogTitle('Folder for the STAC catalogue')
-        self.root_file = QLineEdit(root_file_name)
-        self.root_file.setReadOnly(True)
+        # What QUAC does.
+        mark = QLabel()
+        mark.setPixmap(QIcon(MARK).pixmap(QSize(44, 44)))
+        mark.setFixedSize(44, 44)
+        name = QLabel(TITLE)
+        title_font = name.font()
+        if title_font.pointSizeF() > 0:
+            title_font.setPointSizeF(title_font.pointSizeF() * 1.3)
+        title_font.setBold(True)
+        name.setFont(title_font)
+        self.purpose = self._label(f'{escape(PURPOSE)} <a href="{STAC_ADDRESS}">What is STAC?</a>', muted=True)
+        about = QVBoxLayout()
+        about.setSpacing(2)
+        about.addWidget(name)
+        about.addWidget(self.purpose)
+        header = QHBoxLayout()
+        header.setSpacing(14)
+        header.addWidget(mark, 0, Qt.AlignmentFlag.AlignTop)
+        header.addLayout(about, 1)
 
-        self.link = QRadioButton('Link the data in this folder')
-        self.link_note = QLabel('Updates the catalogue on each save. Data stays where it is.')
+        # The status line, or the note to save the project first.
+        self.status = self._label('')
+        self.open_folder = QPushButton('Open folder')
+        self.open_folder.clicked.connect(self._open_folder)
+        self.status_panel = self._panel('quacStatus', _mix(window, text, 0.04), _mix(window, text, 0.16))
+        status_row = QHBoxLayout(self.status_panel)
+        status_row.setContentsMargins(12, 8, 10, 8)
+        status_row.setSpacing(10)
+        status_row.addWidget(self.status, 1)
+        status_row.addWidget(self.open_folder, 0, Qt.AlignmentFlag.AlignVCenter)
+        highlight = palette.color(QPalette.ColorRole.Highlight)
+        self.not_saved = self._panel('quacNotSaved', _mix(window, highlight, 0.14), _mix(window, highlight, 0.5))
+        not_saved_row = QHBoxLayout(self.not_saved)
+        not_saved_row.setContentsMargins(12, 9, 12, 9)
+        not_saved_row.addWidget(self._label(escape(NOT_SAVED_NOTE)), 1)
+
+        # How the project publishes.
+        self.link = QRadioButton(LINK_LABEL)
+        self.link_note = self._label(escape(LINK_PURPOSE), muted=True, indent=indent)
         self.write_on_save = QCheckBox('Write the catalogue each time the project is saved')
         self.write_on_save.setChecked(write_on_save)
-        self.export = QRadioButton('Export a copy of every layer')
-        self.export_note = QLabel("Copies each layer's data into the catalogue, read-only.")
+        self.export = QRadioButton(EXPORT_LABEL)
+        self.export_note = self._label(escape(EXPORT_PURPOSE), muted=True, indent=indent)
         self._mode = QButtonGroup(self)
         self._mode.addButton(self.link)
         self._mode.addButton(self.export)
@@ -790,17 +892,10 @@ class SettingsPage(QgsOptionsPageWidget):
         self.pmtiles.setChecked(PMTILES in chosen and self._pmtiles_writable)
         self.pmtiles.setToolTip(PMTILES_PURPOSE if self._pmtiles_writable else PMTILES_UNAVAILABLE)
         formats = QGridLayout()
+        formats.setHorizontalSpacing(16)
         for index, box in enumerate((self.geoparquet, self.flatgeobuf, self.pmtiles, self.geopackage, self.geojson, self.csv)):
             formats.addWidget(box, index // 3, index % 3)
         formats.setColumnStretch(3, 1)
-
-        link_options = QVBoxLayout()
-        link_options.setContentsMargins(24, 0, 0, 0)
-        link_options.addWidget(self.link_note)
-        link_options.addWidget(self.write_on_save)
-        export_options = QFormLayout()
-        export_options.setContentsMargins(24, 0, 0, 0)
-        export_options.addRow(self.export_note)
         self.format_note = QLabel()
         self.format_note.setWordWrap(True)
         self.format_note.setOpenExternalLinks(True)
@@ -808,9 +903,6 @@ class SettingsPage(QgsOptionsPageWidget):
         format_choice.setSpacing(2)
         format_choice.addLayout(formats)
         format_choice.addWidget(self.format_note)
-        export_options.addRow('Formats', format_choice)
-        self.last_change = QLabel()
-        export_options.addRow(self.last_change)
 
         upload_on, _found = project.readBoolEntry(SETTINGS_SCOPE, UPLOAD_KEY, False)
         self.upload = QCheckBox('Upload to an S3 bucket after each export')
@@ -824,55 +916,152 @@ class SettingsPage(QgsOptionsPageWidget):
         self.endpoint.setToolTip(ENDPOINT_PURPOSE)
         self.credentials = QgsAuthConfigSelect(self, AWS_S3_PROVIDER)
         self.credentials.setConfigId(project.readEntry(SETTINGS_SCOPE, AUTHCFG_KEY, '')[0])
-        upload_options = QFormLayout()
-        upload_options.setContentsMargins(24, 0, 0, 0)
-        upload_options.addRow('Bucket', self.bucket)
-        upload_options.addRow('Folder in bucket', self.bucket_folder)
-        upload_options.addRow('Endpoint', self.endpoint)
-        upload_options.addRow('Credentials', self.credentials)
+        self.upload_settings = QWidget()
+        upload_form = QFormLayout(self.upload_settings)
+        upload_form.setContentsMargins(indent, 0, 0, 0)
+        upload_form.addRow('Bucket', self.bucket)
+        upload_form.addRow('Folder in bucket', self.bucket_folder)
+        upload_form.addRow('Endpoint', self.endpoint)
+        upload_form.addRow('Credentials', self.credentials)
         self._upload_fields = (self.bucket, self.bucket_folder, self.endpoint, self.credentials)
-        export_options.addRow(self.upload)
-        export_options.addRow(upload_options)
-        for box in (*self._format_boxes.values(), self.pmtiles):
-            box.toggled.connect(self._show_format_note)
 
-        self.not_saved = QLabel('Save the project as a .qgz or .qgs file first. A STAC catalogue is written only for a project saved as a file.')
-        self.not_saved.setWordWrap(True)
+        self.link_settings = QWidget()
+        link_form = QVBoxLayout(self.link_settings)
+        link_form.setContentsMargins(indent, 2, 0, 0)
+        link_form.addWidget(self.write_on_save)
+        self.export_settings = QWidget()
+        export_form = QFormLayout(self.export_settings)
+        export_form.setContentsMargins(indent, 4, 0, 0)
+        export_form.addRow('Formats', format_choice)
+        export_form.addRow(self.upload)
+        export_form.addRow(self.upload_settings)
+
+        how = QVBoxLayout()
+        how.setSpacing(0)
+        how.addWidget(self._heading('How to publish'))
+        how.addSpacing(6)
+        for radio, note, settings in ((self.link, self.link_note, self.link_settings), (self.export, self.export_note, self.export_settings)):
+            how.addWidget(radio)
+            how.addWidget(note)
+            how.addWidget(settings)
+            how.addSpacing(8)
+
+        # Where.
+        self.folder = QgsFileWidget()
+        self.folder.setStorageMode(getattr(QgsFileWidget, 'GetDirectory', None) or QgsFileWidget.StorageMode.GetDirectory)
+        self.folder.setDialogTitle('Folder for the STAC catalogue')
+        catalogue = f'{root_file_name}, with the other documents in {children_folder}/' if self._saved_as_file else UNSAVED_CATALOGUE
+        self.root_file = self._label(escape(catalogue), muted=True)
+        where_form = QFormLayout()
+        where_form.addRow('Folder', self.folder)
+        where_form.addRow('Catalogue', self.root_file)
+        where = QVBoxLayout()
+        where.setSpacing(6)
+        where.addWidget(self._heading('Where'))
+        where.addLayout(where_form)
+
+        # The plugin's version, its links, and who made it.
+        metadata = plugin_metadata()
+        links = [escape(f'{TITLE} {metadata.get("version", "")}'.strip())]
+        links += [f'<a href="{escape(address)}">{label}</a>' for label, address in (('Documentation', metadata.get('homepage')), ('Report a problem', metadata.get('tracker'))) if address]
+        self.about = self._label(' · '.join(links), muted=True, small=True)
+        made_by = self._label('Made by', muted=True, small=True)
+        maker_logo = QLabel()
+        maker_logo.setPixmap(QIcon(MAKER_LOGO_ON_DARK if on_dark else MAKER_LOGO).pixmap(QSize(22, 14)))
+        self.maker = self._label(f'<a href="{MAKER_ADDRESS}" style="color: {self._muted_colour.name()}; text-decoration: none">{MAKER}</a>', muted=True, small=True)
+        footer = QHBoxLayout()
+        footer.setSpacing(5)
+        footer.addWidget(self.about)
+        footer.addStretch(1)
+        footer.addWidget(made_by)
+        footer.addWidget(maker_logo)
+        footer.addWidget(self.maker)
+        rule = QFrame()
+        rule.setFrameShape(QFrame.Shape.HLine)
+        rule.setFrameShadow(QFrame.Shadow.Plain)
+        rule_palette = rule.palette()
+        rule_palette.setColor(QPalette.ColorRole.WindowText, _mix(window, text, 0.16))
+        rule.setPalette(rule_palette)
+
+        body = QWidget()
+        body.setMaximumWidth(680)
+        layout = QVBoxLayout(body)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(16)
+        layout.addLayout(header)
+        layout.addWidget(self.status_panel)
+        layout.addWidget(self.not_saved)
+        layout.addLayout(how)
+        layout.addLayout(where)
+        layout.addStretch(1)
+        layout.addWidget(rule)
+        layout.addLayout(footer)
+        page = QHBoxLayout(self)
+        page.addWidget(body, 1)
+        page.addStretch(0)
+
         if self._saved_as_file:
             home = project_folder(project)
             self.folder.setDefaultRoot(home)
             self.folder.setFilePath(chosen_folder(home, setting))
+        self.status_panel.setVisible(self._saved_as_file)
         self.not_saved.setVisible(not self._saved_as_file)
-
-        form = QFormLayout()
-        form.addRow('Folder', self.folder)
-        form.addRow('Catalogue', self.root_file)
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.not_saved)
-        layout.addLayout(form)
-        layout.addSpacing(8)
-        layout.addWidget(self.link)
-        layout.addLayout(link_options)
-        layout.addSpacing(8)
-        layout.addWidget(self.export)
-        layout.addLayout(export_options)
-        layout.addStretch(1)
 
         self._root_file_name = root_file_name
         self.link.toggled.connect(self._enable_options)
         self.upload.toggled.connect(self._enable_options)
-        self.folder.fileChanged.connect(self._show_last_change)
+        self.write_on_save.toggled.connect(self._show_status)
+        self.bucket.textChanged.connect(self._show_status)
+        self.folder.fileChanged.connect(self._show_status)
+        for box in (*self._format_boxes.values(), self.pmtiles):
+            box.toggled.connect(self._show_format_note)
         self._enable_options()
         if not self._saved_as_file:
-            for control in (self.folder, self.root_file, self.link, self.export, self.write_on_save, *self._format_boxes.values(), self.pmtiles, self.upload, *self._upload_fields):
+            for control in (self.folder, self.root_file, self.link, self.link_note, self.export, self.export_note, self.write_on_save, *self._format_boxes.values(), self.pmtiles, self.upload, *self._upload_fields):
                 control.setEnabled(False)
 
+    def _label(self, text: str, muted: bool = False, small: bool = False, indent: int = 0) -> QLabel:
+        """A label of rich text that wraps, opens its links in the browser, and is in the muted colour where `muted`."""
+        label = QLabel(text)
+        label.setTextFormat(Qt.TextFormat.RichText)
+        label.setWordWrap(not small)
+        label.setOpenExternalLinks(True)
+        label.setContentsMargins(indent, 0, 0, 0)
+        if muted:
+            palette = label.palette()
+            for group in (QPalette.ColorGroup.Active, QPalette.ColorGroup.Inactive):
+                palette.setColor(group, QPalette.ColorRole.WindowText, self._muted_colour)
+            label.setPalette(palette)
+        if small:
+            font = label.font()
+            if font.pointSizeF() > 0:
+                font.setPointSizeF(font.pointSizeF() * 0.92)
+            label.setFont(font)
+        return label
+
+    @staticmethod
+    def _heading(text: str) -> QLabel:
+        heading = QLabel(text)
+        font = heading.font()
+        font.setBold(True)
+        heading.setFont(font)
+        return heading
+
+    @staticmethod
+    def _panel(name: str, background: QColor, border: QColor) -> QFrame:
+        """A panel with a faint background and border, in colours worked out from QGIS's palette."""
+        panel = QFrame()
+        panel.setObjectName(name)
+        panel.setStyleSheet(f'QFrame#{name} {{ background-color: {background.name()}; border: 1px solid {border.name()}; border-radius: 3px; }}')
+        return panel
+
     def _enable_options(self) -> None:
-        """Turns on the chosen way's own controls, and off the other's."""
+        """Shows the chosen way's own settings and hides the other's, and the upload's while it is on; turns off what cannot be used."""
         linking = self.link.isChecked()
-        for control in (self.link_note, self.write_on_save):
-            control.setEnabled(linking)
-        self.export_note.setEnabled(not linking)
+        self.link_settings.setVisible(linking)
+        self.export_settings.setVisible(not linking)
+        self.upload_settings.setVisible(self.upload.isChecked())
+        self.write_on_save.setEnabled(linking)
         for box in (self.flatgeobuf, self.geopackage, self.geojson, self.csv):
             box.setEnabled(not linking)
         self.geoparquet.setEnabled(not linking and self._geoparquet_writable)
@@ -881,19 +1070,21 @@ class SettingsPage(QgsOptionsPageWidget):
         for control in self._upload_fields:
             control.setEnabled(not linking and self.upload.isChecked())
         self._show_format_note()
-        self._show_last_change()
+        self._show_status()
 
-    def _show_last_change(self, *_args: Any) -> None:
-        """
-        Says when the exported catalogue in the chosen folder last changed,
-        while exporting: the time its root document was last written, where
-        the folder holds it and copies under `<project>.stac/data/`. An export
-        that finds nothing changed leaves the files as they are, so this is
-        when an export last changed something.
-        """
-        changed = last_export_change(self.folder.filePath(), self._root_file_name) if self._saved_as_file else None
-        self.last_change.setText(f'Last changed {changed}.' if changed else '')
-        self.last_change.setVisible(self.export.isChecked() and bool(changed))
+    def _show_status(self, *_args: Any) -> None:
+        """The status line, as the page's choices stand (`status_text`), and the Open folder button, on where the folder exists."""
+        if not self._saved_as_file:
+            return
+        exporting = self.export.isChecked()
+        folder = self.folder.filePath()
+        bucket = self.bucket.text().strip() if exporting and self.upload.isChecked() else None
+        lead, rest = status_text(exporting, self.write_on_save.isChecked(), bucket, last_change(folder, self._root_file_name, exporting))
+        self.status.setText(f'<b>{escape(lead)}</b> <span style="color: {self._muted_colour.name()}">{escape(rest)}</span>')
+        self.open_folder.setEnabled(bool(folder) and os.path.isdir(folder))
+
+    def _open_folder(self) -> None:
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.folder.filePath()))
 
     def _show_format_note(self) -> None:
         """
