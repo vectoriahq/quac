@@ -47,7 +47,8 @@ with a stand-in for QGIS's `iface`, and saves a made-up project:
    Processing provider are gone.
 
 It also draws the QUAC page of Project Properties and, given a path, saves it
-as a PNG, and with the S3 check, the page with an upload set beside it, as
+as a PNG, the page for a project not saved as a file beside it as
+`<name>-unsaved.png`, and with the S3 check, the page with an upload set, as
 `<name>-upload.png`. It prints what it checked and exits non-zero on a failure. It is not
 one of the unit tests: it needs QGIS and its Processing plugin, which it looks
 for in QGIS's own `python/plugins` folder.
@@ -75,7 +76,7 @@ os.environ.setdefault('QGIS_AUTH_DB_DIR_PATH', tempfile.mkdtemp(prefix='quac-aut
 PACKAGE = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PACKAGE))
 
-from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin  # noqa: E402
+from build_plugin import CATALOGUE_PLUGIN, lay_out_plugin, read_metadata  # noqa: E402
 
 from qgis.core import (  # noqa: E402
     Qgis,
@@ -365,7 +366,8 @@ def check_export(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     check(bool(iface.bar.messages) and iface.bar.messages[-1][1] == expected, f'the message bar says what was exported: {expected}')
     check_unchanged(home, processing, publish, roads_file)
     page = iface.factories[0].createWidget(None)
-    check(page.last_change.isVisibleTo(page) and page.last_change.text().startswith('Last changed '), f'the page says when the exported catalogue last changed: {page.last_change.text()}')
+    check(page.status.isVisibleTo(page) and 'Exports when you ask.' in page.status.text() and 'The export last changed files today at ' in page.status.text(), f'the page says it exports when asked, and when the export last changed files: {page.status.text()}')
+    check(not page.link_settings.isVisibleTo(page) and page.export_settings.isVisibleTo(page), "while exporting, the page shows the export's settings and hides linking's")
     page.close()
 
     for file_ in (publish / 'Roads.stac' / 'data').iterdir():
@@ -490,14 +492,15 @@ def check_upload(home: Path, processing: Any, iface: Any, plugin: Any, write_now
     page = iface.factories[0].createWidget(None)
     check(page.upload.isChecked() and page.bucket.text() == S3_BUCKET and page.bucket_folder.text() == S3_FOLDER and page.endpoint.text() == endpoint and page.credentials.configId() == authcfg, 'the page shows the upload\'s settings')
     check(page.bucket.isEnabled() and page.credentials.isEnabled(), 'the upload\'s settings can be changed while exporting with the upload on')
-    page.resize(640, 560)
+    check(f'uploads it to {S3_BUCKET}.' in page.status.text(), f'the status line names the bucket the export uploads to: {page.status.text()}')
+    page.resize(640, 720)
     page.show()
     QgsApplication.processEvents()
     if screenshot:
         upload_screenshot = str(Path(screenshot).with_name(f'{Path(screenshot).stem}-upload.png'))
         check(page.grab().save(upload_screenshot), f'the page with an upload is saved as {upload_screenshot}')
     page.upload.setChecked(False)
-    check(not page.bucket.isEnabled() and not page.credentials.isEnabled(), 'with the upload off, its settings are off')
+    check(not page.bucket.isEnabled() and not page.credentials.isEnabled() and not page.upload_settings.isVisibleTo(page), 'with the upload off, its settings are off and hidden')
     page.link.setChecked(True)
     check(not page.upload.isEnabled(), 'while linking, the upload is off')
     page.close()
@@ -912,8 +915,16 @@ def main() -> int:
         # The settings page.
         page = iface.factories[0].createWidget(None)
         check(page.write_on_save.isChecked() and Path(page.folder.filePath()).resolve() == publish.resolve(), 'the page shows the option on and publish/ chosen')
-        check(page.root_file.text() == 'Parks.stac.json' and page.root_file.isReadOnly(), 'the page shows the root file, read-only')
-        page.resize(640, 260)
+        check(page.root_file.text() == 'Parks.stac.json, with the other documents in Parks.stac/', f'the page names the root file and the folder beside it: {page.root_file.text()}')
+        check('Writes on each save.' in page.status.text() and 'The catalogue last changed today at ' in page.status.text() and page.open_folder.isEnabled(), f'the page says it writes on each save, and when the catalogue last changed: {page.status.text()}')
+        check(page.link_settings.isVisibleTo(page) and not page.export_settings.isVisibleTo(page), "while linking, the page shows linking's settings and hides the export's")
+        check('Publishes this project' in page.purpose.text() and 'href="https://stacspec.org/"' in page.purpose.text(), 'the page says what QUAC does, with a link to what STAC is')
+        check(page.about.text().startswith(f"QUAC {read_metadata()['version']}") and 'href="https://github.com/vectoriahq/quac/issues"' in page.about.text(), f'the page gives the version and where to report a problem: {page.about.text()}')
+        check('href="https://vectoria.com.au"' in page.maker.text(), 'the page says who made it, with a link')
+        page.write_on_save.setChecked(False)
+        check('Writes when you ask.' in page.status.text(), f'with writing on save off, the status line says it writes when asked: {page.status.text()}')
+        page.write_on_save.setChecked(True)
+        page.resize(640, 620)
         page.show()
         app.processEvents()
         if screenshot:
@@ -945,7 +956,12 @@ def main() -> int:
         unsaved_project = home / 'unsaved'
         project.clear()
         unsaved = iface.factories[0].createWidget(None)
-        check(not unsaved.write_on_save.isEnabled() and not unsaved.folder.isEnabled() and not unsaved.not_saved.isHidden(), 'for a project not saved as a file the controls are off and the page says to save it first')
+        check(not unsaved.write_on_save.isEnabled() and not unsaved.folder.isEnabled() and not unsaved.not_saved.isHidden() and unsaved.status_panel.isHidden(), 'for a project not saved as a file the controls are off and the page says to save it first in place of the status line')
+        if screenshot:
+            unsaved.resize(640, 620)
+            unsaved.show()
+            app.processEvents()
+            check(unsaved.grab().save(str(Path(screenshot).with_name(f'{Path(screenshot).stem}-unsaved.png'))), 'the page for a project not saved as a file is saved beside it')
         unsaved.close()
         iface.bar.messages.clear()
         write_now.trigger()
