@@ -10,7 +10,9 @@ name: QGIS Server
 # QGIS Desktop job saves a made-up project with the plugin's Desktop part in
 # the official QGIS image's Python (tests/desktop/check_desktop.py), and the
 # GeoParquet job runs the same in conda-forge's QGIS, whose GDAL writes
-# GeoParquet.
+# GeoParquet. Both upload an export to moto, an S3 emulator run beside them:
+# one that takes any credentials, and one that checks them and so refuses the
+# check's.
 
 on:
   push:
@@ -62,11 +64,15 @@ jobs:
             image: qgis/qgis:4.2.3-resolute
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Start the S3 emulator
+        run: ./packages/quac-qgis-server/tests/desktop/start_s3_emulator.sh
       - name: Save a project with the plugin in QGIS Desktop's Python
         run: |
           docker pull --quiet "${{ matrix.image }}"
           # The image's python3 may not have QGIS's modules on its path, so find them.
-          docker run --rm -v "$PWD:/io" -w /io/packages/quac-qgis-server -e QT_QPA_PLATFORM=offscreen "${{ matrix.image }}" sh -c '
+          # The host's network, so the check reaches the emulator at 127.0.0.1.
+          docker run --rm --network host -v "$PWD:/io" -w /io/packages/quac-qgis-server -e QT_QPA_PLATFORM=offscreen \
+            -e QUAC_S3_ENDPOINT=http://127.0.0.1:5055 -e QUAC_S3_REFUSING_ENDPOINT=http://127.0.0.1:5056 "${{ matrix.image }}" sh -c '
             core=$(find / -xdev -type f -path "*/qgis/core/__init__.py" 2>/dev/null | head -n 1)
             PYTHONPATH=$(dirname "$(dirname "$(dirname "$core")")") python3 tests/desktop/check_desktop.py'
 
@@ -86,11 +92,16 @@ jobs:
         with:
           environment-name: qgis
           create-args: qgis=3.44 libgdal-arrow-parquet pyarrow tippecanoe
+      - name: Start the S3 emulator
+        shell: bash
+        run: ./packages/quac-qgis-server/tests/desktop/start_s3_emulator.sh
       - name: Copy data as GeoParquet with the plugin in QGIS Desktop's Python
         working-directory: packages/quac-qgis-server
         env:
           QT_QPA_PLATFORM: offscreen
           QUAC_EXPECT_GEOPARQUET: "1"
+          QUAC_S3_ENDPOINT: http://127.0.0.1:5055
+          QUAC_S3_REFUSING_ENDPOINT: http://127.0.0.1:5056
         run: python tests/desktop/check_desktop.py
 
   qgis-server:
